@@ -1,0 +1,68 @@
+{
+  "organization": "1000000003",
+  "subscriptions": [
+    {
+      "id": 1,
+      "label": "Locate Tags",
+      "icon": "tags",
+      "isActive": true,
+      "route": "Gate",
+    },
+    {
+      "id": 2,
+      "label": "Soon",
+      "icon": "user-secret",
+      "isActive": false,
+      "route": "",
+    },
+    {
+      "id": 3,
+      "label": "Soon",
+      "icon": "archive",
+      "isActive": false,
+      "route": "",
+    },
+    {
+      "id": 4,
+      "label": "Soon",
+      "icon": "rocket",
+      "isActive": false,
+      "route": "",
+    },
+    {
+      "id": 5,
+      "label": "Soon",
+      "icon": "glass",
+      "isActive": false,
+      "route": "",
+    },
+    {
+      "id": 6,
+      "label": "Soon",
+      "icon": "book",
+      "isActive": false,
+      "route": "",
+    },
+    {
+      "id": 7,
+      "label": "Soon",
+      "icon": "barcode",
+      "isActive": false,
+      "route": "",
+    },
+    {
+      "id": 8,
+      "label": "Soon",
+      "icon": "qrcode",
+      "isActive": false,
+      "route": "",
+    },
+    {
+      "id": 9,
+      "label": "Soon",
+      "icon": "crosshairs",
+      "isActive": false,
+      "route": "",
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "id": "ADZ0003",
+  "username": "Lab Place",
+  "email": "troy.j.norris@gmail.com",
+  "isActive": true,
+  "organization": {
+    "id": "1000000003",
+    "name": "Hospital Lab Place",
+    "street": "100 Main St",
+    "city": "Kansas City",
+    "state": "Missouri",
+    "postal": "64106"
+  }
+}
