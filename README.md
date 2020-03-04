@@ -9,6 +9,11 @@ yarn
 
 InsysivAndroid cast to tethered device
 
+Start packager
+yarn start
+
+Check tethered device is detected
 adb devices
 
+Cast android app to device
 react-native run-android --variant=release
