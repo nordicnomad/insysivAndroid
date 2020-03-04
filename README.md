@@ -1,19 +1,21 @@
 # insysivAndroid
 
-installation
+## Installation
+
+### Clone Repository
 git clone https://github.com/nordicnomad/insysivAndroid.git
 
-install node modules
+### install node modules
 yarn
 
 
-InsysivAndroid cast to tethered device
+## InsysivAndroid cast to tethered device
 
-Start packager
+### Start packager
 yarn start
 
-Check tethered device is detected
+### Check tethered device is detected
 adb devices
 
-Cast android app to device
+### Cast android app to device
 react-native run-android --variant=release
