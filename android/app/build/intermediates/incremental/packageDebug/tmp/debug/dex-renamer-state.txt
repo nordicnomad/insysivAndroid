@@ -1,4 +1,4 @@
-#Fri Dec 13 14:13:58 CST 2019
-base.0=/Users/nordicnomad/Desktop/projects/InsysivZebra/android/app/build/intermediates/transforms/dexMerger/debug/0
+#Sat Mar 14 19:48:44 CDT 2020
+base.0=C\:\\Users\\troyj\\Desktop\\insysivAndroid\\android\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\0
 path.0=classes.dex
 renamed.0=classes.dex

@@ -5,6 +5,7 @@ const { width, height } = Dimensions.get('window');
 export default StyleSheet.create({
   scrollContainer: {
     flex: 1,
+
   },
   loginContainer: {
     display: 'flex',
@@ -42,6 +43,26 @@ export default StyleSheet.create({
     width: 300,
     fontSize: 22,
   },
+  formInput: {
+    backgroundColor: '#fff',
+    borderBottomWidth: 2,
+    borderBottomColor: '#ddd',
+    marginBottom: 5,
+    paddingTop: 5,
+    paddingLeft: 8,
+    paddingBottom: 5,
+    fontSize: 22,
+  },
+  formInputFocus: {
+    backgroundColor: '#fff',
+    borderBottomWidth: 2,
+    borderBottomColor: '#ed9a1a',
+    marginBottom: 5,
+    paddingTop: 5,
+    paddingLeft: 8,
+    paddingBottom: 5,
+    fontSize: 22,
+  },
   loginLabel: {
     fontSize: 18,
     fontWeight: '600',
@@ -70,6 +91,7 @@ export default StyleSheet.create({
   },
   container: {
     flex: 1,
+    paddingBottom: 50,
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'flex-start',
@@ -139,6 +161,35 @@ export default StyleSheet.create({
     textAlign: 'center',
     fontWeight: '800',
   },
+  submitButtonAlt: {
+    backgroundColor: '#ddd',
+    paddingTop: 12,
+    paddingBottom: 12,
+    paddingLeft: 12,
+    paddingRight: 12,
+  },
+  submitButtonTextAlt: {
+    color: '#333',
+    fontSize: 18,
+    textAlign: 'center',
+    fontWeight: '800',
+  },
+  miniSubmitWrapper:{
+    marginTop:10,
+  },
+  miniSubmitButton: {
+    backgroundColor: '#ed9a1a',
+    paddingTop: 4,
+    paddingBottom: 4,
+    paddingLeft: 4,
+    paddingRight: 4,
+  },
+  miniSubmitButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    textAlign: 'center',
+    fontWeight: '800',
+  },
   gateSelectionRow: {
     flexDirection: 'row',
     paddingTop: 15,
@@ -150,13 +201,13 @@ export default StyleSheet.create({
   gateSelectionSection: {
     paddingBottom: 15,
   },
-  gateSelectionPickerWrapper: {
+  selectionPickerWrapper: {
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 4,
     marginBottom: 15,
   },
-  gateSelectionPicker: {
+  selectionPicker: {
     height: 50,
     width: 175,
   },
@@ -244,7 +295,6 @@ export default StyleSheet.create({
   tagDescription: {
     color: '#888',
     fontSize: 16,
-
   },
   tagGateText: {
     flex: 1,
@@ -252,6 +302,198 @@ export default StyleSheet.create({
     fontSize: 16,
     color: '#666',
     fontWeight: 'bold',
+  },
+
+  /* Body Main Styles */
+  accountCenterWrapper: {
+    display: 'flex',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  shadedBackgroundWrapper: {
+    backgroundColor: '#eee',
+    paddingTop: 15,
+    paddingBottom: 15,
+    paddingRight: 10,
+    paddingLeft: 10,
+  },
+  bodyTextHeading: {
+    textAlign: 'left',
+    fontSize: 20,
+    color: '#333',
+    fontWeight: 'bold',
+  },
+  bodyText: {
+    textAlign: 'left',
+    fontSize: 18,
+    color: '#333',
+    fontWeight: "300",
+  },
+  bodyTextLabel: {
+    textAlign: 'left',
+    fontSize: 18,
+    color: '#888',
+    fontWeight: 'bold',
+  },
+  bodyTextLabelRight: {
+    textAlign: 'right',
+    fontSize: 18,
+    color: '#888',
+    fontWeight: 'bold',
+  },
+  emailText: {
+    textAlign: 'left',
+    fontSize: 18,
+    color: '#ed9a1a',
+    fontWeight: '700',
+  },
+  inputTextLabel: {
+    textAlign: 'left',
+    fontSize: 14,
+    color: '#888',
+    fontWeight: '700',
+  },
+  productListHeading: {
+    textAlign: 'left',
+    fontSize: 20,
+    color: '#333',
+    fontWeight: '700',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  activeProductListHeading: {
+    textAlign: 'left',
+    fontSize: 20,
+    color: '#ed9a1a',
+    fontWeight: '700',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  productListHeadingRight: {
+    textAlign: 'right',
+    fontSize: 20,
+    color: '#333',
+    fontWeight: '700',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    marginLeft: -6,
+  },
+  productListItem: {
+    marginTop: 10,
+  },
+  productListTray: {
+    display: 'flex',
+    backgroundColor: '#f7f7f7',
+    padding: 10,
+  },
+  activeListTray: {
+    display: 'flex',
+    backgroundColor: '#f7f7f7',
+    padding: 10,
+    marginTop: -5,
+    marginRight: 50,
+  },
+  inactiveListTray: {
+    display: 'none'
+  },
+  formItemWrapper: {
+    marginBottom: 25,
+  },
+  formTitleWrapper: {
+    marginBottom: 15
+  },
+  formPickerWrapper: {
+    borderColor: '#ccc',
+    borderWidth: 1,
+    marginBottom: 15,
+    backgroundColor: '#fff'
+  },
+  formPicker: {
+
+  },
+  straightRow: {
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  majorMinorRow: {
+    display: 'flex',
+    flexDirection: 'row',
+    marginTop: 15,
+    marginBottom: 5,
+    flexWrap: 'wrap',
+  },
+  majorColumn: {
+    flexDirection: 'column',
+    flex: 1,
+  },
+  minorColumn: {
+    width: 50,
+  },
+  mediumColumn: {
+    width: 100,
+  },
+  countText: {
+    textAlign: 'right',
+  },
+  countTextNumber: {
+    fontSize: 24,
+    textAlign: "right",
+    color: '#0072BB',
+  },
+  countTextNumberUnkown:{
+    fontSize: 24,
+    textAlign: "right",
+    color: '#FB3640',
+  },
+  footerContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingLeft: 15,
+    paddingRight: 15,
+    display: 'flex',
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+    flexWrap: 'wrap',
+  },
+  equalColumn: {
+    flex: 1,
+    marginLeft: 2.5,
+    marginRight: 2.5,
+  },
+  leftColumn: {
+    width: (width / 2) - 15,
+  },
+  rightColumn: {
+    width: (width / 2) - 15,
+  },
+  productStatusIcon: {
+    textAlign: 'center',
+    color: '#ed991a'
+  },
+  productStatusIconInactive: {
+    textAlign: 'center',
+    color: '#333'
+  },
+  trayItemWrapper: {
+    marginBottom: 10,
+  },
+  trayLabel: {
+    textAlign: 'left',
+    fontSize: 14,
+    color: '#888',
+    fontWeight: 'bold',
+  },
+  trayText: {
+    textAlign: 'left',
+    fontSize: 14,
+    color: '#333',
+    fontWeight: "300",
   },
 
   /* Old inventory scan styles */

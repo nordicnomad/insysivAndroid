@@ -44,9 +44,9 @@ export default class InventoryScan extends Component{
           <View style={{flex: 1,paddingRight:10,}}>
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate('Login')
+                navigation.navigate('AccountInfo')
               }>
-              <Icon name="sign-out" size={30} color="#102541" />
+              <Icon name="user-circle-o" size={26} color="#102541" />
             </TouchableOpacity>
           </View>
         </View>
