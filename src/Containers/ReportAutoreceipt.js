@@ -48,7 +48,24 @@ export default class ReportAutoreceipt extends Component {
       ),
     }
   };
-
+  getAutoReceiptData() {
+    let autoReceiptResponse = {}
+    //emulator call
+    //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/autoReceipt')
+    //test server call
+    return fetch('https://insysivtestapi.herokuapp.com/insysiv/api/v1.0/autoReceipt')
+    .then((response) => response.json())
+    .then((responseJson) => {
+      console.log(responseJson)
+      autoReceiptResponse = responseJson.autoReceipt;
+      this.setState({
+        autoReceipt: autoReceiptResponse,
+      })
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
 
   render() {
     return (

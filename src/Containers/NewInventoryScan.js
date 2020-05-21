@@ -48,7 +48,24 @@ export default class NewInventory extends Component {
       ),
     }
   };
-
+  getInventoryData() {
+    let inventoryResponse = {}
+    //emulator call
+    //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/inventory')
+    //test server call
+    return fetch('https://insysivtestapi.herokuapp.com/insysiv/api/v1.0/inventory')
+    .then((response) => response.json())
+    .then((responseJson) => {
+      console.log(responseJson)
+      inventoryResponse = responseJson.inventory;
+      this.setState({
+        inventory: inventoryResponse,
+      })
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
 
   render() {
     return (

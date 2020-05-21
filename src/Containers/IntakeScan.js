@@ -2,7 +2,7 @@ import React, {Fragment, Component} from 'react';
 import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.png'
-import GateData from '../dummyData/gates.json'
+import ProductListTrayItem from '../Components/ProductListTrayItem'
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -10,8 +10,9 @@ export default class IntakeScan extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      selectedValue: 0,
-      gates: []
+      scanCount: 0,
+      scannedItems: [],
+      scannerStatus: 1,
     }
   }
   static navigationOptions = ({navigation}) => {
@@ -48,7 +49,152 @@ export default class IntakeScan extends Component {
       ),
     }
   };
+  ScanBarcode() {
+    let existingScans = this.state.scannedItems
+    let existingCount = this.state.scanCount
 
+    // call to scanner to get barcode (populate object's serial, model, and expiration)
+    let newScanData = [
+      {
+        trayState: false,
+        isUnknown: true,
+        name: "Unknown Product",
+        model: "9188493038",
+        lotSerial: "0209485",
+        expiration: "08/08/2020",
+        count: 1
+      },
+      {
+        trayState: false,
+        isUnknown: false,
+        name: "Existing Product",
+        model: "9188493000",
+        lotSerial: "0209467",
+        expiration: "08/08/2020",
+        count: 1
+      }
+    ]
+    let addState = 0
+    let matchState = false
+    let existingTotalCount = 0
+    existingScans.forEach(function(exScan, index) {
+      existingTotalCount = existingTotalCount + exScan.count
+    })
+
+    if(existingTotalCount % 2 === 0) {
+      addState = 1
+    }
+    else {
+      addState = 0
+    }
+    let newScan = newScanData[addState]
+    if(existingScans.length === 0) {
+      existingScans.push(newScan)
+    }
+    else {
+      existingScans.forEach(function(scan, index) {
+          if(newScan.lotSerial === scan.lotSerial) {
+            matchState = true
+            existingScans[index].count = existingScans[index].count + 1
+          }
+      })
+      if(matchState === false) {
+        existingScans.push(newScan)
+      }
+    }
+
+    let finalTotalCount = 0
+    existingScans.forEach(function(countScan, index) {
+      finalTotalCount = finalTotalCount + countScan.count
+    })
+
+    // api call to lookup service, return name
+
+    // add object to the top of the scanned items array or increase item count and move to top.
+
+    this.setState({
+      scanCount: existingCount,
+      scannedItems: existingScans,
+      scanCount: finalTotalCount
+    })
+  }
+
+  RemoveScannedItem(index) {
+    let scannedItems = this.state.scannedItems
+    let newTotalCount = 0
+    scannedItems.splice(index, 1)
+    scannedItems.forEach(function(countScan, index) {
+      newTotalCount = newTotalCount + countScan.count
+    })
+    this.setState({
+      scannedItems: scannedItems,
+      scanCount: newTotalCount,
+    })
+  }
+  AdjustScannedQuantity = (index, newQuantity) => {
+    console.log("CALLED ADJUSTMENT FUNCTION")
+    let updateCount = newQuantity
+    let updatedScannedItems = this.state.scannedItems
+    updatedScannedItems[index].count = updateCount
+    this.setState({
+      scannedItems: updatedScannedItems
+    })
+  }
+  SynchoronizeIntakeToDesktop = () => {
+    this.setState({
+      scanCount: 0,
+      scannedItems: []
+    })
+  }
+  GetScannerStatus(status) {
+    let scannerStatus = status
+
+    if(scannerStatus === 1) {
+      return(
+        <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.ScanBarcode()}>
+          <Text style={styles.miniSubmitButtonText}>Scan</Text>
+        </TouchableOpacity>
+      )
+    }
+    else {
+      return(
+        <TouchableOpacity style={styles.miniDisabledButton}>
+          <Text style={styles.miniDisableButtonText}>Wait</Text>
+        </TouchableOpacity>
+      )
+    }
+  }
+  RenderScannedProducts(scanitems) {
+    let scannedItems = scanitems
+    let scanOutput = []
+
+    if(scannedItems.length === 0) {
+      scanOutput.push(
+        <View key={"noData"}>
+          <Text style={styles.noDataText}>No Scanned Items to Display.</Text>
+          <Text style={styles.noDataText}>Scan Item Barcodes to Begin.</Text>
+        </View>
+      )
+    }
+    else {
+      scannedItems.forEach(function(item, index){
+        scanOutput.push(
+          <ProductListTrayItem
+            key={index}
+            unknownFlag={item.isUnknown}
+            itemName={item.name}
+            itemCount={item.count}
+            itemModel={item.model}
+            itemSerial={item.lotSerial}
+            itemExpiration={item.expiration}
+            statePosition={index}
+            removeFunction={() => this.RemoveScannedItem(index)}
+            adjustmentFunction={() => this.AdjustScannedQuantity(index, 100)}
+            />)
+      }.bind(this))
+    }
+    return(scanOutput)
+  }
 
   render() {
     return (
@@ -60,76 +206,19 @@ export default class IntakeScan extends Component {
             </View>
             <View style={styles.sectionContainer}>
               <View style={styles.menuRow}>
-                <View style={styles.minorColumn}>
-                  <Text>Ready -</Text>
-                </View>
-                <View style={styles.mediumColumn}>
-                  <TouchableOpacity style={styles.miniSubmitButton}>
-                    <Text style={styles.miniSubmitButtonText}>Cancel</Text>
-                  </TouchableOpacity>
+                <View style={styles.majorColumn}>
+                  {this.GetScannerStatus(this.state.scannerStatus)}
                 </View>
                 <View style={styles.majorColumn}>
                   <Text style={styles.countText}>
                     Total Count
-                    <Text style={styles.countTextNumber}> 16</Text>
+                    <Text style={styles.countTextNumber}> {this.state.scanCount}</Text>
                   </Text>
                 </View>
               </View>
             </View>
             <View style={styles.sectionContainer}>
-              <View style={styles.productListItem}>
-                <View style={styles.majorMinorRow}>
-                  <View style={styles.majorColumn}><Text style={styles.productListHeading}>Unknown Product</Text></View>
-                  <View style={styles.minorColumn}>
-                    <Text style={styles.countTextNumberUnkown}>4</Text>
-                  </View>
-                </View>
-                <View style={styles.activeListTray}>
-                  <View style={styles.straightRow}>
-                    <View style={styles.equalColumn}>
-                      <Text style={styles.trayLabel}>Model Number</Text>
-                      <Text style={styles.trayLabel}>Lot / Serial Number</Text>
-                    </View>
-                    <View style={styles.equalColumn}>
-                      <Text style={styles.trayText}>GR9393930</Text>
-
-                      <Text style={styles.trayText}>LR101</Text>
-                      <View style={styles.miniSubmitWrapper}>
-                        <TouchableOpacity style={styles.miniSubmitButton}>
-                          <Text style={styles.miniSubmitButtonText}>Remove</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-              </View>
-              <View style={styles.productListItem}>
-                <View style={styles.majorMinorRow}>
-                  <View style={styles.majorColumn}><Text style={styles.productListHeading}>Matched Product Name</Text></View>
-                  <View style={styles.minorColumn}>
-                    <Text style={styles.countTextNumber}>1</Text>
-                  </View>
-                </View>
-                <View style={styles.inactiveListTray}></View>
-              </View>
-              <View style={styles.productListItem}>
-                <View style={styles.majorMinorRow}>
-                  <View style={styles.majorColumn}><Text style={styles.productListHeading}>Matched Product Name</Text></View>
-                  <View style={styles.minorColumn}>
-                    <Text style={styles.countTextNumber}>1</Text>
-                  </View>
-                </View>
-                <View style={styles.inactiveListTray}></View>
-              </View>
-              <View style={styles.productListItem}>
-                <View style={styles.majorMinorRow}>
-                  <View style={styles.majorColumn}><Text style={styles.productListHeading}>Matched Product Name</Text></View>
-                  <View style={styles.minorColumn}>
-                    <Text style={styles.countTextNumber}>100</Text>
-                  </View>
-                </View>
-                <View style={styles.inactiveListTray}></View>
-              </View>
+              {this.RenderScannedProducts(this.state.scannedItems)}
             </View>
           </View>
         </ScrollView>
@@ -139,7 +228,7 @@ export default class IntakeScan extends Component {
             <Text style={styles.bodyTextLabel}>to Desktop</Text>
           </View>
           <View style={styles.rightColumn}>
-            <TouchableOpacity style={styles.submitButton}>
+            <TouchableOpacity style={styles.submitButton} onPress={() => this.SynchoronizeIntakeToDesktop()}>
               <Text style={styles.submitButtonText}>Synchronize</Text>
             </TouchableOpacity>
           </View>

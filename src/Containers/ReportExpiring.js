@@ -48,7 +48,24 @@ export default class ReportExpiring extends Component {
       ),
     }
   };
-
+  getExpiringItemsData() {
+    let expiringItemsResponse = {}
+    //emulator call
+    //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/expiringItems')
+    //test server call
+    return fetch('https://insysivtestapi.herokuapp.com/insysiv/api/v1.0/expiringItems')
+    .then((response) => response.json())
+    .then((responseJson) => {
+      console.log(responseJson)
+      expiringItemsResponse = responseJson.expiringItems;
+      this.setState({
+        expiringItems: expiringItemsResponse,
+      })
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
 
   render() {
     return (

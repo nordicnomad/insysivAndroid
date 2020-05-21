@@ -48,7 +48,24 @@ export default class AccountInfo extends Component {
       ),
     }
   };
-
+  getAccountData() {
+    let accountResponse = {}
+    //emulator call
+    //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/info')
+    //test server call
+    return fetch('https://insysivtestapi.herokuapp.com/insysiv/api/v1.0/info')
+    .then((response) => response.json())
+    .then((responseJson) => {
+      console.log(responseJson)
+      accountResponse = responseJson.account;
+      this.setState({
+        account: accountResponse,
+      })
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
 
   render() {
     return (

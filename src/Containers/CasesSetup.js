@@ -48,7 +48,24 @@ export default class CasesSetup extends Component {
       ),
     }
   };
-
+  getCasesData() {
+    let casesResponse = {}
+    //emulator call
+    //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/cases')
+    //test server call
+    return fetch('https://insysivtestapi.herokuapp.com/insysiv/api/v1.0/cases')
+    .then((response) => response.json())
+    .then((responseJson) => {
+      console.log(responseJson)
+      casesResponse = responseJson.cases;
+      this.setState({
+        cases: casesResponse,
+      })
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
 
   render() {
     return (

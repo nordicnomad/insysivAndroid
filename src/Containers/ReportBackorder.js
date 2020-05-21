@@ -48,7 +48,24 @@ export default class ReportBackorder extends Component {
       ),
     }
   };
-
+  getBackOrderData() {
+    let backOrderResponse = {}
+    //emulator call
+    //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/backOrder')
+    //test server call
+    return fetch('https://insysivtestapi.herokuapp.com/insysiv/api/v1.0/backOrder')
+    .then((response) => response.json())
+    .then((responseJson) => {
+      console.log(responseJson)
+      backOrderResponse = responseJson.backOrder;
+      this.setState({
+        backOrder: backOrderResponse,
+      })
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
 
   render() {
     return (

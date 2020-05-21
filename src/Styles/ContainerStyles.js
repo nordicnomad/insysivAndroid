@@ -5,7 +5,6 @@ const { width, height } = Dimensions.get('window');
 export default StyleSheet.create({
   scrollContainer: {
     flex: 1,
-
   },
   loginContainer: {
     display: 'flex',
@@ -91,7 +90,7 @@ export default StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingBottom: 50,
+    paddingBottom: 125,
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'flex-start',
@@ -186,6 +185,19 @@ export default StyleSheet.create({
   },
   miniSubmitButtonText: {
     color: '#fff',
+    fontSize: 16,
+    textAlign: 'center',
+    fontWeight: '800',
+  },
+  miniDisabledButton: {
+    backgroundColor: '#ccc',
+    paddingTop: 4,
+    paddingBottom: 4,
+    paddingLeft: 4,
+    paddingRight: 4,
+  },
+  miniDisableButtonText: {
+    color: '#666',
     fontSize: 16,
     textAlign: 'center',
     fontWeight: '800',
@@ -379,6 +391,19 @@ export default StyleSheet.create({
     borderBottomColor: '#ddd',
     marginLeft: -6,
   },
+  noDataText: {
+    textAlign: 'center',
+    fontSize: 18,
+    color: '#666',
+  },
+  statusTextReady: {
+    fontSize:18,
+    color: '#8FC93A',
+  },
+  statusTextWait: {
+    fontSize: 18,
+    color: '#EE7A38',
+  },
   productListItem: {
     marginTop: 10,
   },
@@ -429,9 +454,11 @@ export default StyleSheet.create({
     flex: 1,
   },
   minorColumn: {
+    flexDirection: 'column',
     width: 50,
   },
   mediumColumn: {
+    flexDirection: 'column',
     width: 100,
   },
   countText: {
@@ -460,6 +487,8 @@ export default StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#ddd',
     flexWrap: 'wrap',
+    zIndex:9999,
+    backgroundColor: '#fff',
   },
   equalColumn: {
     flex: 1,

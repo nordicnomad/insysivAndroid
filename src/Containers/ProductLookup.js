@@ -2,7 +2,7 @@ import React, {Fragment, Component} from 'react';
 import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert, TextInput } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.png'
-import GateData from '../dummyData/gates.json'
+import SearchLookupItem from '../Components/SearchLookupItem'
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -11,7 +11,6 @@ export default class ProductLookup extends Component {
     super(props)
     this.state = {
       selectedValue: 0,
-      gates: []
     }
   }
   static navigationOptions = ({navigation}) => {
@@ -48,7 +47,24 @@ export default class ProductLookup extends Component {
       ),
     }
   };
-
+  getProductsData() {
+    let productsResponse = {}
+    //emulator call
+    //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/products')
+    //test server call
+    return fetch('https://insysivtestapi.herokuapp.com/insysiv/api/v1.0/products')
+    .then((response) => response.json())
+    .then((responseJson) => {
+      console.log(responseJson)
+      productsResponse = responseJson.products;
+      this.setState({
+        products: productsResponse,
+      })
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
 
   render() {
     return (
@@ -77,49 +93,8 @@ export default class ProductLookup extends Component {
           </View>
           <View style={styles.sectionContainer}>
             <Text style={styles.bodyTextLabel}>Results</Text>
-            <View style={styles.productListItem}>
-              <Text style={styles.activeProductListHeading}>Search Result Name</Text>
-              <View style={styles.productListTray}>
-                <View style={styles.straightRow}>
-                  <Text style={styles.bodyTextLabel}>Product Detail</Text>
-                </View>
-                <View style={styles.majorMinorRow}>
-                  <View style={styles.equalColumn}>
-                    <Text style={styles.trayText}><Text style={styles.trayLabel}>Model: </Text>LA6518Q</Text>
-                    <Text style={styles.trayText}><Text style={styles.trayLabel}>Lot / Serial: </Text>123445</Text>
-                    <Text style={styles.trayText}><Text style={styles.trayLabel}>Quantity on Hand: </Text> 0</Text>
-                  </View>
-                  <View style={styles.equalColumn}>
-                    <Text style={styles.trayText}><Text style={styles.trayLabel}>Quantity on Order: </Text>500</Text>
-                    <Text style={styles.trayText}><Text style={styles.trayLabel}>Manufacturer: </Text>Medtronic</Text>
-                  </View>
-                </View>
-                <View style={styles.straightRow}>
-                  <View style={styles.equalColumn}>
-                    <View style={styles.miniSubmitWrapper}>
-                      <TouchableOpacity style={styles.miniSubmitButton}>
-                        <Text style={styles.miniSubmitButtonText}>Locate</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                  <View style={styles.equalColumn}>
-                    <View style={styles.miniSubmitWrapper}>
-                      <TouchableOpacity style={styles.miniSubmitButton}>
-                        <Text style={styles.miniSubmitButtonText}>FDA Lookup</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-              </View>
-            </View>
-            <View style={styles.productListItem}>
-              <Text style={styles.productListHeading}>Search Result Name</Text>
-              <View style={styles.inactiveListTray}></View>
-            </View>
-            <View style={styles.productListItem}>
-              <Text style={styles.productListHeading}>Search Result Name</Text>
-              <View style={styles.inactiveListTray}></View>
-            </View>
+
+            <SearchLookupItem name="ksdfjksdf" />
           </View>
         </View>
       </ScrollView>

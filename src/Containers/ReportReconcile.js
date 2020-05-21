@@ -48,7 +48,24 @@ export default class ReportReconcile extends Component {
       ),
     }
   };
-
+  getTrashUnreconciledData() {
+    let trashUnreconciledResponse = {}
+    //emulator call
+    //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/trashUnreconciled')
+    //test server call
+    return fetch('https://insysivtestapi.herokuapp.com/insysiv/api/v1.0/trashUnreconciled')
+    .then((response) => response.json())
+    .then((responseJson) => {
+      console.log(responseJson)
+      trashUnreconciledResponse = responseJson.trashUnreconciled;
+      this.setState({
+        trashUnreconciled: trashUnreconciledResponse,
+      })
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
 
   render() {
     return (

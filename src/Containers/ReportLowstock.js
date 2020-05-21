@@ -48,7 +48,24 @@ export default class ReportsHome extends Component {
       ),
     }
   };
-
+  getLowStockData() {
+    let lowStockAlertsResponse = {}
+    //emulator call
+    //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/lowStockAlerts')
+    //test server call
+    return fetch('https://insysivtestapi.herokuapp.com/insysiv/api/v1.0/lowStockAlerts')
+    .then((response) => response.json())
+    .then((responseJson) => {
+      console.log(responseJson)
+      lowStockAlertsResponse = responseJson.lowStockAlerts;
+      this.setState({
+        lowStockAlerts: lowStockAlertsResponse,
+      })
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
 
   render() {
     return (
