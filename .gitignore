@@ -53,6 +53,7 @@ android/.gradle/*.bin
 android/.gradle/*.lock
 local.properties
 *.iml
+android/*
 /android/
 
 # Node

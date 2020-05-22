@@ -72,7 +72,7 @@ export default class ProductListTrayItem extends Component {
           <View style={styles.majorMinorRow}>
             <View style={styles.majorColumn}>
               <TouchableOpacity onPress={() => this.ToggleDetailTray()}>
-                <Text style={styles.productListHeading}>{this.props.itemName}</Text>
+                <Text style={this.state.trayState === true ? styles.activeProductListHeading : styles.productListHeading}>{this.props.itemName}</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.minorColumn}>

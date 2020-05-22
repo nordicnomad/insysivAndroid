@@ -2,7 +2,7 @@ import React, {Fragment, Component} from 'react';
 import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.png'
-import GateData from '../dummyData/gates.json'
+import UserData from '../dummyData/login.json'
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -11,8 +11,14 @@ export default class AccountInfo extends Component {
     super(props)
     this.state = {
       selectedValue: 0,
-      gates: []
+      gates: [],
+      account: {},
+      user: {},
     }
+  }
+  componentDidMount() {
+    this.getUserData()
+    this.getAccountData()
   }
   static navigationOptions = ({navigation}) => {
     return {
@@ -48,6 +54,11 @@ export default class AccountInfo extends Component {
       ),
     }
   };
+  getUserData() {
+    this.setState({
+      user: UserData
+    })
+  }
   getAccountData() {
     let accountResponse = {}
     //emulator call
@@ -68,54 +79,67 @@ export default class AccountInfo extends Component {
   }
 
   render() {
-    return (
-      <ScrollView style={styles.scrollContainer}>
-        <View style={styles.container}>
-          <View style={styles.titleRow}>
-            <Text style={styles.titleText}>Account Information</Text>
-          </View>
-          <View style={styles.sectionContainer}>
-            <Text style={styles.bodyText}>
-              <Text style={styles.bodyTextLabel}>Current User: </Text>
-              TroyJNorris
-            </Text>
-            <View style={styles.accountCenterWrapper}>
-              <View style={styles.buttonRow}>
-                <TouchableOpacity
-                  style={styles.loginButton}
-                  activeOpacity={0.6}
-                  onPress={() =>
-                  this.props.navigation.navigate('Login')
-                }>
-                  <Text style={styles.loginButtonText}>Log Out</Text>
-                </TouchableOpacity>
-              </View>
+    if(this.state.account.organization === null || this.state.account.organization === undefined) {
+      return(
+        <ScrollView style={styles.scrollContainer}>
+          <View style={styles.container}>
+            <View style={styles.titleRow}>
+              <Text style={styles.titleText}>Account Information</Text>
             </View>
           </View>
-          <View style={styles.sectionContainer}>
-            <Text style={styles.bodyTextHeading}>System Information</Text>
-            <Text style={styles.bodyText}>
-              <Text style={styles.bodyTextLabel}>System Version: </Text>
-              1.10
-            </Text>
-            <Text style={styles.bodyText}>
-              <Text style={styles.bodyTextLabel}>Host Account: </Text>
-              St Luke's Health System
-            </Text>
+        </ScrollView>
+      )
+    }
+    else {
+      return (
+        <ScrollView style={styles.scrollContainer}>
+          <View style={styles.container}>
+            <View style={styles.titleRow}>
+              <Text style={styles.titleText}>Account Information</Text>
+            </View>
+            <View style={styles.sectionContainer}>
+              <Text style={styles.bodyText}>
+                <Text style={styles.bodyTextLabel}>Current User: </Text>
+                {this.state.user.username}
+              </Text>
+              <View style={styles.accountCenterWrapper}>
+                <View style={styles.buttonRow}>
+                  <TouchableOpacity
+                    style={styles.loginButton}
+                    activeOpacity={0.6}
+                    onPress={() =>
+                    this.props.navigation.navigate('Login')
+                  }>
+                    <Text style={styles.loginButtonText}>Log Out</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+            <View style={styles.sectionContainer}>
+              <Text style={styles.bodyTextHeading}>System Information</Text>
+              <Text style={styles.bodyText}>
+                <Text style={styles.bodyTextLabel}>System Version: </Text>
+                {this.state.account.organization.systemVersion}
+              </Text>
+              <Text style={styles.bodyText}>
+                <Text style={styles.bodyTextLabel}>Host Account: </Text>
+                {this.state.account.organization.name}
+              </Text>
+            </View>
+            <View style={styles.sectionContainer}>
+              <Text style={styles.bodyTextHeading}>Customer Service</Text>
+              <Text style={styles.bodyText}>
+                <Text style={styles.bodyTextLabel}>Phone: </Text>
+                {this.state.account.organization.customerServicePhone}
+              </Text>
+              <Text style={styles.bodyText}>
+                <Text style={styles.bodyTextLabel}>Email: </Text>
+                {this.state.account.organization.customerServiceEmail}
+              </Text>
+            </View>
           </View>
-          <View style={styles.sectionContainer}>
-            <Text style={styles.bodyTextHeading}>Customer Service</Text>
-            <Text style={styles.bodyText}>
-              <Text style={styles.bodyTextLabel}>Phone: </Text>
-              888-888-8888
-            </Text>
-            <Text style={styles.bodyText}>
-              <Text style={styles.bodyTextLabel}>Email: </Text>
-              Troy.Norris@insysiv.com
-            </Text>
-          </View>
-        </View>
-      </ScrollView>
-    );
+        </ScrollView>
+      );
+    }
   }
 }

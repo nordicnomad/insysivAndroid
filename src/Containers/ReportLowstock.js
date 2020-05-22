@@ -2,7 +2,7 @@ import React, {Fragment, Component} from 'react';
 import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.png'
-import GateData from '../dummyData/gates.json'
+import LowStockAlertItem from '../Components/LowStockAlertItem'
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -11,8 +11,12 @@ export default class ReportsHome extends Component {
     super(props)
     this.state = {
       selectedValue: 0,
-      gates: []
+      gates: [],
+      lowStockAlerts: []
     }
+  }
+  componentDidMount() {
+    this.getLowStockData()
   }
   static navigationOptions = ({navigation}) => {
     return {
@@ -59,12 +63,31 @@ export default class ReportsHome extends Component {
       console.log(responseJson)
       lowStockAlertsResponse = responseJson.lowStockAlerts;
       this.setState({
-        lowStockAlerts: lowStockAlertsResponse,
+        lowStockAlerts: lowStockAlertsResponse.lowStockAlerts,
       })
     })
     .catch((error) => {
       console.error(error);
     });
+  }
+
+  renderLowStockList() {
+    let alertList = this.state.lowStockAlerts
+    let alertOutput = []
+    alertList.forEach(function(alert, index){
+      alertOutput.push(
+        <LowStockAlertItem
+          key={"lsa"+index}
+          name={alert.name}
+          onHand={alert.onHand}
+          onOrder={alert.onOrder}
+          manufacturer={alert.manufacturer}
+          model={alert.model}
+          lotSerial={alert.lotSerial}  />
+      )
+    });
+
+    return alertOutput
   }
 
   render() {
@@ -79,100 +102,7 @@ export default class ReportsHome extends Component {
             <Text style={styles.bodyTextLabel}>Alerts</Text>
           </View>
             <View style={styles.productList}>
-              {/* Open Tray List Item */}
-              <View style={styles.productListItem}>
-                <View style={styles.majorMinorRow}>
-                  <View style={styles.equalColumn}>
-                    <Text style={styles.activeProductListHeading}>Description Item</Text>
-                  </View>
-                  <View style={styles.equalColumn}>
-                    <Text style={styles.productListHeadingRight}>0</Text>
-                  </View>
-                </View>
-                <View style={styles.productListTray}>
-                  <View style={styles.straightRow}>
-                    <Text style={styles.bodyTextLabel}>Low Stock Item Information</Text>
-                  </View>
-                  <View style={styles.majorMinorRow}>
-                    <View style={styles.equalColumn}>
-                      <Text style={styles.trayText}><Text style={styles.trayLabel}>Model: </Text>LA6518Q</Text>
-                      <Text style={styles.trayText}><Text style={styles.trayLabel}>Lot / Serial: </Text>123445</Text>
-                      <Text style={styles.trayText}><Text style={styles.trayLabel}>Quantity on Hand: </Text> 0</Text>
-                    </View>
-                    <View style={styles.equalColumn}>
-                      <Text style={styles.trayText}><Text style={styles.trayLabel}>Quantity on Order: </Text>500</Text>
-                      <Text style={styles.trayText}><Text style={styles.trayLabel}>Manufacturer: </Text>Medtronic</Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
-              {/* Closed Tray List Items */}
-              <View style={styles.productListItem}>
-                <View style={styles.straightRow}>
-                  <View style={styles.majorColumn}>
-                    <Text style={styles.productListHeading}>Another Low Item</Text>
-                  </View>
-                  <View style={styles.minorColumn}>
-                    <Text style={styles.productListHeadingRight}>19</Text>
-                  </View>
-                </View>
-                <View style={styles.inactiveListTray}></View>
-              </View>
-              <View style={styles.productListItem}>
-                <View style={styles.straightRow}>
-                  <View style={styles.majorColumn}>
-                    <Text style={styles.productListHeading}>Another Low Item</Text>
-                  </View>
-                  <View style={styles.minorColumn}>
-                    <Text style={styles.productListHeadingRight}>1</Text>
-                  </View>
-                </View>
-                <View style={styles.inactiveListTray}></View>
-              </View>
-              <View style={styles.productListItem}>
-                <View style={styles.straightRow}>
-                  <View style={styles.majorColumn}>
-                    <Text style={styles.productListHeading}>Another Low Item</Text>
-                  </View>
-                  <View style={styles.minorColumn}>
-                    <Text style={styles.productListHeadingRight}>3</Text>
-                  </View>
-                </View>
-                <View style={styles.inactiveListTray}></View>
-              </View>
-              <View style={styles.productListItem}>
-                <View style={styles.straightRow}>
-                  <View style={styles.majorColumn}>
-                    <Text style={styles.productListHeading}>Another Low Item</Text>
-                  </View>
-                  <View style={styles.minorColumn}>
-                    <Text style={styles.productListHeadingRight}>0</Text>
-                  </View>
-                </View>
-                <View style={styles.inactiveListTray}></View>
-              </View>
-              <View style={styles.productListItem}>
-                <View style={styles.straightRow}>
-                  <View style={styles.majorColumn}>
-                    <Text style={styles.productListHeading}>Another Low Item</Text>
-                  </View>
-                  <View style={styles.minorColumn}>
-                    <Text style={styles.productListHeadingRight}>2</Text>
-                  </View>
-                </View>
-                <View style={styles.inactiveListTray}></View>
-              </View>
-              <View style={styles.productListItem}>
-                <View style={styles.straightRow}>
-                  <View style={styles.majorColumn}>
-                    <Text style={styles.productListHeading}>Another Low Item</Text>
-                  </View>
-                  <View style={styles.minorColumn}>
-                    <Text style={styles.productListHeadingRight}>1</Text>
-                  </View>
-                </View>
-                <View style={styles.inactiveListTray}></View>
-              </View>
+              {this.renderLowStockList()}
             </View>
           </View>
         </View>
