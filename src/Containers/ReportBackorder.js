@@ -11,8 +11,22 @@ export default class ReportBackorder extends Component {
     super(props)
     this.state = {
       selectedValue: 0,
-      gates: []
+      gates: [],
+      searchString: "",
+      filterString: "",
+      searchHasFocus: false,
+      backOrder: {
+        messages: [],
+        organizationId: "",
+        explanationText: "",
+        inqueryEmail: "",
+        currentDate: "",
+      }
     }
+    this.onSearchChange = this.onSearchChange.bind(this)
+  }
+  componentDidMount() {
+    this.getBackOrderData()
   }
   static navigationOptions = ({navigation}) => {
     return {
@@ -66,6 +80,67 @@ export default class ReportBackorder extends Component {
       console.error(error);
     });
   }
+  onSearchFocusChange() {
+    this.setState({searchHasFocus: !this.state.searchHasFocus})
+  }
+  onSearchChange(event) {
+    this.setState({searchString: event.target.value});
+    console.log(event.target.value)
+  }
+  updateFilteredMessages(search) {
+    console.log("FILTER BUTTON ACTIVATED")
+    console.log(search)
+    this.setState({filterString: search})
+  }
+  renderBackOrders(filter) {
+    let backOrderOutput = []
+    let backOrders = this.state.backOrder.messages
+    let filterString = filter
+
+    if(filterString === "" || filterString === undefined || filterString === null) {
+      backOrders.forEach(function(message, index) {
+        backOrderOutput.push(
+          <View key={"BOM" + message.messageId} style={styles.productListItem}>
+            <View style={styles.majorMinorRow}>
+              <View style={styles.majorColumn}>
+                <Text style={styles.activeProductListHeading}>If Description</Text>
+              </View>
+              <View style={styles.mediumColumn}>
+                <Text style={styles.productListHeadingRight}>4/30/2020</Text>
+              </View>
+            </View>
+            <View style={styles.productListTray}>
+              <Text style={styles.trayText}>ALL MESSAGES</Text>
+            </View>
+          </View>
+        )
+      }.bind(this))
+    }
+    else {
+      let filteredMessages = backOrders
+      filteredMessages.forEach(function(message, index) {
+        if(message.backorderText.includes(filterString)) {
+          backOrderOutput.push(
+            <View key={"FBOM" + message.messageId} style={styles.productListItem}>
+              <View style={styles.majorMinorRow}>
+                <View style={styles.majorColumn}>
+                  <Text style={styles.activeProductListHeading}>Else Description</Text>
+                </View>
+                <View style={styles.mediumColumn}>
+                  <Text style={styles.productListHeadingRight}>4/30/2020</Text>
+                </View>
+              </View>
+              <View style={styles.productListTray}>
+                <Text style={styles.trayText}>Matched Message</Text>
+              </View>
+            </View>
+          )
+        }
+      }.bind(this))
+      console.log(filteredMessages)
+    }
+    return backOrderOutput
+  }
 
   render() {
     return (
@@ -75,50 +150,32 @@ export default class ReportBackorder extends Component {
             <Text style={styles.titleText}>Back Order Report</Text>
           </View>
           <View style={styles.sectionContainer}>
-            <Text style={styles.bodyText}>The following items are on back order and likely won't be received until after the specified date. For questions & possible substitutions contact: </Text>
-            <Text style={styles.emailText}>supply@hospital.com</Text>
+            <Text style={styles.bodyText}>{this.state.backOrder.explanationText} For questions & possible substitutions contact: </Text>
+            <Text style={styles.emailText}>{this.state.backOrder.inqueryEmail}</Text>
           </View>
           <View style={styles.sectionContainer}>
             <View style={styles.searchWrapper}>
               <View style={styles.straightRow}>
-                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>3/10/2020</Text> Current Back Orders</Text>
+                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>{this.state.backOrder.currentDate}</Text> Current Back Orders</Text>
               </View>
               <View style={styles.majorMinorRow}>
                 <View style={styles.majorColumn}>
-                  <TextInput style={styles.formInput} placeholder="Search" />
+                  <TextInput
+                    style={this.state.searchHasFocus ? styles.formInputFocus : styles.formInput}
+                    onFocus={() => this.onSearchFocusChange()}
+                    onBlur={() => this.onSearchFocusChange()}
+                    onChange={this.onSearchChange}
+                    placeholder="Search" />
                 </View>
                 <View style={styles.mediumColumn}>
                   <TouchableOpacity style={styles.miniSubmitButton}>
-                    <Text style={styles.miniSubmitButtonText}>Search</Text>
+                    <Text style={styles.miniSubmitButtonText} onPress={() => this.updateFilteredMessages(this.state.searchString)}>Search</Text>
                   </TouchableOpacity>
                 </View>
               </View>
             </View>
-            <View style={styles.productListItem}>
-              <View style={styles.majorMinorRow}>
-                <View style={styles.majorColumn}>
-                  <Text style={styles.activeProductListHeading}>Item Description</Text>
-                </View>
-                <View style={styles.mediumColumn}>
-                  <Text style={styles.productListHeadingRight}>4/30/2020</Text>
-                </View>
-              </View>
-              <View style={styles.productListTray}>
-                <Text style={styles.trayText}>Earthquake in Puerto Rico has disrupted supplies of this item until April. Some are available from vendor in emergencies, otherwise sub with this other item.</Text>
-              </View>
-            </View>
-            <View style={styles.productListItem}>
-              <View style={styles.majorMinorRow}>
-                <View style={styles.majorColumn}>
-                  <Text style={styles.productListHeading}>Another Back Order</Text>
-                </View>
-                <View style={styles.mediumColumn}>
-                  <Text style={styles.productListHeadingRight}>8/30/2020</Text>
-                </View>
-              </View>
-              <View style={styles.productListTray}>
-                <Text style={styles.trayText}>Terrorists have hijacked a cargo vessal carrying this item in the mid atlantic. If the ship goes faster than 55 miles per hour it will explode, so our order will take a while to arrive.</Text>
-              </View>
+            <View>
+              {this.renderBackOrders(this.state.filterString)}
             </View>
           </View>
         </View>

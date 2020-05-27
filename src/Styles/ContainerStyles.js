@@ -341,6 +341,7 @@ export default StyleSheet.create({
     fontSize: 18,
     color: '#333',
     fontWeight: "300",
+    lineHeight: 25
   },
   bodyTextLabel: {
     textAlign: 'left',

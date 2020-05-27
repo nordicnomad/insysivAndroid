@@ -2,10 +2,8 @@ import { createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
 import Login from './src/Containers/Login';
 import Home from './src/Containers/Home';
-import InventoryScan from './src/Containers/InventoryScan';
-import InventoryGate from './src/Containers/InventoryGate';
 
-import NewInventory from './src/Containers/NewInventoryScan';
+import InventoryScan from './src/Containers/InventoryScan';
 import CasesSetup from './src/Containers/CasesSetup';
 import CasesScan from './src/Containers/CasesScan';
 import AccountInfo from './src/Containers/AccountInfo';
@@ -25,16 +23,8 @@ const AppNavigator = createStackNavigator({
     screen: Home,
     title: 'Select Option',
   },
-  InventoryGate: {
-    screen: InventoryGate,
-    title: 'Select Gate'
-  },
   InventoryScan: {
     screen: InventoryScan,
-    title: 'Scan Items'
-  },
-  NewInventory: {
-    screen: NewInventory,
     title: 'Inventory Scan'
   },
   CasesSetup: {
