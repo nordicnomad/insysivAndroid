@@ -10,8 +10,14 @@ export default class ProductLookup extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      selectedValue: 0,
+      searchTerm: "Medtronic",
+      products: {
+        products: []
+      }
     }
+  }
+  componentDidMount() {
+    this.getProductsData()
   }
   static navigationOptions = ({navigation}) => {
     return {
@@ -65,6 +71,30 @@ export default class ProductLookup extends Component {
       console.error(error);
     });
   }
+  renderProductSearch() {
+    let searchProducts = this.state.products.products
+    console.log("PRODUCT ARRAY")
+    console.log(searchProducts)
+    let searchOutput = []
+    let searchTerm = this.state.searchTerm
+
+    searchProducts.forEach(function(product, index) {
+      if(product.name === searchTerm || product.manufacturer === searchTerm || product.model === searchTerm) {
+        searchOutput.push(
+          <SearchLookupItem
+            unknownFlag={false}
+            key={"SL" + index}
+            name={product.name}
+            manufacturer={product.manufacturer}
+            model={product.model}
+            onOrder={product.onOrder}
+            onHand={product.onHand}
+            lotSerials={product.lotSerials} />
+        )
+      }
+    });
+    return searchOutput
+  }
 
   render() {
     return (
@@ -81,10 +111,11 @@ export default class ProductLookup extends Component {
                   <TextInput style={styles.formInput} />
                 </View>
                 <View style={styles.minorColumn}>
-                  <Text style={styles.bodyTextHeading}>Or</Text>
+                  <Text style={styles.seperatorHeading}>Or</Text>
                 </View>
                 <View style={styles.mediumColumn}>
                   <TouchableOpacity style={styles.submitButton}>
+                    {/*Connect to barcode scanner*/}
                     <Text style={styles.submitButtonText}>Scan</Text>
                   </TouchableOpacity>
                 </View>
@@ -93,8 +124,7 @@ export default class ProductLookup extends Component {
           </View>
           <View style={styles.sectionContainer}>
             <Text style={styles.bodyTextLabel}>Results</Text>
-
-            <SearchLookupItem name="ksdfjksdf" />
+            {this.renderProductSearch()}
           </View>
         </View>
       </ScrollView>

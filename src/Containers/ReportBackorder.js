@@ -2,7 +2,7 @@ import React, {Fragment, Component} from 'react';
 import { StyleSheet, Text, TextInput, View, Button, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.png'
-import GateData from '../dummyData/gates.json'
+import BackOrderItem from '../Components/BackOrderItem'
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -85,12 +85,9 @@ export default class ReportBackorder extends Component {
   }
   onSearchChange(event) {
     this.setState({searchString: event.target.value});
-    console.log(event.target.value)
   }
-  updateFilteredMessages(search) {
-    console.log("FILTER BUTTON ACTIVATED")
-    console.log(search)
-    this.setState({filterString: search})
+  updateFilteredMessages() {
+    this.setState({filterString: this.state.searchString})
   }
   renderBackOrders(filter) {
     let backOrderOutput = []
@@ -100,44 +97,33 @@ export default class ReportBackorder extends Component {
     if(filterString === "" || filterString === undefined || filterString === null) {
       backOrders.forEach(function(message, index) {
         backOrderOutput.push(
-          <View key={"BOM" + message.messageId} style={styles.productListItem}>
-            <View style={styles.majorMinorRow}>
-              <View style={styles.majorColumn}>
-                <Text style={styles.activeProductListHeading}>If Description</Text>
-              </View>
-              <View style={styles.mediumColumn}>
-                <Text style={styles.productListHeadingRight}>4/30/2020</Text>
-              </View>
-            </View>
-            <View style={styles.productListTray}>
-              <Text style={styles.trayText}>ALL MESSAGES</Text>
-            </View>
-          </View>
+          <BackOrderItem
+            messageId={message.messageId}
+            messageName={message.messageName}
+            backorderDate={message.backorderDate}
+            backorderText={message.backorderText}
+           />
         )
       }.bind(this))
     }
     else {
-      let filteredMessages = backOrders
-      filteredMessages.forEach(function(message, index) {
-        if(message.backorderText.includes(filterString)) {
+      backOrders.forEach(function(message, index) {
+        if(message.backorderText.includes(filterString) || message.messageName.includes(filterString)) {
           backOrderOutput.push(
-            <View key={"FBOM" + message.messageId} style={styles.productListItem}>
-              <View style={styles.majorMinorRow}>
-                <View style={styles.majorColumn}>
-                  <Text style={styles.activeProductListHeading}>Else Description</Text>
-                </View>
-                <View style={styles.mediumColumn}>
-                  <Text style={styles.productListHeadingRight}>4/30/2020</Text>
-                </View>
-              </View>
-              <View style={styles.productListTray}>
-                <Text style={styles.trayText}>Matched Message</Text>
-              </View>
-            </View>
+            <BackOrderItem
+              messageId={message.messageId}
+              messageName={message.messageName}
+              backorderDate={message.backorderDate}
+              backorderText={message.backorderText}
+             />
           )
         }
       }.bind(this))
-      console.log(filteredMessages)
+    }
+    if(backOrderOutput.length === 0) {
+      backOrderOutput.push(
+        <Text key={"0"}>No Data Matchin Search</Text>
+      )
     }
     return backOrderOutput
   }
@@ -164,12 +150,13 @@ export default class ReportBackorder extends Component {
                     style={this.state.searchHasFocus ? styles.formInputFocus : styles.formInput}
                     onFocus={() => this.onSearchFocusChange()}
                     onBlur={() => this.onSearchFocusChange()}
-                    onChange={this.onSearchChange}
+                    value={this.state.searchString}
+                    onChangeText={value => this.setState({searchString: value})}
                     placeholder="Search" />
                 </View>
                 <View style={styles.mediumColumn}>
-                  <TouchableOpacity style={styles.miniSubmitButton}>
-                    <Text style={styles.miniSubmitButtonText} onPress={() => this.updateFilteredMessages(this.state.searchString)}>Search</Text>
+                  <TouchableOpacity style={styles.submitButton}>
+                    <Text style={styles.miniSubmitButtonText} onPress={() => this.updateFilteredMessages()}>Search</Text>
                   </TouchableOpacity>
                 </View>
               </View>

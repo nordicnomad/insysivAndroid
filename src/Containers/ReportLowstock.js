@@ -86,7 +86,11 @@ export default class ReportsHome extends Component {
           lotSerial={alert.lotSerial}  />
       )
     });
-
+    if(alertOutput.length <= 0) {
+      alertOutput.push(
+        <Text>No Current Low Stock Alerts</Text>
+      )
+    }
     return alertOutput
   }
 

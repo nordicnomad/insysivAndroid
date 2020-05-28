@@ -30,14 +30,16 @@ export default class SearchLookupItem extends Component {
     if(this.props.unknownFlag) {
       return(
         <View style={styles.productListItem}>
-          <TouchableOpacity onPress={() => this.ToggleDetailTray()}>
-            <Text style={styles.activeProductListHeading}>Search Result Name</Text>
-          </TouchableOpacity>
-          <View style={this.state.trayState === true ? styles.activeListTray : styles.inactiveListTray}>
-            <View style={styles.straightRow}>
-              <Text style={styles.bodyTextLabel}>Product Detail</Text>
+          <View style={styles.majorMinorRow}>
+            <View style={styles.majorColumn}>
+              <TouchableOpacity onPress={() => this.ToggleDetailTray()}>
+                <Text style={this.state.trayState ? styles.activeProductListHeading : styles.productListHeading}>Search Result Name</Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.majorMinorRow}>
+          </View>
+          <View style={this.state.trayState === true ? styles.productListTray : styles.inactiveListTray}>
+            <Text style={styles.bodyTextLabel}>Product Detail</Text>
+            <View style={styles.straightRow}>
               <View style={styles.equalColumn}>
                 <Text style={styles.trayLabel}>Model: </Text>
                 <Text style={styles.trayLabel}>Lot / Serial: </Text>
@@ -46,11 +48,11 @@ export default class SearchLookupItem extends Component {
                 <Text style={styles.trayLabel}>Manufacturer: </Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>LA6518Q</Text>
-                <Text style={styles.trayText}>123445</Text>
-                <Text style={styles.trayText}>0</Text>
-                <Text style={styles.trayText}>500</Text>
-                <Text style={styles.trayText}>Medtronic</Text>
+                <Text style={styles.trayText}>{this.props.model}</Text>
+                <Text style={styles.trayText}>{this.props.lotSerials[0].lotSerial}</Text>
+                <Text style={styles.trayText}>{this.props.onHand}</Text>
+                <Text style={styles.trayText}>{this.props.onOrder}</Text>
+                <Text style={styles.trayText}>{this.props.manufacturer}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -79,33 +81,42 @@ export default class SearchLookupItem extends Component {
           <View style={styles.majorMinorRow}>
             <View style={styles.majorColumn}>
               <TouchableOpacity onPress={() => this.ToggleDetailTray()}>
-                <Text style={styles.productListHeading}>{this.props.itemName}</Text>
+                <Text style={this.state.trayState ? styles.activeProductListHeading : styles.productListHeading}>Search Result Name</Text>
               </TouchableOpacity>
-            </View>
-            <View style={styles.minorColumn}>
-
-              <TouchableOpacity onPress={() => this.props.adjustmentFunction()}>
-                <Text style={styles.countTextNumber}>
-                  {this.props.itemCount}
-                </Text>
-              </TouchableOpacity>
-
             </View>
           </View>
-          <View style={this.state.trayState === true ? styles.activeListTray : styles.inactiveListTray}>
+          <View style={this.state.trayState === true ? styles.productListTray : styles.inactiveListTray}>
+            <Text style={styles.bodyTextLabel}>Product Detail</Text>
             <View style={styles.straightRow}>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Model Number</Text>
-                <Text style={styles.trayLabel}>Lot / Serial Number</Text>
-                <Text style={styles.trayLabel}>Expiration Date</Text>
+                <Text style={styles.trayLabel}>Model: </Text>
+                <Text style={styles.trayLabel}>Lot / Serial: </Text>
+                <Text style={styles.trayLabel}>Quantity on Hand: </Text>
+                <Text style={styles.trayLabel}>Quantity on Order: </Text>
+                <Text style={styles.trayLabel}>Manufacturer: </Text>
               </View>
               <View style={styles.equalColumn}>
-              <Text style={styles.trayText}>{this.props.itemModel}</Text>
-              <Text style={styles.trayText}>{this.props.itemSerial}</Text>
-              <Text style={styles.trayText}>{this.props.itemExpiration}</Text>
+                <Text style={styles.trayText}>{this.props.model}</Text>
+                <Text style={styles.trayText}>{this.props.lotSerials[0].lotSerial}</Text>
+                <Text style={styles.trayText}>{this.props.onHand}</Text>
+                <Text style={styles.trayText}>{this.props.onOrder}</Text>
+                <Text style={styles.trayText}>{this.props.manufacturer}</Text>
+              </View>
+            </View>
+            <View style={styles.straightRow}>
+              <View style={styles.equalColumn}>
                 <View style={styles.miniSubmitWrapper}>
-                  <TouchableOpacity style={styles.miniSubmitButton} onPress={this.props.removeFunction}>
-                    <Text style={styles.miniSubmitButtonText}>Remove</Text>
+                  <TouchableOpacity style={styles.miniSubmitButton}>
+                    {/*Connect to RFID Scanner for location*/}
+                    <Text style={styles.miniSubmitButtonText}>Locate</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              <View style={styles.equalColumn}>
+                <View style={styles.miniSubmitWrapper}>
+                  <TouchableOpacity style={styles.miniSubmitButton}>
+                    {/*Connect to an API to do the lookup and navigation*/}
+                    <Text style={styles.miniSubmitButtonText}>FDA Lookup</Text>
                   </TouchableOpacity>
                 </View>
               </View>
