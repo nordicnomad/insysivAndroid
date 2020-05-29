@@ -10,9 +10,20 @@ export default class CasesSetup extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      selectedValue: 0,
-      gates: []
+      showNewTray: false,
+      activeCaseValue: 0,
+      cases:{cases:[],Doctors:[],Locations:[],Procedures:[]},
+      caseNumberHasFocus: false,
+      patientNameHasFocus: false,
+      newCaseNumber: '',
+      newPatientName: '',
+      newDoctorValue: 0,
+      newLocationValue: 0,
+      newProcedureValue: 0,
     }
+  }
+  componentDidMount() {
+    this.getCasesData();
   }
   static navigationOptions = ({navigation}) => {
     return {
@@ -66,6 +77,135 @@ export default class CasesSetup extends Component {
       console.error(error);
     });
   }
+  onCaseNumberFocusChange() {
+    this.setState({caseNumberHasFocus: !this.state.caseNumberHasFocus})
+  }
+  onPatientNameFocusChange() {
+    this.setState({patientNameHasFocus: !this.state.patientNameHasFocus})
+  }
+  onDoctorChange = (pickerValue) => {
+    this.setState({newDoctorValue: pickerValue})
+  }
+  onLocationChange = (pickerValue) => {
+    this.setState({newLocationValue: pickerValue})
+  }
+  onProcedureChange = (pickerValue) => {
+    this.setState({newProcedureValue: pickerValue})
+  }
+  onCaseChange = (pickerValue) => {
+    this.setState({activeCaseValue: pickerValue})
+  }
+  toggleCreateTray = (trayState) => {
+    if(trayState === true) {
+      this.setState({
+        showNewTray: false,
+      })
+    }
+    else {
+      this.setState({
+        showNewTray: true,
+      })
+    }
+  }
+  renderExistingCases() {
+    let existingCases = this.state.cases.cases
+    let existingOutput = []
+    existingOutput.push(
+      <Picker.Item key={"exC" + 0} label='Select an existing case...' value='0' />
+    )
+    existingCases.forEach(function(existing, index) {
+      existingOutput.push(
+        <Picker.Item key={"exC"+index} label={existing.name + " - " + existing.number} value={index+1} />
+      )
+    })
+    return(existingOutput)
+  }
+  renderDoctorChoices() {
+    let doctors = this.state.cases.Doctors
+    let doctorsOutput = []
+    doctorsOutput.push(
+      <Picker.Item key={"Doc" + 0} label='Select a Doctor...' value='0' />
+    )
+    doctors.forEach(function(doctor, index) {
+      doctorsOutput.push(
+        <Picker.Item key={"Doc"+index} label={doctor} value={index+1} />
+      )
+    })
+    return(doctorsOutput)
+  }
+  renderLocationChoices() {
+    let locations = this.state.cases.Locations
+    let locationsOutput = []
+    locationsOutput.push(
+      <Picker.Item key={"Loc" + 0} label='Select a Location...' value='0' />
+    )
+    locations.forEach(function(location, index) {
+      locationsOutput.push(
+        <Picker.Item key={"Loc"+index} label={location} value={index+1} />
+      )
+    })
+    return(locationsOutput)
+  }
+  renderProcedureChoices() {
+    let procedures = this.state.cases.Procedures
+    let proceduresOutput = []
+    proceduresOutput.push(
+      <Picker.Item key={"Pro" + 0} label='Select a Procedure...' value='0' />
+    )
+    procedures.forEach(function(procedure, index) {
+      proceduresOutput.push(
+        <Picker.Item key={"Pro"+index} label={procedure} value={index+1} />
+      )
+    })
+    return(proceduresOutput)
+  }
+  selectActiveCase = () => {
+    let selectedValue = this.state.activeCaseValue
+    if(selectedValue > 0) {
+      let allCases = this.state.cases.cases
+      let activeSelected = allCases[selectedValue - 1]
+      console.log("SELECTED ACTIVE CASE")
+      console.log(selectedValue-1)
+      console.log(allCases)
+      console.log(activeSelected)
+      this.props.navigation.navigate('CasesScan', {
+        caseInformation: activeSelected
+      })
+    }
+    else {
+      alert("Please Select an Active Case to Continue.")
+    }
+  }
+  createNewCase = (caseNumber, patientName, doctor, location, procedure) => {
+    //Here we'll need a post method to the python API that creates a New
+    //Case object in the database for an associated patient.
+
+    let userResponse = {
+      caseNumber: '',
+      patientName: '',
+      doctor: '',
+      location: '',
+      procedure: ''
+    }
+    if(doctor != '0' && location != '0' && procedure != '0') {
+      userResponse={
+        caseNumber: caseNumber,
+        patientName: patientName,
+        doctor: doctor,
+        location: location,
+        procedure: procedure
+      }
+      alert("This button creates a new record in the database for:" + patientName)
+
+      this.props.navigation.navigate('CasesScan', {
+        caseInformation: userResponse
+      })
+    }
+    else {
+      alert("All fields are required to continue.")
+    }
+
+  }
 
   render() {
     return (
@@ -82,80 +222,100 @@ export default class CasesSetup extends Component {
               <View style={styles.majorMinorRow}>
                 <View style={styles.majorColumn}>
                   <View style={styles.formPickerWrapper}>
-                    <Picker style={styles.formPicker}>
-                      <Picker.Item label='Select an option...' value='0' />
-                      <Picker.Item label='Alvarez, Alan - 12121156' value='1' />
-                      <Picker.Item label='Boop, Beatrice - 21212267' value='2' />
+                    <Picker
+                      style={styles.formPicker}
+                      selectedValue={this.state.activeCaseValue}
+                      onValueChange={this.onCaseChange}
+                      >
+                      {this.renderExistingCases()}
                     </Picker>
                   </View>
                 </View>
                 <View style={styles.minorColumn}>
                   <TouchableOpacity
-                    style={styles.miniSubmitButton}
-                    onPress={() => this.props.navigation.navigate("CasesScan")}>
-                    <Text style={styles.miniSubmitButtonText}>GO</Text>
+                    style={styles.submitButton}
+                    onPress={() => this.selectActiveCase()}>
+                    <Text style={styles.submitButtonText}>GO</Text>
                   </TouchableOpacity>
                 </View>
               </View>
               <View style={styles.majorMinorRow}>
                 <View style={styles.minorColumn}>
-                  <Text style={styles.bodyTextHeading}>Or</Text>
+                  <Text style={styles.seperatorHeading}>Or</Text>
                 </View>
                 <View style={styles.majorColumn}>
-                  <TouchableOpacity style={styles.submitButton}>
+                  <TouchableOpacity
+                    style={styles.submitButton}
+                    onPress={() => this.toggleCreateTray(this.state.showNewTray)}>
                     <Text style={styles.submitButtonText}>Start a New Case</Text>
                   </TouchableOpacity>
                 </View>
               </View>
             </View>
           </View>
-          <View style={styles.sectionContainer}>
+          <View style={this.state.showNewTray === true ? styles.sectionContainer : styles.inactiveListTray}>
             <View style={styles.shadedBackgroundWrapper}>
               <View style={styles.formTitleWrapper}>
                 <Text style={styles.bodyTextHeading}>New Case Setup</Text>
               </View>
               <View style={styles.formItemWrapper}>
-                <TextInput style={styles.formInput} />
                 <Text style={styles.inputTextLabel}>Case Number</Text>
+                <TextInput
+                  style={this.state.caseNumberHasFocus === true ? styles.formInputFocus : styles.formInput}
+                  onFocus={() => this.onCaseNumberFocusChange()}
+                  onBlur={() => this.onCaseNumberFocusChange()}
+                  onChangeText={value => this.setState({newCaseNumber: value})}
+                  />
               </View>
               <View style={styles.formItemWrapper}>
-                <TextInput style={styles.formInput} />
                 <Text style={styles.inputTextLabel}>Patient Name</Text>
+                <TextInput
+                  style={this.state.patientNameHasFocus === true ? styles.formInputFocus : styles.formInput}
+                  onFocus={() => this.onPatientNameFocusChange()}
+                  onBlur={() => this.onPatientNameFocusChange()}
+                  onChangeText={value => this.setState({newPatientName: value})}
+                  />
               </View>
               <View style={styles.formItemWrapper}>
-                <View style={styles.formPickerWrapper}>
-                  <Picker style={styles.formPicker}>
-                    <Picker.Item label='Select a doctor...' value='0' />
-                    <Picker.Item label='Dr. Mann MD' value='1' />
-                    <Picker.Item label='Dr. OtherPerson MD' value='2' />
-                  </Picker>
-                </View>
                 <Text style={styles.inputTextLabel}>Doctor</Text>
-              </View>
-              <View style={styles.formItemWrapper}>
                 <View style={styles.formPickerWrapper}>
-                  <Picker style={styles.formPicker}>
-                    <Picker.Item label='Select a location...' value='0' />
-                    <Picker.Item label='CV Lab Number 1' value='1' />
-                    <Picker.Item label='CV Lab Number 2' value='2' />
+                  <Picker
+                    style={styles.formPicker}
+                    selectedValue={this.state.newDoctorValue}
+                    onValueChange={this.onDoctorChange}
+                    >
+                    {this.renderDoctorChoices()}
                   </Picker>
                 </View>
+              </View>
+              <View style={styles.formItemWrapper}>
                 <Text style={styles.inputTextLabel}>Location</Text>
-              </View>
-              <View style={styles.formItemWrapper}>
                 <View style={styles.formPickerWrapper}>
-                  <Picker style={styles.formPicker}>
-                    <Picker.Item label='Select a procedure...' value='0' />
-                    <Picker.Item label='Heart Procedure' value='1' />
-                    <Picker.Item label='Laser Procedure' value='2' />
+                  <Picker
+                    style={styles.formPicker}
+                    selectedValue={this.state.newLocationValue}
+                    onValueChange={this.onLocationChange}
+                    >
+                    {this.renderLocationChoices()}
                   </Picker>
                 </View>
+              </View>
+              <View style={styles.formItemWrapper}>
                 <Text style={styles.inputTextLabel}>Procedure</Text>
+                <View style={styles.formPickerWrapper}>
+                  <Picker
+                    style={styles.formPicker}
+                    selectedValue={this.state.newProcedureValue}
+                    onValueChange={this.onProcedureChange}
+                    >
+                    {this.renderProcedureChoices()}
+                  </Picker>
+                </View>
               </View>
               <View style={styles.buttonRow}>
                 <TouchableOpacity
                   style={styles.submitButton}
-                  onPress={() => this.props.navigation.navigate("CasesScan")}>
+                  onPress={() => this.createNewCase(this.state.newCaseNumber, this.state.newPatientName, this.state.newDoctorValue, this.state.newPatientName, this.state.newProcedureValue)}>
                   <Text style={styles.submitButtonText}>Start Case</Text>
                 </TouchableOpacity>
               </View>

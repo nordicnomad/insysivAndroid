@@ -98,6 +98,7 @@ export default class ReportBackorder extends Component {
       backOrders.forEach(function(message, index) {
         backOrderOutput.push(
           <BackOrderItem
+            key={"BOI" + index}
             messageId={message.messageId}
             messageName={message.messageName}
             backorderDate={message.backorderDate}
@@ -111,6 +112,7 @@ export default class ReportBackorder extends Component {
         if(message.backorderText.includes(filterString) || message.messageName.includes(filterString)) {
           backOrderOutput.push(
             <BackOrderItem
+              key={"BOI" + index}
               messageId={message.messageId}
               messageName={message.messageName}
               backorderDate={message.backorderDate}

@@ -2,7 +2,7 @@ import React, {Fragment, Component} from 'react';
 import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.png'
-import GateData from '../dummyData/gates.json'
+import ExpiringAlertItem from '../Components/ExpiringAlertItem'
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -10,9 +10,14 @@ export default class ReportExpiring extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      selectedValue: 0,
-      gates: []
+      forwardValue: 30,
+      expiringItems: {
+        expiring: [],
+      },
     }
+  }
+  componentDidMount() {
+    this.getExpiringItemsData(this.state.forwardValue);
   }
   static navigationOptions = ({navigation}) => {
     return {
@@ -48,7 +53,12 @@ export default class ReportExpiring extends Component {
       ),
     }
   };
-  getExpiringItemsData() {
+  getExpiringItemsData(forwardValue) {
+    //Will eventually need to be converted to a post method
+    //that sends a date range, or just an integer of 0, 30, or 90
+    //with 0 being the page load default, and returns an object with
+    //an array of the expiring and expired items as an array of the expiring property.
+    //default sorting by date of expiration.
     let expiringItemsResponse = {}
     //emulator call
     //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/expiringItems')
@@ -67,6 +77,49 @@ export default class ReportExpiring extends Component {
     });
   }
 
+  setFilterDuration = (buttonValue) => {
+    let forwardValue = this.state.forwardValue
+    if(buttonValue != forwardValue) {
+      this.setState({
+        forwardValue: buttonValue
+      })
+      this.getExpiringItemsData(buttonValue);
+    }
+  }
+  renderExpiringAlerts() {
+    let expiringItems = this.state.expiringItems.expiring
+    let expiringOutput = []
+
+    expiringItems.forEach(function(item, index) {
+      expiringOutput.push(
+        <ExpiringAlertItem
+          key={"Exp" + index}
+          name={item.name}
+          manufacturer={item.manufacturer}
+          onOrder={item.onOrder}
+          onHand={item.onHand}
+          model={item.model}
+          lotSerial={item.lotSerial}
+          expirationDate={item.expirationDate}
+          locateFunction={() => this.locateExpiredItem(item.name)}
+          />
+      )
+    }.bind(this))
+    if(expiringOutput.length <= 0) {
+      expiringOutput.push(
+        <Text key={"EXP"+0}>No Expired Items to Display</Text>
+      )
+    }
+    return(expiringOutput)
+  }
+  locateExpiredItem(expiredName) {
+    //Will need to utilize the zebra RN-RFID API to connect to the
+    //sled and use it to geiger counter the rfid tag in the storeroom
+    //finding where the item is actually located so it can be removed
+    //and not used on a patient after it has expired.
+    alert("Connect to RFID Sled and scan for this Expired Item: " + expiredName)
+  }
+
   render() {
     return (
       <ScrollView style={styles.scrollContainer}>
@@ -77,18 +130,18 @@ export default class ReportExpiring extends Component {
           <View style={styles.sectionContainer}>
             <View style={styles.straightRow}>
               <View style={styles.equalColumn}>
-                <TouchableOpacity style={styles.submitButton}>
-                  <Text style={styles.submitButtonText}>Expired</Text>
+                <TouchableOpacity style={this.state.forwardValue === 0 ? styles.submitButton : styles.submitButtonAlt} onPress={() => this.setFilterDuration(0)}>
+                  <Text style={this.state.forwardValue === 0 ? styles.submitButtonText : styles.submitButtonTextAlt}>Expired</Text>
                 </TouchableOpacity>
               </View>
               <View style={styles.equalColumn}>
-                <TouchableOpacity style={styles.submitButtonAlt}>
-                  <Text style={styles.submitButtonTextAlt}>In 30 Days</Text>
+                <TouchableOpacity style={this.state.forwardValue === 30 ? styles.submitButton : styles.submitButtonAlt} onPress={() => this.setFilterDuration(30)}>
+                  <Text style={this.state.forwardValue === 30 ? styles.submitButtonText : styles.submitButtonTextAlt}>In 30 Days</Text>
                 </TouchableOpacity>
               </View>
               <View style={styles.equalColumn}>
-                <TouchableOpacity style={styles.submitButtonAlt}>
-                  <Text style={styles.submitButtonTextAlt}>In 90 Days</Text>
+                <TouchableOpacity style={this.state.forwardValue === 90 ? styles.submitButton : styles.submitButtonAlt} onPress={() => this.setFilterDuration(90)}>
+                  <Text style={this.state.forwardValue === 90 ? styles.submitButtonText : styles.submitButtonTextAlt}>In 90 Days</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -98,103 +151,7 @@ export default class ReportExpiring extends Component {
               <Text style={styles.bodyTextLabel}>Expired</Text>
             </View>
             <View style={styles.productList}>
-              {/* Open Tray List Item */}
-              <View style={styles.productListItem}>
-                <View style={styles.majorMinorRow}>
-                  <View style={styles.majorColumn}>
-                    <Text style={styles.activeProductListHeading}>Description Item</Text>
-                  </View>
-                  <View style={styles.mediumColumn}>
-                    <Text style={styles.productListHeadingRight}>1/30/2020</Text>
-                  </View>
-                </View>
-                <View style={styles.productListTray}>
-                  <View style={styles.straightRow}>
-                    <Text style={styles.bodyTextLabel}>Expired Item Information</Text>
-                  </View>
-                  <View style={styles.straightRow}>
-                    <View style={styles.equalColumn}>
-                      <Text style={styles.trayText}><Text style={styles.trayLabel}>Model: </Text>LA6518Q</Text>
-                      <Text style={styles.trayText}><Text style={styles.trayLabel}>Lot / Serial: </Text>123445</Text>
-                      <Text style={styles.trayText}><Text style={styles.trayLabel}>Last Pinged: </Text> 2/29/2020</Text>
-                    </View>
-                    <View style={styles.equalColumn}>
-                      <Text style={styles.trayText}><Text style={styles.trayLabel}>Ping Location: </Text>East OR Entry</Text>
-                      <Text style={styles.trayText}><Text style={styles.trayLabel}>Manufacturer: </Text>Medtronic</Text>
-                      <TouchableOpacity style={styles.miniSubmitButton}>
-                        <Text style={styles.miniSubmitButtonText}>Locate</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-              </View>
-              {/* Closed Tray List Items */}
-              <View style={styles.productListItem}>
-                <View style={styles.majorMinorRow}>
-                  <View style={styles.majorColumn}>
-                    <Text style={styles.productListHeading}>Another Expired Item</Text>
-                  </View>
-                  <View style={styles.mediumColumn}>
-                    <Text style={styles.productListHeadingRight}>1/31/2020</Text>
-                  </View>
-                </View>
-                <View style={styles.inactiveListTray}></View>
-              </View>
-              <View style={styles.productListItem}>
-                <View style={styles.majorMinorRow}>
-                  <View style={styles.majorColumn}>
-                    <Text style={styles.productListHeading}>Another Expired Item</Text>
-                  </View>
-                  <View style={styles.mediumColumn}>
-                    <Text style={styles.productListHeadingRight}>1/31/2020</Text>
-                  </View>
-                </View>
-                <View style={styles.inactiveListTray}></View>
-              </View>
-              <View style={styles.productListItem}>
-                <View style={styles.majorMinorRow}>
-                  <View style={styles.majorColumn}>
-                    <Text style={styles.productListHeading}>Another Expired Item</Text>
-                  </View>
-                  <View style={styles.mediumColumn}>
-                    <Text style={styles.productListHeadingRight}>1/31/2020</Text>
-                  </View>
-                </View>
-                <View style={styles.inactiveListTray}></View>
-              </View>
-              <View style={styles.productListItem}>
-                <View style={styles.majorMinorRow}>
-                  <View style={styles.majorColumn}>
-                    <Text style={styles.productListHeading}>Another Expired Item</Text>
-                  </View>
-                  <View style={styles.mediumColumn}>
-                    <Text style={styles.productListHeadingRight}>1/31/2020</Text>
-                  </View>
-                </View>
-                <View style={styles.inactiveListTray}></View>
-              </View>
-              <View style={styles.productListItem}>
-                <View style={styles.majorMinorRow}>
-                  <View style={styles.majorColumn}>
-                    <Text style={styles.productListHeading}>Another Expired Item</Text>
-                  </View>
-                  <View style={styles.mediumColumn}>
-                    <Text style={styles.productListHeadingRight}>1/31/2020</Text>
-                  </View>
-                </View>
-                <View style={styles.inactiveListTray}></View>
-              </View>
-              <View style={styles.productListItem}>
-                <View style={styles.majorMinorRow}>
-                  <View style={styles.majorColumn}>
-                    <Text style={styles.productListHeading}>Another Expired Item</Text>
-                  </View>
-                  <View style={styles.mediumColumn}>
-                    <Text style={styles.productListHeadingRight}>1/31/2020</Text>
-                  </View>
-                </View>
-                <View style={styles.inactiveListTray}></View>
-              </View>
+              {this.renderExpiringAlerts()}
             </View>
           </View>
         </View>
