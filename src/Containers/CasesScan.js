@@ -2,7 +2,7 @@ import React, {Fragment, Component} from 'react';
 import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.png'
-import GateData from '../dummyData/gates.json'
+import CaseProductItem from '../Components/CaseProductItem'
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -11,8 +11,23 @@ export default class CasesScan extends Component {
     super(props)
     this.state = {
       selectedValue: 0,
-      gates: []
+      caseInformation: {
+        caseNumber: '',
+        patientName: '',
+        doctor: '',
+        location: '',
+        procedure: '',
+        products: []
+      }
     }
+  }
+  componentDidMount() {
+    let caseInformation = this.props.navigation.getParam('caseInformation')
+    this.setState({
+      caseInformation: caseInformation
+    })
+    console.log("DATA ENTERING FROM SETUP")
+    console.log(caseInformation)
   }
   static navigationOptions = ({navigation}) => {
     return {
@@ -49,6 +64,24 @@ export default class CasesScan extends Component {
     }
   };
 
+  renderCaseProducts() {
+    let caseProducts = this.state.caseInformation.products
+    let caseProductsOutput = []
+
+    caseProducts.forEach(function(product, index){
+      caseProductsOutput.push(
+        <CaseProductItem
+          name={product.name}
+          lotSerial={product.lotSerial}
+          model={product.model}
+          scannedTime={product.scannedTime}
+          manufacturer={product.manufacturer}
+          waste={product.waste}
+          scanned={product.scanned} />
+      )
+    })
+    return(caseProductsOutput)
+  }
 
   render() {
     return (
@@ -60,52 +93,16 @@ export default class CasesScan extends Component {
             </View>
             <View style={styles.sectionContainer}>
               <View style={styles.shadedBackgroundWrapper}>
-                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>123456</Text>
-                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Patient Name: </Text>Billy Patient</Text>
-                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Doctor: </Text> Dr. Mann MD</Text>
-                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Location: </Text>CV Lab 1</Text>
-                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Procedure: </Text>Heart Procedure</Text>
+                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>{this.state.caseInformation.number}</Text>
+                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Patient Name: </Text>{this.state.caseInformation.name}</Text>
+                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Doctor: </Text> {this.state.caseInformation.doctor}</Text>
+                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Location: </Text>{this.state.caseInformation.location}</Text>
+                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Procedure: </Text>{this.state.caseInformation.procedure}</Text>
               </View>
             </View>
             <View style={styles.sectionContainer}>
-              <View style={styles.productListItem}>
-                <View style={styles.majorMinorRow}>
-                  <View style={styles.majorColumn}>
-                    <Text style={styles.productListHeading}>Product Name</Text>
-                  </View>
-                  <View style={styles.minorColumn}>
-                    <Icon style={styles.productStatusIcon} name={"check-circle-o"} size={24} color="#333" />
-                  </View>
-                </View>
-                <View style={styles.activeListTray}>
-                  <View style={styles.trayItemWrapper}>
-                    <Text style={styles.trayText}>
-                      <Text style={styles.trayLabel}>Lot / Serial: </Text>
-                      990283409
-                    </Text>
-                    <Text style={styles.trayText}>
-                      <Text style={styles.trayLabel}>Model Number: </Text>
-                      G4FR4
-                    </Text>
-                    <Text style={styles.trayText}>
-                      <Text style={styles.trayLabel}>Time Scanned: </Text>
-                      2/20/2020 9:45 PM
-                    </Text>
-                  </View>
-                  <View style={styles.straightRow}>
-                    <View style={styles.equalColumn}>
-                      <TouchableOpacity style={styles.miniSubmitButton}>
-                        <Text style={styles.miniSubmitButtonText}>Waste</Text>
-                      </TouchableOpacity>
-                    </View>
-                    <View style={styles.equalColumn}>
-                      <TouchableOpacity style={styles.miniSubmitButton}>
-                        <Text style={styles.miniSubmitButtonText}>Remove</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-              </View>
+              {this.renderCaseProducts()}
+
               <View style={styles.productListItem}>
                 <View style={styles.majorMinorRow}>
                   <View style={styles.majorColumn}>

@@ -185,7 +185,8 @@ export default class CasesSetup extends Component {
       patientName: '',
       doctor: '',
       location: '',
-      procedure: ''
+      procedure: '',
+      products: [],
     }
     if(doctor != '0' && location != '0' && procedure != '0') {
       userResponse={
