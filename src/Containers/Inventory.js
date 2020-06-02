@@ -6,7 +6,7 @@ import GateData from '../dummyData/gates.json'
 
 import styles from '../Styles/ContainerStyles.js'
 
-export default class InventoryScan extends Component {
+export default class Inventory extends Component {
   constructor(props) {
     super(props)
     this.state = {

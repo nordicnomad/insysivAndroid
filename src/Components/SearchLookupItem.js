@@ -33,7 +33,7 @@ export default class SearchLookupItem extends Component {
           <View style={styles.majorMinorRow}>
             <View style={styles.majorColumn}>
               <TouchableOpacity onPress={() => this.ToggleDetailTray()}>
-                <Text style={this.state.trayState ? styles.activeProductListHeading : styles.productListHeading}>Search Result Name</Text>
+                <Text style={this.state.trayState ? styles.activeProductListHeading : styles.productListHeading}>{this.props.name}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -58,14 +58,14 @@ export default class SearchLookupItem extends Component {
             <View style={styles.straightRow}>
               <View style={styles.equalColumn}>
                 <View style={styles.miniSubmitWrapper}>
-                  <TouchableOpacity style={styles.miniSubmitButton}>
+                  <TouchableOpacity style={styles.miniSubmitButton} onPress={this.props.locateFunction}>
                     <Text style={styles.miniSubmitButtonText}>Locate</Text>
                   </TouchableOpacity>
                 </View>
               </View>
               <View style={styles.equalColumn}>
                 <View style={styles.miniSubmitWrapper}>
-                  <TouchableOpacity style={styles.miniSubmitButton}>
+                  <TouchableOpacity style={styles.miniSubmitButton} onPress={this.props.lookupFunction}>
                     <Text style={styles.miniSubmitButtonText}>FDA Lookup</Text>
                   </TouchableOpacity>
                 </View>
@@ -81,7 +81,7 @@ export default class SearchLookupItem extends Component {
           <View style={styles.majorMinorRow}>
             <View style={styles.majorColumn}>
               <TouchableOpacity onPress={() => this.ToggleDetailTray()}>
-                <Text style={this.state.trayState ? styles.activeProductListHeading : styles.productListHeading}>Search Result Name</Text>
+                <Text style={this.state.trayState ? styles.activeProductListHeading : styles.productListHeading}>{this.props.name}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -106,7 +106,7 @@ export default class SearchLookupItem extends Component {
             <View style={styles.straightRow}>
               <View style={styles.equalColumn}>
                 <View style={styles.miniSubmitWrapper}>
-                  <TouchableOpacity style={styles.miniSubmitButton}>
+                  <TouchableOpacity style={styles.miniSubmitButton} onPress={this.props.locateFunction}>
                     {/*Connect to RFID Scanner for location*/}
                     <Text style={styles.miniSubmitButtonText}>Locate</Text>
                   </TouchableOpacity>
@@ -114,7 +114,7 @@ export default class SearchLookupItem extends Component {
               </View>
               <View style={styles.equalColumn}>
                 <View style={styles.miniSubmitWrapper}>
-                  <TouchableOpacity style={styles.miniSubmitButton}>
+                  <TouchableOpacity style={styles.miniSubmitButton} onPress={this.props.lookupFunction}>
                     {/*Connect to an API to do the lookup and navigation*/}
                     <Text style={styles.miniSubmitButtonText}>FDA Lookup</Text>
                   </TouchableOpacity>

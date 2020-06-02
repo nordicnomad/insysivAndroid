@@ -20,6 +20,10 @@ export default class CasesSetup extends Component {
       newDoctorValue: 0,
       newLocationValue: 0,
       newProcedureValue: 0,
+      newDoctorLabel: "",
+      newLocationLabel: "",
+      newProcedureLabel: "",
+      newProductsValue: [],
     }
   }
   componentDidMount() {
@@ -84,13 +88,13 @@ export default class CasesSetup extends Component {
     this.setState({patientNameHasFocus: !this.state.patientNameHasFocus})
   }
   onDoctorChange = (pickerValue) => {
-    this.setState({newDoctorValue: pickerValue})
+    this.setState({newDoctorValue: pickerValue, newDoctorLabel: this.state.cases.Doctors[pickerValue-1]})
   }
   onLocationChange = (pickerValue) => {
-    this.setState({newLocationValue: pickerValue})
+    this.setState({newLocationValue: pickerValue, newLocationLabel:this.state.cases.Locations[pickerValue-1]})
   }
   onProcedureChange = (pickerValue) => {
-    this.setState({newProcedureValue: pickerValue})
+    this.setState({newProcedureValue: pickerValue, newProcedureLabel: this.state.cases.Procedures[pickerValue-1]})
   }
   onCaseChange = (pickerValue) => {
     this.setState({activeCaseValue: pickerValue})
@@ -164,10 +168,6 @@ export default class CasesSetup extends Component {
     if(selectedValue > 0) {
       let allCases = this.state.cases.cases
       let activeSelected = allCases[selectedValue - 1]
-      console.log("SELECTED ACTIVE CASE")
-      console.log(selectedValue-1)
-      console.log(allCases)
-      console.log(activeSelected)
       this.props.navigation.navigate('CasesScan', {
         caseInformation: activeSelected
       })
@@ -176,26 +176,29 @@ export default class CasesSetup extends Component {
       alert("Please Select an Active Case to Continue.")
     }
   }
-  createNewCase = (caseNumber, patientName, doctor, location, procedure) => {
+  createNewCase = (caseNumber, patientName, doctor, location, procedure, products) => {
     //Here we'll need a post method to the python API that creates a New
     //Case object in the database for an associated patient.
 
     let userResponse = {
-      caseNumber: '',
-      patientName: '',
+      number: '',
+      name: '',
       doctor: '',
       location: '',
       procedure: '',
       products: [],
     }
-    if(doctor != '0' && location != '0' && procedure != '0') {
+    if(this.state.newDoctorValue != '0' && this.state.newLocationValue != '0' && this.state.newProcedureValue != '0') {
       userResponse={
-        caseNumber: caseNumber,
-        patientName: patientName,
+        number: caseNumber,
+        name: patientName,
         doctor: doctor,
         location: location,
-        procedure: procedure
+        procedure: procedure,
+        products: products,
       }
+      console.log("USERRESPONSE BEFORE NAVIGATION")
+      console.log(userResponse)
       alert("This button creates a new record in the database for:" + patientName)
 
       this.props.navigation.navigate('CasesScan', {
@@ -316,7 +319,7 @@ export default class CasesSetup extends Component {
               <View style={styles.buttonRow}>
                 <TouchableOpacity
                   style={styles.submitButton}
-                  onPress={() => this.createNewCase(this.state.newCaseNumber, this.state.newPatientName, this.state.newDoctorValue, this.state.newPatientName, this.state.newProcedureValue)}>
+                  onPress={() => this.createNewCase(this.state.newCaseNumber, this.state.newPatientName, this.state.newDoctorLabel, this.state.newLocationLabel, this.state.newProcedureLabel, this.state.newProductsValue)}>
                   <Text style={styles.submitButtonText}>Start Case</Text>
                 </TouchableOpacity>
               </View>

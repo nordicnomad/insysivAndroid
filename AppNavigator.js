@@ -3,7 +3,7 @@ import { createStackNavigator } from 'react-navigation-stack';
 import Login from './src/Containers/Login';
 import Home from './src/Containers/Home';
 
-import InventoryScan from './src/Containers/InventoryScan';
+import Inventory from './src/Containers/Inventory';
 import CasesSetup from './src/Containers/CasesSetup';
 import CasesScan from './src/Containers/CasesScan';
 import AccountInfo from './src/Containers/AccountInfo';
@@ -23,9 +23,9 @@ const AppNavigator = createStackNavigator({
     screen: Home,
     title: 'Select Option',
   },
-  InventoryScan: {
-    screen: InventoryScan,
-    title: 'Inventory Scan'
+  Inventory: {
+    screen: Inventory,
+    title: 'Inventory'
   },
   CasesSetup: {
     screen: CasesSetup,

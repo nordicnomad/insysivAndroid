@@ -107,7 +107,7 @@ export default class ReportExpiring extends Component {
     }.bind(this))
     if(expiringOutput.length <= 0) {
       expiringOutput.push(
-        <Text key={"EXP"+0}>No Expired Items to Display</Text>
+        <Text key={"EXP"+0} style={styles.noDataText}>No Expired Items to Display</Text>
       )
     }
     return(expiringOutput)

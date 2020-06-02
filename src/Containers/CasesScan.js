@@ -12,8 +12,8 @@ export default class CasesScan extends Component {
     this.state = {
       selectedValue: 0,
       caseInformation: {
-        caseNumber: '',
-        patientName: '',
+        number: '',
+        name: '',
         doctor: '',
         location: '',
         procedure: '',
@@ -65,30 +65,61 @@ export default class CasesScan extends Component {
   };
 
   renderCaseProducts() {
+    let caseInformation = this.state.caseInformation
     let caseProducts = this.state.caseInformation.products
     let caseProductsOutput = []
-
-    caseProducts.forEach(function(product, index){
+    if(caseProducts != undefined && caseProducts != null) {
+      caseProducts.forEach(function(product, index){
+        caseProductsOutput.push(
+          <CaseProductItem
+            key={"CPI"+index}
+            name={product.name}
+            lotSerial={product.lotSerial}
+            model={product.model}
+            scannedTime={product.scannedTime}
+            manufacturer={product.manufacturer}
+            waste={product.waste}
+            scanned={product.scanned}
+            wasteFunction={() => this.wasteScannedItem(product.name)}
+            removeFunction={() => this.removeScannedItem(index)} />
+        )
+      }.bind(this))
+    }
+    if(caseProductsOutput.length <= 0) {
       caseProductsOutput.push(
-        <CaseProductItem
-          key={"CPI"+index}
-          name={product.name}
-          lotSerial={product.lotSerial}
-          model={product.model}
-          scannedTime={product.scannedTime}
-          manufacturer={product.manufacturer}
-          waste={product.waste}
-          scanned={product.scanned}
-          wasteFunction={() => this.wasteScannedItem(product.name)} />
+        <Text key={"CPI"+0} style={styles.noDataText}>No Items Scanned</Text>
       )
-    })
+    }
     return(caseProductsOutput)
   }
 
-  wasteScannedItem(productName) {
+  wasteScannedItem = (productName) => {
     //need to have some kind of a call to flag the item as wasted in
     //our system and the EMR system used by the hospital.
     alert("Connect to a call to the back end and from there EMR marking the item as waste for item: " + productName)
+  }
+  removeScannedItem = (stateIndex) => {
+    let scannedItems = this.state.caseInformation.products
+    let newTotalCount = 0
+    scannedItems.splice(stateIndex, 1)
+    console.log("CASE INFORMATION AFTER REMOVAL")
+    console.log(this.state.caseInformation)
+    this.setState({
+      caseInformation: {
+        number: this.state.caseInformation.number,
+        name: this.state.caseInformation.name,
+        doctor: this.state.caseInformation.doctor,
+        location: this.state.caseInformation.location,
+        procedure: this.state.caseInformation.procedure,
+        products: scannedItems
+      }
+    })
+  }
+
+  synchronizeCaseData = () => {
+    //Synchronize changes with a post method.
+    alert("Add Post Method so Data is Synched to Backend.")
+    this.props.navigation.navigate("Home")
   }
 
   render() {
@@ -119,7 +150,7 @@ export default class CasesScan extends Component {
             <Text style={styles.bodyTextLabel}>Case Scanning</Text>
           </View>
           <View style={styles.rightColumn}>
-            <TouchableOpacity style={styles.submitButton}>
+            <TouchableOpacity style={styles.submitButton} onPress={() => this.synchronizeCaseData()}>
               <Text style={styles.submitButtonText}>Synchronize</Text>
             </TouchableOpacity>
           </View>

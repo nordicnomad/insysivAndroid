@@ -88,7 +88,7 @@ export default class ReportsHome extends Component {
     });
     if(alertOutput.length <= 0) {
       alertOutput.push(
-        <Text>No Current Low Stock Alerts</Text>
+        <Text key={"lsa" + 0} style={styles.noDataText}>No Current Low Stock Alerts</Text>
       )
     }
     return alertOutput

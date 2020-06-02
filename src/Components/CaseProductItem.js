@@ -80,7 +80,7 @@ export default class CaseProductItem extends Component {
               </TouchableOpacity>
             </View>
             <View style={styles.equalColumn}>
-              <TouchableOpacity style={styles.miniSubmitButton}>
+              <TouchableOpacity style={styles.miniSubmitButton} onPress={this.props.removeFunction}>
                 <Text style={styles.miniSubmitButtonText}>Remove</Text>
               </TouchableOpacity>
             </View>

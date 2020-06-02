@@ -10,7 +10,7 @@ export default class ProductLookup extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      searchTerm: "Medtronic",
+      searchTerm: "",
       products: {
         products: []
       }
@@ -53,6 +53,9 @@ export default class ProductLookup extends Component {
       ),
     }
   };
+  scanProductBarcode = (productName) => {
+    alert("Pressing this and scanning if such a thing is possible will search the product data set and return a product object for: " + productName)
+  }
   getProductsData() {
     let productsResponse = {}
     //emulator call
@@ -71,28 +74,48 @@ export default class ProductLookup extends Component {
       console.error(error);
     });
   }
+  locateProduct = (productName) => {
+    alert("Clicking this button will send item barcode to sled to locate with RFID tag for: " + productName)
+  }
+  lookupProduct = (productName) => {
+    alert("Clicking this button will send a request to FDA Lookup Service for: " + productName)
+  }
   renderProductSearch() {
     let searchProducts = this.state.products.products
-    console.log("PRODUCT ARRAY")
-    console.log(searchProducts)
     let searchOutput = []
-    let searchTerm = this.state.searchTerm
-
-    searchProducts.forEach(function(product, index) {
-      if(product.name === searchTerm || product.manufacturer === searchTerm || product.model === searchTerm) {
-        searchOutput.push(
-          <SearchLookupItem
-            unknownFlag={false}
-            key={"SL" + index}
-            name={product.name}
-            manufacturer={product.manufacturer}
-            model={product.model}
-            onOrder={product.onOrder}
-            onHand={product.onHand}
-            lotSerials={product.lotSerials} />
-        )
-      }
-    });
+    let searchTerm = this.state.searchTerm.toUpperCase()
+    if(searchProducts != null && searchProducts != undefined && searchTerm != '') {
+      searchProducts.forEach(function(product, index) {
+        let productName = product.name.toUpperCase()
+        let productManf = product.manufacturer.toUpperCase()
+        let productMod = product.model.toUpperCase()
+        if(productManf.includes(searchTerm) || productName.includes(searchTerm) || productMod.includes(searchTerm)) {
+          searchOutput.push(
+            <SearchLookupItem
+              unknownFlag={false}
+              key={"SL" + index}
+              name={product.name}
+              manufacturer={product.manufacturer}
+              model={product.model}
+              onOrder={product.onOrder}
+              onHand={product.onHand}
+              lotSerials={product.lotSerials}
+              locateFunction={() => this.locateProduct(product.name)}
+              lookupFunction={() => this.lookupProduct(product.name)} />
+          )
+        }
+      }.bind(this));
+    }
+    if(searchOutput.length <= 0) {
+      searchOutput.push(
+        <View key={"SL"+0}>
+          <View>
+            <Text style={styles.noDataText}>No products matched.</Text>
+          </View>
+          <Text style={styles.noDataText}>Search or Scan an Item to begin.</Text>
+        </View>
+      )
+    }
     return searchOutput
   }
 
@@ -108,13 +131,13 @@ export default class ProductLookup extends Component {
               <Text style={styles.bodyTextLabel}>Search</Text>
               <View style={styles.majorMinorRow}>
                 <View style={styles.majorColumn}>
-                  <TextInput style={styles.formInput} />
+                  <TextInput style={styles.formInput} onChangeText={value => this.setState({searchTerm: value})} />
                 </View>
                 <View style={styles.minorColumn}>
                   <Text style={styles.seperatorHeading}>Or</Text>
                 </View>
                 <View style={styles.mediumColumn}>
-                  <TouchableOpacity style={styles.submitButton}>
+                  <TouchableOpacity style={styles.submitButton} onPress={() => this.scanProductBarcode("Name of Product")}>
                     {/*Connect to barcode scanner*/}
                     <Text style={styles.submitButtonText}>Scan</Text>
                   </TouchableOpacity>

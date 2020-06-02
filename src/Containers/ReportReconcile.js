@@ -11,7 +11,9 @@ export default class ReportReconcile extends Component {
     super(props)
     this.state = {
       selectedValue: 0,
-      gates: []
+      gates: [],
+      reportDate: "03/13/2020",
+
     }
   }
   static navigationOptions = ({navigation}) => {

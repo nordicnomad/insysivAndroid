@@ -92,7 +92,7 @@ export default class ReportBackorder extends Component {
   renderBackOrders(filter) {
     let backOrderOutput = []
     let backOrders = this.state.backOrder.messages
-    let filterString = filter
+    let filterString = filter.toUpperCase()
 
     if(filterString === "" || filterString === undefined || filterString === null) {
       backOrders.forEach(function(message, index) {
@@ -109,7 +109,7 @@ export default class ReportBackorder extends Component {
     }
     else {
       backOrders.forEach(function(message, index) {
-        if(message.backorderText.includes(filterString) || message.messageName.includes(filterString)) {
+        if(message.backorderText.toUpperCase().includes(filterString) || message.messageName.toUpperCase().includes(filterString)) {
           backOrderOutput.push(
             <BackOrderItem
               key={"BOI" + index}
@@ -124,7 +124,7 @@ export default class ReportBackorder extends Component {
     }
     if(backOrderOutput.length === 0) {
       backOrderOutput.push(
-        <Text key={"0"}>No Data Matchin Search</Text>
+        <Text key={"0"} style={styles.noDataText}>No Data Matchin Search</Text>
       )
     }
     return backOrderOutput
