@@ -71,16 +71,24 @@ export default class CasesScan extends Component {
     caseProducts.forEach(function(product, index){
       caseProductsOutput.push(
         <CaseProductItem
+          key={"CPI"+index}
           name={product.name}
           lotSerial={product.lotSerial}
           model={product.model}
           scannedTime={product.scannedTime}
           manufacturer={product.manufacturer}
           waste={product.waste}
-          scanned={product.scanned} />
+          scanned={product.scanned}
+          wasteFunction={() => this.wasteScannedItem(product.name)} />
       )
     })
     return(caseProductsOutput)
+  }
+
+  wasteScannedItem(productName) {
+    //need to have some kind of a call to flag the item as wasted in
+    //our system and the EMR system used by the hospital.
+    alert("Connect to a call to the back end and from there EMR marking the item as waste for item: " + productName)
   }
 
   render() {
@@ -102,29 +110,6 @@ export default class CasesScan extends Component {
             </View>
             <View style={styles.sectionContainer}>
               {this.renderCaseProducts()}
-
-              <View style={styles.productListItem}>
-                <View style={styles.majorMinorRow}>
-                  <View style={styles.majorColumn}>
-                    <Text style={styles.productListHeading}>Product Name</Text>
-                  </View>
-                  <View style={styles.minorColumn}>
-                    <Icon style={styles.productStatusIconInactive} name={"barcode"} size={24} color="#333" />
-                  </View>
-                </View>
-                <View style={styles.inactiveListTray}></View>
-              </View>
-              <View style={styles.productListItem}>
-                <View style={styles.majorMinorRow}>
-                  <View style={styles.majorColumn}>
-                    <Text style={styles.productListHeading}>Product Name</Text>
-                  </View>
-                  <View style={styles.minorColumn}>
-                    <Icon style={styles.productStatusIcon} name={"check-circle-o"} size={24} color="#333" />
-                  </View>
-                </View>
-                <View style={styles.inactiveListTray}></View>
-              </View>
             </View>
           </View>
         </ScrollView>

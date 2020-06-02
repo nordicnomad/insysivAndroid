@@ -34,12 +34,12 @@ export default class CaseProductItem extends Component {
     let iconOutput = []
     if(iconStatus === true) {
       iconOutput.push(
-          <Icon style={styles.productStatusIcon} name={rfidIcon} size={24} color="#333" />
+          <Icon key={"iconRFID"} style={styles.productStatusIcon} name={rfidIcon} size={24} color="#333" />
       )
     }
     else {
       iconOutput.push(
-          <Icon style={styles.productStatusIconInactive} name={barcodeIcon} size={24} color="#333" />
+          <Icon key={"iconBar"} style={styles.productStatusIconInactive} name={barcodeIcon} size={24} color="#333" />
       )
     }
     return(iconOutput)
@@ -50,30 +50,32 @@ export default class CaseProductItem extends Component {
       <View style={styles.productListItem}>
         <View style={styles.majorMinorRow}>
           <View style={styles.majorColumn}>
-            <Text style={styles.productListHeading}>Product Name</Text>
+            <TouchableOpacity onPress={() => this.ToggleDetailTray()}>
+              <Text style={this.state.trayState === true ? styles.activeProductListHeading : styles.productListHeading}>{this.props.name}</Text>
+            </TouchableOpacity>
           </View>
           <View style={styles.minorColumn}>
-            {this.renderStatusIcon()}
+            {this.renderStatusIcon(this.props.scanned)}
           </View>
         </View>
-        <View style={styles.activeListTray}>
+        <View style={this.state.trayState ? styles.productListTray : styles.inactiveListTray}>
           <View style={styles.trayItemWrapper}>
             <Text style={styles.trayText}>
               <Text style={styles.trayLabel}>Lot / Serial: </Text>
-              990283409
+              {this.props.lotSerial}
             </Text>
             <Text style={styles.trayText}>
               <Text style={styles.trayLabel}>Model Number: </Text>
-              G4FR4
+              {this.props.model}
             </Text>
             <Text style={styles.trayText}>
               <Text style={styles.trayLabel}>Time Scanned: </Text>
-              2/20/2020 9:45 PM
+              {this.props.scannedTime}
             </Text>
           </View>
           <View style={styles.straightRow}>
             <View style={styles.equalColumn}>
-              <TouchableOpacity style={styles.miniSubmitButton}>
+              <TouchableOpacity style={styles.miniSubmitButton} onPress={this.props.wasteFunction}>
                 <Text style={styles.miniSubmitButtonText}>Waste</Text>
               </TouchableOpacity>
             </View>
