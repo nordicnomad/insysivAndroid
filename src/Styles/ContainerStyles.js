@@ -413,6 +413,11 @@ export default StyleSheet.create({
     fontSize: 18,
     color: '#666',
   },
+  dateSelectIcons: {
+    textAlign: 'center',
+    fontSize: 26,
+    color: '#ed9a1a',
+  },
   statusTextReady: {
     fontSize:18,
     color: '#8FC93A',
@@ -438,6 +443,10 @@ export default StyleSheet.create({
   },
   inactiveListTray: {
     display: 'none'
+  },
+  trayListWrapper: {
+    paddingTop: 5,
+    paddingBottom: 5,
   },
   formItemWrapper: {
     marginBottom: 25,

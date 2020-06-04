@@ -2,7 +2,7 @@ import React, {Fragment, Component} from 'react';
 import { StyleSheet, Text, View, Button, Picker, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.png'
-import GateData from '../dummyData/gates.json'
+import ReportReconcileItem from '../Components/ReportReconcileItem'
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -13,8 +13,14 @@ export default class ReportReconcile extends Component {
       selectedValue: 0,
       gates: [],
       reportDate: "03/13/2020",
-
+      trashUnreconciled: {
+        dateOfReconcile: "",
+        trashUnassignedItems: []
+      }
     }
+  }
+  componentDidMount() {
+    this.getTrashUnreconciledData()
   }
   static navigationOptions = ({navigation}) => {
     return {
@@ -68,6 +74,33 @@ export default class ReportReconcile extends Component {
       console.error(error);
     });
   }
+  escalateItem = (itemName, index) => {
+    alert("Flag "+itemName +" for evaluation by someone with higher access.")
+  }
+  assignItem = (itemName) => {
+    alert("Assign "+itemName +" to case number.")
+  }
+  renderReconcileItems() {
+    let reconcileOutput = []
+    let reconcileItems = this.state.trashUnreconciled.trashUnassignedItems
+
+    reconcileItems.forEach(function(item, index) {
+      reconcileOutput.push(
+        <ReportReconcileItem
+          key={"TUI"+index}
+          manufacturer={item.manufacturer}
+          model={item.model}
+          selectedCaseId={item.selectedCaseId}
+          dateUnassigned={item.dateUnassigned}
+          cases={item.cases}
+          name={item.name}
+          escalateFunction={() => this.escalateItem(item.name, index)}
+          assignFunction={() => this.assignItem(item.name)}
+          />
+      )
+    }.bind(this))
+    return(reconcileOutput)
+  }
 
   render() {
     return (
@@ -79,197 +112,27 @@ export default class ReportReconcile extends Component {
           <View style={styles.sectionContainer}>
             <View style={styles.majorMinorRow}>
               <View style={styles.minorColumn}>
-                <Icon name="angle-left" size={26} color="#102541" />
+                <Icon style={styles.dateSelectIcons} name="angle-left" size={26} color="#102541" />
               </View>
               <View styles={styles.majorColumn}>
-                <Text style={styles.bodyTextHeading}>3/13/2020</Text>
+                <Text style={styles.bodyTextHeading}>{this.state.trashUnreconciled.dateOfReconcile}</Text>
               </View>
               <View style={styles.minorColumn}>
-                <Icon name="angle-right" size={26} color="#102541" />
+                <Icon style={styles.dateSelectIcons} name="angle-right" size={26} color="#102541" />
               </View>
             </View>
           </View>
           <View style={styles.sectionContainer}>
             <View style={styles.straightRow}>
               <View style={styles.equalColumn}>
-                <Text style={styles.bodyTextLabel}><Text style={styles.bodyTextHeading}>5</Text> Items</Text>
+                <Text style={styles.bodyTextLabel}><Text style={styles.bodyTextHeading}>{this.state.trashUnreconciled.trashUnassignedItems.length}</Text> Items</Text>
               </View>
               <View style={styles.equalColumn}>
                 <Text style={styles.bodyTextLabelRight}>Appearance</Text>
               </View>
             </View>
+            {this.renderReconcileItems()}
 
-            {/* Truncated Materials List Item */}
-            <View style={styles.productListItem}>
-              <View style={styles.straightRow}>
-                <View style={styles.majorColumn}>
-                  <Text style={styles.productListHeading}>Item Description</Text>
-                </View>
-                <View style={styles.mediumColumn}>
-                  <Text style={styles.productListHeadingRight}>3/13/2020</Text>
-                </View>
-              </View>
-              <View style={styles.productListTray}>
-                <View style={styles.majorMinorRow}>
-                  <View style={styles.mediumColumn}>
-                    <Text style={styles.bodyTextLabel}>Assign to: </Text>
-                  </View>
-                  <View style={styles.majorColumn}>
-                    <View style={styles.formPickerWrapper}>
-                      <Picker style={styles.formPicker}>
-                        <Picker.Item label='Select an option...' value='0' />
-                        <Picker.Item label='Alvarez - 12121156' value='1' />
-                        <Picker.Item label='Boop - 21212267' value='2' />
-                      </Picker>
-                    </View>
-                  </View>
-                </View>
-                <View style={styles.straightRow}>
-                  <View style={styles.equalColumn}>
-                    <TouchableOpacity style={styles.miniSubmitButton}>
-                      <Text style={styles.miniSubmitButtonText}>View Case</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.equalColumn}>
-                    <TouchableOpacity style={styles.miniSubmitButton}>
-                      <Text style={styles.miniSubmitButtonText}>Escalate</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.equalColumn}>
-                    <TouchableOpacity style={styles.miniSubmitButton}>
-                      <Text style={styles.miniSubmitButtonText}>Assign</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            </View>
-
-            {/* Expanded Materials List Item */}
-            <View style={styles.productListItem}>
-              <View style={styles.straightRow}>
-                <View style={styles.majorColumn}>
-                  <Text style={styles.activeProductListHeading}>Item Description</Text>
-                </View>
-                <View style={styles.mediumColumn}>
-                  <Text style={styles.productListHeadingRight}>3/13/2020</Text>
-                </View>
-              </View>
-              <View style={styles.productListTray}>
-                <View style={styles.majorMinorRow}>
-                  <View style={styles.mediumColumn}>
-                    <Text style={styles.bodyTextLabel}>Assign to: </Text>
-                  </View>
-                  <View style={styles.majorColumn}>
-                    <View style={styles.formPickerWrapper}>
-                      <Picker style={styles.formPicker}>
-                        <Picker.Item label='Select an option...' value='0' />
-                        <Picker.Item label='Alvarez - 12121156' value='1' />
-                        <Picker.Item label='Boop - 21212267' value='2' />
-                      </Picker>
-                    </View>
-                  </View>
-                </View>
-                <View>
-                  <View style={styles.straightRow}>
-                    <View style={styles.majorColumn}>
-                      <Text style={styles.bodyTextLabel}>Materials</Text>
-                    </View>
-                    <View style={styles.minorColumn}>
-                      <Text style={styles.bodyTextLabel}>Qty</Text>
-                    </View>
-                    <View style={styles.minorColumn}>
-                      <Text style={styles.bodyTextLabel}>Scan</Text>
-                    </View>
-                  </View>
-                  <View style={styles.straightRow}>
-                    <View style={styles.majorColumn}>
-                      <Text style={styles.bodyText}>Another Item</Text>
-                    </View>
-                    <View style={styles.minorColumn}>
-                      <Text style={styles.bodyText}>2</Text>
-                    </View>
-                    <View style={styles.minorColumn}>
-                      <Text style={styles.bodyText}>Y</Text>
-                    </View>
-                  </View>
-                  <View style={styles.straightRow}>
-                    <View style={styles.majorColumn}>
-                      <Text style={styles.bodyText}>This Item</Text>
-                    </View>
-                    <View style={styles.minorColumn}>
-                      <Text style={styles.bodyText}>1</Text>
-                    </View>
-                    <View style={styles.minorColumn}>
-                      <Text style={styles.bodyText}>N</Text>
-                    </View>
-                  </View>
-                  <View style={styles.straightRow}>
-                    <View style={styles.majorColumn}>
-                      <Text style={styles.bodyText}>Another Item</Text>
-                    </View>
-                    <View style={styles.minorColumn}>
-                      <Text style={styles.bodyText}>1</Text>
-                    </View>
-                    <View style={styles.minorColumn}>
-                      <Text style={styles.bodyText}>Y</Text>
-                    </View>
-                  </View>
-                </View>
-                <View style={styles.straightRow}>
-                  <View style={styles.minorColumn}>
-                    <TouchableOpacity style={styles.miniSubmitButton}>
-                      <Text style={styles.miniSubmitButtonText}>X</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.equalColumn}>
-                    <TouchableOpacity style={styles.miniSubmitButton}>
-                      <Text style={styles.miniSubmitButtonText}>Escalate</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.equalColumn}>
-                    <TouchableOpacity style={styles.miniSubmitButton}>
-                      <Text style={styles.miniSubmitButtonText}>Assign</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            </View>
-            <View style={styles.productListItem}>
-              <View style={styles.straightRow}>
-                <View style={styles.majorColumn}>
-                  <Text style={styles.productListHeading}>Item Description</Text>
-                </View>
-                <View style={styles.mediumColumn}>
-                  <Text style={styles.productListHeadingRight}>3/13/2020</Text>
-                </View>
-              </View>
-              <View style={styles.inactiveListTray}>
-              </View>
-            </View>
-            <View style={styles.productListItem}>
-              <View style={styles.straightRow}>
-                <View style={styles.majorColumn}>
-                  <Text style={styles.productListHeading}>Item Description</Text>
-                </View>
-                <View style={styles.mediumColumn}>
-                  <Text style={styles.productListHeadingRight}>3/13/2020</Text>
-                </View>
-              </View>
-              <View style={styles.inactiveListTray}>
-              </View>
-            </View>
-            <View style={styles.productListItem}>
-              <View style={styles.straightRow}>
-                <View style={styles.majorColumn}>
-                  <Text style={styles.productListHeading}>Item Description</Text>
-                </View>
-                <View style={styles.mediumColumn}>
-                  <Text style={styles.productListHeadingRight}>3/13/2020</Text>
-                </View>
-              </View>
-              <View style={styles.inactiveListTray}>
-              </View>
-            </View>
           </View>
         </View>
       </ScrollView>
