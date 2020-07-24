@@ -1,5 +1,6 @@
 import React, {Fragment, Component} from 'react';
-import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
+import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert } from 'react-native'
+import ZebraScanner from 'react-native-zebra-scanner'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.png'
 import ProductListTrayItem from '../Components/ProductListTrayItem'
@@ -11,8 +12,38 @@ export default class IntakeScan extends Component {
     super(props)
     this.state = {
       scanCount: 0,
-      scannedItems: [],
-      scannerStatus: 1,
+      scannedItems: [
+        {
+          trayState: false,
+          isUnknown: true,
+          name: "Unknown Product",
+          model: "9188493038",
+          lotSerial: "0209485",
+          expiration: "08/08/2020",
+          count: 1
+        },
+      ],
+      scannerConnected: false,
+    }
+  }
+  componentDidMount() {
+    this.checkForScanner()
+  }
+  async checkForScanner() {
+    let scannerStatus = await ZebraScanner.isAvailable();
+
+    console.log("SCANNER IS AVAILABLE")
+    console.log(scannerStatus)
+    if(scannerStatus) {
+      ZebraScanner.addScanListener(this.ScanBarcode())
+      this.setState({
+        scannerConnected: true
+      })
+    }
+    else {
+      this.setState({
+        scannerConnected: false
+      })
     }
   }
   static navigationOptions = ({navigation}) => {
@@ -140,6 +171,19 @@ export default class IntakeScan extends Component {
       scannedItems: updatedScannedItems
     })
   }
+  OpenAdjustmentModal = (index) => {
+    let productLocation = index
+
+    this.setState({
+      modalState: true,
+      modalProduct: index, 
+    })
+  }
+  CloseAdjustmentModal = () => {
+    this.setState({
+      modalState: false
+    })
+  }
   SynchoronizeIntakeToDesktop = () => {
     this.setState({
       scanCount: 0,
@@ -149,18 +193,14 @@ export default class IntakeScan extends Component {
   GetScannerStatus(status) {
     let scannerStatus = status
 
-    if(scannerStatus === 1) {
+    if(scannerStatus === true) {
       return(
-        <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.ScanBarcode()}>
-          <Text style={styles.miniSubmitButtonText}>Scan</Text>
-        </TouchableOpacity>
+        <Text style={styles.scannerConnected}>Scanner Ready</Text>
       )
     }
     else {
       return(
-        <TouchableOpacity style={styles.miniDisabledButton}>
-          <Text style={styles.miniDisableButtonText}>Wait</Text>
-        </TouchableOpacity>
+        <Text style={styles.scannerDisconnected}>Scanner Unavailable</Text>
       )
     }
   }
@@ -189,7 +229,7 @@ export default class IntakeScan extends Component {
             itemExpiration={item.expiration}
             statePosition={index}
             removeFunction={() => this.RemoveScannedItem(index)}
-            adjustmentFunction={() => this.AdjustScannedQuantity(index, 100)}
+            adjustmentFunction={() => this.OpenAdjustmentModal(index)}
             />)
       }.bind(this))
     }
@@ -207,7 +247,7 @@ export default class IntakeScan extends Component {
             <View style={styles.sectionContainer}>
               <View style={styles.menuRow}>
                 <View style={styles.majorColumn}>
-                  {this.GetScannerStatus(this.state.scannerStatus)}
+                  {this.GetScannerStatus(this.state.scannerConnected)}
                 </View>
                 <View style={styles.majorColumn}>
                   <Text style={styles.countText}>

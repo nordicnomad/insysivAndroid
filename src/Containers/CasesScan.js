@@ -1,5 +1,6 @@
 import React, {Fragment, Component} from 'react';
-import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
+import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert } from 'react-native'
+import ZebraScanner from 'react-native-zebra-scanner'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.png'
 import CaseProductItem from '../Components/CaseProductItem'
@@ -11,6 +12,7 @@ export default class CasesScan extends Component {
     super(props)
     this.state = {
       selectedValue: 0,
+      noScanner: false,
       caseInformation: {
         number: '',
         name: '',
@@ -28,6 +30,21 @@ export default class CasesScan extends Component {
     })
     console.log("DATA ENTERING FROM SETUP")
     console.log(caseInformation)
+    this.checkForScanner()
+  }
+  async checkForScanner () {
+    let scannerStatus = await ZebraScanner.isAvailable();
+
+    console.log("SCANNER IS AVAILABLE")
+    console.log(scannerStatus)
+    if(scannerStatus) {
+      ZebraScanner.addScanListener(this.ScanBarcode())
+    }
+    else {
+      this.setState({
+        noScanner: true
+      })
+    }
   }
   static navigationOptions = ({navigation}) => {
     return {

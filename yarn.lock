@@ -926,6 +926,11 @@
     eslint-plugin-react-native "3.6.0"
     prettier "1.16.4"
 
+"@react-native-community/netinfo@^5.9.4":
+  version "5.9.4"
+  resolved "https://registry.yarnpkg.com/@react-native-community/netinfo/-/netinfo-5.9.4.tgz#a05a9403f8ee09c7d7f7c2dda850b79cac376691"
+  integrity sha512-mb664NOqPvyUZ4TznzdYEfdS3OhSXWGbZprgsDZn4THw2X/4wcBFcBUeWuMzeQ56KhY0rm/YBBlZWHrSf3C/Aw==
+
 "@react-navigation/core@^3.5.1":
   version "3.5.1"
   resolved "https://registry.yarnpkg.com/@react-navigation/core/-/core-3.5.1.tgz#7a2339fca3496979305fb3a8ab88c2ca8d8c214d"
@@ -4941,6 +4946,11 @@ react-native-zebra-rfid@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/react-native-zebra-rfid/-/react-native-zebra-rfid-0.0.1.tgz#85e140ce7ee046d2fd98d94ca771545899e278f9"
   integrity sha512-BYor09WPenhsdzsYNbUEHNDEUv0beHKN6vVKFbIRrdpc71OkDtKrGlaEyD2ySebkiKLqr2Vm6+0AEbxU1rKdyA==
+
+react-native-zebra-scanner@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/react-native-zebra-scanner/-/react-native-zebra-scanner-1.0.0.tgz#c4eaf5a92a3bacd9233fc061c91ff2b70f41f54c"
+  integrity sha512-19uYfhqTvXF3DvgSpA8wkP9ORIwD5QpR+DXvj7XmtQHL+oCI2WMyyKnP0U+3R1auf1HCW8mv2RUfY5pLnFQuFQ==
 
 react-native@0.60.4:
   version "0.60.4"

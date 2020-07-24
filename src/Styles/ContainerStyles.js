@@ -418,11 +418,27 @@ export default StyleSheet.create({
     fontSize: 26,
     color: '#ed9a1a',
   },
+  scannerConnected: {
+    textAlign: 'left',
+    fontSize:16,
+    color: '#36ABFC',
+    marginTop: 6,
+    fontWeight: 'bold',
+  },
+  scannerDisconnected: {
+    textAlign: 'left',
+    fontSize:16,
+    color: '#EE7A38',
+    marginTop: 6,
+    fontWeight: 'bold', 
+  },
   statusTextReady: {
+    textAlign: 'left',
     fontSize:18,
     color: '#8FC93A',
   },
   statusTextWait: {
+    textAlign: 'left',
     fontSize: 18,
     color: '#EE7A38',
   },
