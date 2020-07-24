@@ -1,4 +1,0 @@
-#Fri Dec 13 17:02:30 CST 2019
-base.0=/Users/nordicnomad/Desktop/projects/InsysivZebra/android/app/build/intermediates/transforms/dexMerger/release/0
-path.0=classes.dex
-renamed.0=classes.dex
