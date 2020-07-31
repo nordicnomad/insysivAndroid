@@ -430,7 +430,7 @@ export default StyleSheet.create({
     fontSize:16,
     color: '#EE7A38',
     marginTop: 6,
-    fontWeight: 'bold', 
+    fontWeight: 'bold',
   },
   statusTextReady: {
     textAlign: 'left',
@@ -621,5 +621,96 @@ export default StyleSheet.create({
   },
   bluetoothWarning: {
     display: 'none',
+  },
+  modalBackgroundContainer: {
+    backgroundColor: "rgba(0,0,0,.4)",
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: width,
+    height: height,
+  },
+  modalTitleWrapper: {
+    position: 'relative',
+    paddingRight: 35,
+  },
+  modalTitleText: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#000',
+  },
+  modalCloseButton: {
+    width: 35,
+    height: 35,
+    position: 'absolute',
+    top:-15,
+    right: 0,
+  },
+  modalCloseButtonText: {
+    fontSize: 25,
+    fontWeight: '900',
+    textAlign: 'center',
+  },
+  modalInnerContainer: {
+    paddingTop: 25,
+    paddingLeft: 10,
+    paddingBottom: 25,
+    paddingRight: 10,
+    marginTop: height * .1,
+    marginBottom: height * .1,
+    marginLeft: width *.05,
+    marginRight: width *.05,
+    backgroundColor: '#fff',
+  },
+  modalTextInput: {
+    backgroundColor: '#f7f7f7',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    marginBottom: 5,
+    paddingTop: 5,
+    paddingLeft: 8,
+    paddingBottom: 5,
+    width: 300,
+    height: 50,
+    fontSize: 22,
+  },
+  modalTextInputFocus :{
+    backgroundColor: '#f7f7f7',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ed9a1a',
+    marginBottom: 25,
+    paddingTop: 5,
+    paddingLeft: 8,
+    paddingBottom: 5,
+    width: 300,
+    fontSize: 22,
+  },
+  modalInputLabel: {
+    textAlign: 'left',
+    fontSize: 14,
+    color: '#888',
+    fontWeight: '700',
+    marginBottom: 25,
+  },
+  modalButtonRow: {
+    display: 'flex',
+    flexDirection: 'row'
+  },
+  modalButtonColumn: {
+    flex: 1,
+    flexDirection: 'column'
+  },
+  modalButton: {
+    backgroundColor: '#ed9a1a',
+    paddingTop: 12,
+    paddingBottom: 12,
+    paddingLeft: 12,
+    paddingRight: 12,
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    textAlign: 'center',
+    fontWeight: '800',
   }
 });

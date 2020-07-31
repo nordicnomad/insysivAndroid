@@ -1,9 +1,10 @@
 import React, {Fragment, Component} from 'react';
-import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert } from 'react-native'
+import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert, TextInput } from 'react-native'
 import ZebraScanner from 'react-native-zebra-scanner'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.png'
 import ProductListTrayItem from '../Components/ProductListTrayItem'
+import AdjustQuantityModal from '../Components/AdjustQuantityModal'
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -12,6 +13,10 @@ export default class IntakeScan extends Component {
     super(props)
     this.state = {
       scanCount: 0,
+      modalState: false,
+      modalProduct: null,
+      modalInputHasFocus: false,
+      modalItemCount: null,
       scannedItems: [
         {
           trayState: false,
@@ -176,12 +181,14 @@ export default class IntakeScan extends Component {
 
     this.setState({
       modalState: true,
-      modalProduct: index, 
+      modalProduct: index,
+      modalItemCount: this.state.scannedItems[index].count
     })
   }
   CloseAdjustmentModal = () => {
     this.setState({
-      modalState: false
+      modalState: false,
+      modalProduct: null,
     })
   }
   SynchoronizeIntakeToDesktop = () => {
@@ -202,6 +209,52 @@ export default class IntakeScan extends Component {
       return(
         <Text style={styles.scannerDisconnected}>Scanner Unavailable</Text>
       )
+    }
+  }
+  onQuantityFocusChange = () => {
+    this.setState({modalInputHasFocus: !this.state.modalInputHasFocus})
+  }
+  RenderModalValidation() {
+    let errorMessage = "An error message has occurred. ";
+    return(errorMessage)
+  }
+  RenderModal() {
+    //Modal to do list
+    //Value state management
+    //Submit scanned list update
+    //Form validation and error styling (positive number, not null, cancel discards updates)
+    //
+    if(this.state.modalState === true) {
+      return (
+        <View style={styles.modalBackgroundContainer}>
+          <View style={styles.modalInnerContainer}>
+            <View style={styles.modalTitleWrapper}>
+              <Text style={styles.modalTitleText}>Name</Text>
+              <TouchableOpacity style={styles.modalCloseButton} onPress={() => this.CloseAdjustmentModal()}>
+                <Text style={styles.modalCloseButtonText}>X</Text>
+              </TouchableOpacity>
+            </View>
+            <View>
+              <TextInput
+                onFocus={() => this.onQuantityFocusChange()}
+                onBlur={() => this.onQuantityFocusChange()}
+                style={this.state.modalInputHasFocus ? styles.textInputFocus : styles.textInput}
+                keyboardType={"numeric"} />
+              <Text style={styles.modalInputLabel}>Item quantity</Text>
+              <View><Text>{this.RenderModalValidation()}</Text></View>
+              <View style={styles.modalButtonRow}>
+                <View style={styles.modalButtonColumn}></View>
+                <View style={styles.modalButtonColumn}>
+                  <TouchableOpacity style={styles.modalButton}><Text style={styles.modalButtonText}>Set Quantity</Text></TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+      );
+    }
+    else {
+      return(<View></View>)
     }
   }
   RenderScannedProducts(scanitems) {
@@ -273,6 +326,7 @@ export default class IntakeScan extends Component {
             </TouchableOpacity>
           </View>
         </View>
+        {this.RenderModal()}
       </View>
     );
   }

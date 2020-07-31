@@ -8,27 +8,38 @@ export default class AdjustQuantityModal extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      inputHasFocus: false
+      inputHasFocus: false,
+      itemCount: null,
     }
   }
 
   render() {
-    return (
-      <View style={this.props.modalState ? this.styles.modalBackgroundContainer : this.styles.hideModal}>
-        <View style={styles.modalInnerContainer}>
-          <Text style={styles.modalTitleText}>{this.props.modalTitle}</Text>
-          <View>
-            <TextInput style={this.state.inputHasFocus ? this.styles.textInputFocus : this.styles.textInput} />
-            <Text>Item quantity</Text>
+    if(this.props.modalState === true) {
+      console.log("MODAL OBJECT")
+      console.log(this.props.modalObject)
+      return (
+        <View style={styles.modalBackgroundContainer}>
+          <View style={styles.modalInnerContainer}>
+            <View style={styles.modalTitleWrapper}>
+              <Text style={styles.modalTitleText}>{this.props.modalObject.name}</Text>
+              <TouchableOpacity style={styles.modalCloseButton} onPress={this.props.closeModalFunction}><Text style={styles.modalCloseButtonText}>X</Text></TouchableOpacity>
+            </View>
             <View>
-              <View></View>
-              <View>
-                <TouchableOpacity>Set Quantity</TouchableOpacity>
+              <TextInput style={this.state.inputHasFocus ? styles.textInputFocus : styles.textInput} keyboardType={"numeric"} value={this.state.itemCount} />
+              <Text style={styles.modalInputLabel}>Item quantity</Text>
+              <View style={styles.buttonRow}>
+                <View style={styles.buttonColumn}></View>
+                <View style={styles.buttonColumn}>
+                  <TouchableOpacity style={styles.modalButton}><Text style={styles.modalButtonText}>Set Quantity</Text></TouchableOpacity>
+                </View>
               </View>
             </View>
           </View>
         </View>
-      </View>
-    );
+      );
+    }
+    else {
+      return(<View></View>)
+    }
   }
 }
