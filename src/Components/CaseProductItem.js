@@ -61,6 +61,10 @@ export default class CaseProductItem extends Component {
         <View style={this.state.trayState ? styles.productListTray : styles.inactiveListTray}>
           <View style={styles.trayItemWrapper}>
             <Text style={styles.trayText}>
+              <Text style={styles.trayLabel}>Barcode: </Text>
+              {this.props.barcode}
+            </Text>
+            <Text style={styles.trayText}>
               <Text style={styles.trayLabel}>Lot / Serial: </Text>
               {this.props.lotSerial}
             </Text>

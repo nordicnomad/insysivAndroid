@@ -47,11 +47,13 @@ export default class ProductListTrayItem extends Component {
           <View style={this.state.trayState === true ? styles.activeListTray : styles.inactiveListTray}>
             <View style={styles.straightRow}>
               <View style={styles.equalColumn}>
+                <Text style={styles.trayLabel}>Barcode</Text>
                 <Text style={styles.trayLabel}>Model Number</Text>
-                <Text style={styles.trayLabel}>Lot / Serial Number</Text>
+                <Text style={styles.trayLabel}>Lot / Serial</Text>
                 <Text style={styles.trayLabel}>Expiration Date</Text>
               </View>
               <View style={styles.equalColumn}>
+                <Text style={styles.trayText}>{this.props.itemBarcode}</Text>
                 <Text style={styles.trayText}>{this.props.itemModel}</Text>
                 <Text style={styles.trayText}>{this.props.itemSerial}</Text>
                 <Text style={styles.trayText}>{this.props.itemExpiration}</Text>
@@ -88,11 +90,13 @@ export default class ProductListTrayItem extends Component {
           <View style={this.state.trayState === true ? styles.activeListTray : styles.inactiveListTray}>
             <View style={styles.straightRow}>
               <View style={styles.equalColumn}>
+                <Text style={styles.trayLabel}>Barcode</Text>
                 <Text style={styles.trayLabel}>Model Number</Text>
-                <Text style={styles.trayLabel}>Lot / Serial Number</Text>
+                <Text style={styles.trayLabel}>Lot / Serial</Text>
                 <Text style={styles.trayLabel}>Expiration Date</Text>
               </View>
               <View style={styles.equalColumn}>
+              <Text style={styles.trayText}>{this.props.itemBarcode}</Text>
               <Text style={styles.trayText}>{this.props.itemModel}</Text>
               <Text style={styles.trayText}>{this.props.itemSerial}</Text>
               <Text style={styles.trayText}>{this.props.itemExpiration}</Text>

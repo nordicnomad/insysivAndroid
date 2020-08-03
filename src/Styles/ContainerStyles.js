@@ -3,6 +3,11 @@ import { Dimensions } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
 export default StyleSheet.create({
+  containerContainsFooter: {
+    flex: 1,
+    height: height - 93,
+    minHeight: height - 93
+  },
   scrollContainer: {
     flex: 1,
   },
@@ -13,7 +18,7 @@ export default StyleSheet.create({
     justifyContent: 'flex-start',
   },
   loginLogoRow: {
-    paddingTop: 75,
+    paddingTop: 50,
     paddingBottom: 25,
   },
   loginLogo: {
@@ -638,6 +643,7 @@ export default StyleSheet.create({
     fontSize: 24,
     fontWeight: '600',
     color: '#000',
+    marginBottom: 10,
   },
   modalCloseButton: {
     width: 35,
@@ -666,11 +672,11 @@ export default StyleSheet.create({
     backgroundColor: '#f7f7f7',
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
-    marginBottom: 5,
+    marginBottom: 10,
     paddingTop: 5,
     paddingLeft: 8,
     paddingBottom: 5,
-    width: 300,
+    width: "100%",
     height: 50,
     fontSize: 22,
   },
@@ -678,11 +684,12 @@ export default StyleSheet.create({
     backgroundColor: '#f7f7f7',
     borderBottomWidth: 1,
     borderBottomColor: '#ed9a1a',
-    marginBottom: 25,
+    marginBottom: 10,
     paddingTop: 5,
     paddingLeft: 8,
     paddingBottom: 5,
-    width: 300,
+    width: "100%",
+    height: 50,
     fontSize: 22,
   },
   modalInputLabel: {
@@ -690,7 +697,7 @@ export default StyleSheet.create({
     fontSize: 14,
     color: '#888',
     fontWeight: '700',
-    marginBottom: 25,
+    marginBottom: 5,
   },
   modalButtonRow: {
     display: 'flex',
@@ -712,5 +719,11 @@ export default StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
     fontWeight: '800',
+  },
+  modalErrorText: {
+    color: '#EE7A38',
+    fontWeight: '800',
+    marginBottom: 10,
+    textAlign: 'left',
   }
 });

@@ -4,6 +4,7 @@ import ZebraScanner from 'react-native-zebra-scanner'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.png'
 import CaseProductItem from '../Components/CaseProductItem'
+import { BarcodeSearch } from '../Utilities/BarcodeLookup'
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -11,8 +12,8 @@ export default class CasesScan extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      selectedValue: 0,
-      noScanner: false,
+      scannedBarcode: '',
+      scannerConnected: false,
       caseInformation: {
         number: '',
         name: '',
@@ -38,11 +39,14 @@ export default class CasesScan extends Component {
     console.log("SCANNER IS AVAILABLE")
     console.log(scannerStatus)
     if(scannerStatus) {
-      ZebraScanner.addScanListener(this.ScanBarcode())
+      ZebraScanner.addScanListener(this.ScanBarcode)
+      this.setState({
+        scannerConnected: true
+      })
     }
     else {
       this.setState({
-        noScanner: true
+        scannerConnected: false
       })
     }
   }
@@ -90,6 +94,7 @@ export default class CasesScan extends Component {
         caseProductsOutput.push(
           <CaseProductItem
             key={"CPI"+index}
+            barcode={product.barcode}
             name={product.name}
             lotSerial={product.lotSerial}
             model={product.model}
@@ -108,6 +113,45 @@ export default class CasesScan extends Component {
       )
     }
     return(caseProductsOutput)
+  }
+  GetScannerStatus(status) {
+    let scannerStatus = status
+
+    if(scannerStatus === true) {
+      return(
+        <Text style={styles.scannerConnected}>Scanner Ready</Text>
+      )
+    }
+    else {
+      return(
+        <Text style={styles.scannerDisconnected}>Scanner Unavailable</Text>
+      )
+    }
+  }
+  ScanBarcode = (newBarcode) => {
+    //Instantiate Variables
+    if(newBarcode != undefined && newBarcode != null) {
+      let scannedItemsList = this.state.caseInformation.products
+      let scannedBarcode = newBarcode
+
+
+      //If not a known product create and unknown product scanned item object
+      let barcodeLookup = BarcodeSearch(scannedBarcode, 1)
+      scannedItemsList.push(barcodeLookup)
+      //Update LocalState with new information
+      this.setState({
+        caseInformation: {
+          number: this.state.caseInformation.number,
+          name: this.state.caseInformation.name,
+          doctor: this.state.caseInformation.doctor,
+          location: this.state.caseInformation.location,
+          procedure: this.state.caseInformation.procedure,
+          products:scannedItemsList,
+        },
+        scannedBarcode: scannedBarcode,
+      })
+    }
+
   }
 
   wasteScannedItem = (productName) => {
@@ -157,6 +201,13 @@ export default class CasesScan extends Component {
               </View>
             </View>
             <View style={styles.sectionContainer}>
+              <View style={styles.menuRow}>
+                <View style={styles.majorColumn}>
+                  {this.GetScannerStatus(this.state.scannerConnected)}
+                </View>
+                <View style={styles.majorColumn}>
+                </View>
+              </View>
               {this.renderCaseProducts()}
             </View>
           </View>

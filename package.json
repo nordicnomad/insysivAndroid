@@ -7,7 +7,6 @@
     "test": "jest"
   },
   "dependencies": {
-    "@react-native-community/netinfo": "^5.9.4",
     "react": "16.8.6",
     "react-native": "0.60.4",
     "react-native-gesture-handler": "^1.4.1",

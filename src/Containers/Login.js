@@ -2,6 +2,7 @@ import React, {Fragment, Component} from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native';
 import LoginLogo from '../Images/insysivLogo.jpg'
 import UserData from '../dummyData/login.json'
+import OfflineBanner from '../Components/OfflineBanner'
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -14,13 +15,16 @@ export default class Login extends Component {
       passHasFocus: false,
       username: '',
       password: '',
+      networkConnected: false,
     }
     this.onUserChange = this.onUserChange.bind(this)
     this.onPassChange = this.onPassChange.bind(this)
   }
+
   static navigationOptions = {
     header: null,
   };
+
   onEmailFocusChange() {
     this.setState({emailHasFocus: !this.state.emailHasFocus})
   }
@@ -55,6 +59,7 @@ export default class Login extends Component {
   render() {
     return (
       <ScrollView style={styles.scrollContainer}>
+        <OfflineBanner showBanner={this.state.networkConnected} />
         <View style={styles.loginContainer}>
           <View style={styles.loginLogoRow}>
             <Image

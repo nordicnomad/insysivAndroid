@@ -4,7 +4,7 @@ import ZebraScanner from 'react-native-zebra-scanner'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.png'
 import ProductListTrayItem from '../Components/ProductListTrayItem'
-import AdjustQuantityModal from '../Components/AdjustQuantityModal'
+import { BarcodeSearch } from '../Utilities/BarcodeLookup'
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -14,20 +14,16 @@ export default class IntakeScan extends Component {
     this.state = {
       scanCount: 0,
       modalState: false,
-      modalProduct: null,
+      scannedBarcode: '',
+      modalProduct: {
+        count: 0,
+        name: '',
+      },
+      modalProductIndex: -1,
       modalInputHasFocus: false,
-      modalItemCount: null,
-      scannedItems: [
-        {
-          trayState: false,
-          isUnknown: true,
-          name: "Unknown Product",
-          model: "9188493038",
-          lotSerial: "0209485",
-          expiration: "08/08/2020",
-          count: 1
-        },
-      ],
+      modalItemCount: 0,
+      modalErrorMessage: '',
+      scannedItems: [],
       scannerConnected: false,
     }
   }
@@ -37,10 +33,8 @@ export default class IntakeScan extends Component {
   async checkForScanner() {
     let scannerStatus = await ZebraScanner.isAvailable();
 
-    console.log("SCANNER IS AVAILABLE")
-    console.log(scannerStatus)
     if(scannerStatus) {
-      ZebraScanner.addScanListener(this.ScanBarcode())
+      ZebraScanner.addScanListener(this.ScanBarcode)
       this.setState({
         scannerConnected: true
       })
@@ -85,74 +79,38 @@ export default class IntakeScan extends Component {
       ),
     }
   };
-  ScanBarcode() {
-    let existingScans = this.state.scannedItems
-    let existingCount = this.state.scanCount
+  ScanBarcode = (newBarcode) => {
+    //Instantiate Variables
+    if(newBarcode != undefined && newBarcode != null) {
+      let scannedItemsList = this.state.scannedItems
+      let scannedBarcode = newBarcode
+      let scanMatched = false
+      let totalCount = 1
 
-    // call to scanner to get barcode (populate object's serial, model, and expiration)
-    let newScanData = [
-      {
-        trayState: false,
-        isUnknown: true,
-        name: "Unknown Product",
-        model: "9188493038",
-        lotSerial: "0209485",
-        expiration: "08/08/2020",
-        count: 1
-      },
-      {
-        trayState: false,
-        isUnknown: false,
-        name: "Existing Product",
-        model: "9188493000",
-        lotSerial: "0209467",
-        expiration: "08/08/2020",
-        count: 1
+      //Check scanned items for existing barcode increase count of identical scans
+      scannedItemsList.forEach(function(item, i) {
+        totalCount = totalCount + parseFloat(item.count)
+
+        if(item.barcode === scannedBarcode) {
+          scanMatched = true
+          scannedItemsList[i].count = scannedItemsList[i].count + 1
+        }
+      }.bind(this));
+      //If not already existing send request to product lookup and build scanned item object with response
+
+      //If not a known product create and unknown product scanned item object
+      if(scanMatched === false) {
+        let barcodeLookup = BarcodeSearch(scannedBarcode, 0)
+        scannedItemsList.push(barcodeLookup)
       }
-    ]
-    let addState = 0
-    let matchState = false
-    let existingTotalCount = 0
-    existingScans.forEach(function(exScan, index) {
-      existingTotalCount = existingTotalCount + exScan.count
-    })
-
-    if(existingTotalCount % 2 === 0) {
-      addState = 1
-    }
-    else {
-      addState = 0
-    }
-    let newScan = newScanData[addState]
-    if(existingScans.length === 0) {
-      existingScans.push(newScan)
-    }
-    else {
-      existingScans.forEach(function(scan, index) {
-          if(newScan.lotSerial === scan.lotSerial) {
-            matchState = true
-            existingScans[index].count = existingScans[index].count + 1
-          }
+      //Update LocalState with new information
+      this.setState({
+        scannedItems: scannedItemsList,
+        scannedBarcode: scannedBarcode,
+        scanCount: totalCount,
       })
-      if(matchState === false) {
-        existingScans.push(newScan)
-      }
     }
 
-    let finalTotalCount = 0
-    existingScans.forEach(function(countScan, index) {
-      finalTotalCount = finalTotalCount + countScan.count
-    })
-
-    // api call to lookup service, return name
-
-    // add object to the top of the scanned items array or increase item count and move to top.
-
-    this.setState({
-      scanCount: existingCount,
-      scannedItems: existingScans,
-      scanCount: finalTotalCount
-    })
   }
 
   RemoveScannedItem(index) {
@@ -160,7 +118,7 @@ export default class IntakeScan extends Component {
     let newTotalCount = 0
     scannedItems.splice(index, 1)
     scannedItems.forEach(function(countScan, index) {
-      newTotalCount = newTotalCount + countScan.count
+      newTotalCount = newTotalCount + parseFloat(countScan.count)
     })
     this.setState({
       scannedItems: scannedItems,
@@ -168,20 +126,45 @@ export default class IntakeScan extends Component {
     })
   }
   AdjustScannedQuantity = (index, newQuantity) => {
-    console.log("CALLED ADJUSTMENT FUNCTION")
     let updateCount = newQuantity
-    let updatedScannedItems = this.state.scannedItems
-    updatedScannedItems[index].count = updateCount
-    this.setState({
-      scannedItems: updatedScannedItems
-    })
+    if(updateCount >= 0 && updateCount != null && updateCount != undefined && updateCount != '') {
+      let updatedScannedItems = this.state.scannedItems
+      updatedScannedItems[index].count = updateCount
+
+      this.setState({
+        scannedItems: updatedScannedItems,
+      })
+      this.CloseAdjustmentModal()
+
+      let scannedItems = this.state.scannedItems
+      let newTotalCount = 0
+      scannedItems.forEach(function(product, index) {
+        newTotalCount = newTotalCount + parseFloat(product.count)
+      })
+      this.setState({
+        scanCount: newTotalCount,
+      })
+    }
+    else if(updateCount === null || updateCount === undefined || updateCount === '') {
+      this.setState({
+        modalErrorMessage: "Please Enter a Valid Number"
+      })
+    }
+    else if(updateCount < 1) {
+      this.setState({
+        modalErrorMessage: "Please Enter a Positive Number"
+      })
+    }
   }
   OpenAdjustmentModal = (index) => {
     let productLocation = index
 
+    let modalProductBuild = this.state.scannedItems[index]
+    modalProductBuild.index = index
+
     this.setState({
       modalState: true,
-      modalProduct: index,
+      modalProduct: this.state.scannedItems[index],
       modalItemCount: this.state.scannedItems[index].count
     })
   }
@@ -189,6 +172,8 @@ export default class IntakeScan extends Component {
     this.setState({
       modalState: false,
       modalProduct: null,
+      modalErrorMessage: null,
+      modalItemCount: 0,
     })
   }
   SynchoronizeIntakeToDesktop = () => {
@@ -215,37 +200,43 @@ export default class IntakeScan extends Component {
     this.setState({modalInputHasFocus: !this.state.modalInputHasFocus})
   }
   RenderModalValidation() {
-    let errorMessage = "An error message has occurred. ";
-    return(errorMessage)
+    if(this.state.modalErrorMessage != null && this.state.modalErrorMessage != undefined && this.state.modalErrorMessage != '') {
+      let errorMessage = this.state.modalErrorMessage;
+      return(errorMessage)
+    }
+    else {
+      return(null)
+    }
   }
   RenderModal() {
-    //Modal to do list
-    //Value state management
-    //Submit scanned list update
-    //Form validation and error styling (positive number, not null, cancel discards updates)
-    //
     if(this.state.modalState === true) {
       return (
         <View style={styles.modalBackgroundContainer}>
           <View style={styles.modalInnerContainer}>
             <View style={styles.modalTitleWrapper}>
-              <Text style={styles.modalTitleText}>Name</Text>
+              <Text style={styles.modalTitleText}>{this.state.modalProduct.name}</Text>
               <TouchableOpacity style={styles.modalCloseButton} onPress={() => this.CloseAdjustmentModal()}>
                 <Text style={styles.modalCloseButtonText}>X</Text>
               </TouchableOpacity>
             </View>
             <View>
               <TextInput
+                onChangeText={value => this.setState({modalItemCount: value})}
                 onFocus={() => this.onQuantityFocusChange()}
                 onBlur={() => this.onQuantityFocusChange()}
-                style={this.state.modalInputHasFocus ? styles.textInputFocus : styles.textInput}
-                keyboardType={"numeric"} />
+                style={this.state.modalInputHasFocus ? styles.modalTextInputFocus : styles.modalTextInput}
+                keyboardType={'numeric'}
+                value={String(this.state.modalItemCount)} />
               <Text style={styles.modalInputLabel}>Item quantity</Text>
-              <View><Text>{this.RenderModalValidation()}</Text></View>
+              <View><Text style={styles.modalErrorText}>{this.RenderModalValidation()}</Text></View>
               <View style={styles.modalButtonRow}>
                 <View style={styles.modalButtonColumn}></View>
                 <View style={styles.modalButtonColumn}>
-                  <TouchableOpacity style={styles.modalButton}><Text style={styles.modalButtonText}>Set Quantity</Text></TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={() => this.AdjustScannedQuantity(this.state.modalProduct.index, this.state.modalItemCount)}>
+                    <Text style={styles.modalButtonText}>Set Quantity</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>
@@ -275,6 +266,7 @@ export default class IntakeScan extends Component {
           <ProductListTrayItem
             key={index}
             unknownFlag={item.isUnknown}
+            itemBarcode={item.barcode}
             itemName={item.name}
             itemCount={item.count}
             itemModel={item.model}
@@ -291,7 +283,7 @@ export default class IntakeScan extends Component {
 
   render() {
     return (
-      <View style={{flex: 1}}>
+      <View style={styles.containerContainsFooter}>
         <ScrollView style={styles.scrollContainer}>
           <View style={styles.container}>
             <View style={styles.titleRow}>
