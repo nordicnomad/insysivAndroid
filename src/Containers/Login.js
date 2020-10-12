@@ -3,26 +3,18 @@ import { StyleSheet, Text, View, TouchableOpacity, TextInput, ScrollView, Image 
 import LoginLogo from '../Images/insysivLogo.jpg'
 import UserData from '../dummyData/login.json'
 import OfflineBanner from '../Components/OfflineBanner'
-import Realm from 'realm'
-
-
-import {AuthSchema} from '../Data/Models/AuthModel.js'
-import {AccountSchema} from '../Data/Models/AccountModel.js'
 
 import styles from '../Styles/ContainerStyles.js'
-
 
 export default class Login extends Component {
   constructor(props) {
     super(props)
-    realm = new Realm({ path: 'realm' });
     this.state = {
       emailHasFocus: false,
       passHasFocus: false,
       username: '',
       password: '',
       networkConnected: false,
-      realm: null,
     }
     this.onUserChange = this.onUserChange.bind(this)
     this.onPassChange = this.onPassChange.bind(this)
@@ -63,14 +55,6 @@ export default class Login extends Component {
       console.log(error)
       console.error(error);
     });
-  }
-  renderUserName() {
-
-    let users = realm
-    console.log(users)
-    return(
-      <Text>{users.username}</Text>
-    )
   }
   render() {
     return (
@@ -113,12 +97,6 @@ export default class Login extends Component {
               <Text style={styles.loginButtonText}>Log In</Text>
             </TouchableOpacity>
           </View>
-          <View>
-            <TouchableOpacity onPress={() => this.registerUser()}>
-              <Text>Register New User</Text>
-            </TouchableOpacity>
-          </View>
-          <Text>{this.renderUserName()}</Text>
         </View>
       </ScrollView>
     );

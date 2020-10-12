@@ -118,14 +118,17 @@ export default StyleSheet.create({
   },
   menuRow: {
     display: 'flex',
+    width: width,
     flexDirection: 'row',
     marginTop: 25,
     marginBottom: 25,
     flexWrap: 'wrap',
+    alignItems: 'flex-start'
   },
   menuItem: {
     width: (width / 3),
     marginBottom: 35,
+    alignItems: 'center',
   },
   menuButton: {
 
@@ -536,6 +539,9 @@ export default StyleSheet.create({
     flexWrap: 'wrap',
     zIndex:9999,
     backgroundColor: '#fff',
+  },
+  hideFooterContainer: {
+    display: 'none',
   },
   equalColumn: {
     flex: 1,
