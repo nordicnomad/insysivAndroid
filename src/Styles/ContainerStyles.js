@@ -163,6 +163,12 @@ export default StyleSheet.create({
     paddingBottom: 14,
     paddingLeft: 12,
     paddingRight: 12,
+    height: 50,
+  },
+  submitLoading: {
+    backgroundColor: '#ed9a1a',
+    paddingTop: 7,
+    height: 50,
   },
   submitButtonText: {
     color: '#fff',

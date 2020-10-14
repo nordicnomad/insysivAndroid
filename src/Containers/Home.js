@@ -6,7 +6,8 @@ import ButtonLoader from '../Images/buttonLoader.gif'
 import SubscriptionData from '../dummyData/subscriptions.json'
 
 var Realm = require('realm');
-let realm ;
+let products ;
+let lastProductFetch ;
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -45,7 +46,7 @@ export default class Home extends Component {
           postal: ""
         }
       },
-      showSyncFooter: true,
+      showSyncFooter: false,
       isFetchingProducts: false,
       lastFetchProducts: "No Products",
       lastFetchProductsObject: {
@@ -60,12 +61,8 @@ export default class Home extends Component {
       {
           licenseNumber: "string",
           productModelNumber: "string",
-          billingCode: "string",
           orderThruVendor: "string",
           productDescription: "string",
-          registerableDevice: "string",
-          lotRequired: "string",
-          postBill: "string",
           autoReplace: "string",
           discontinued: "string",
           productCategory: "string",
@@ -76,23 +73,24 @@ export default class Home extends Component {
           quantityOnHand: "int",
           quantityOrdered: "int",
           lastRequistionNumber: "int",
-          lastLineNumber: "int",
           orderStatus: "string",
-          orderReviewFlag: "string",
-          orderReviewReason: "string",
           active: "string",
           accepted: "string",
-          createTimestamp: "string",
-          createUserid: "string",
-          changeTimestamp: "string",
-          changeUserid: "string",
           consignment: "string",
           minimumValue: "int",
           maximumValue: "int",
           nonOrdered: "string",
           productNote: "string",
-          actualCostRequired: "string",
-          originalVendor: "string"
+
+      }}]
+    });
+    lastProductFetch = new Realm({
+      schema: [{name: 'Products_Last_Fetch',
+      properties:
+      {
+          year: "int",
+          month: "int",
+          day: "int"
       }}]
     });
   }
@@ -131,6 +129,123 @@ export default class Home extends Component {
     }
     return(dateobject)
   }
+  saveCurrentDate = () => {
+    let fetchedTimestamps = lastProductFetch.objects('Products_Last_Fetch')
+    let timestamp = fetchedTimestamps[0]
+    let currentDate = this.getCurrentDate()
+
+    if(timestamp != null && timestamp != undefined && timestamp.length > 0) {
+      try {
+        lastProductFetch.write(() => {
+          timestamp.year = currentDate.year
+          timestamp.month = currentDate.month
+          timestamp.day = currentDate.day
+        });
+      }
+      catch (e) {
+        console.log("Error on timestamp update");
+      }
+    }
+    else {
+      try {
+        lastProductFetch.write(() => {
+          lastProductFetch.create('Products_Last_Fetch', {
+            year: currentDate.year,
+            month: currentDate.month,
+            day: currentDate.day
+          })
+        })
+      }
+      catch (e) {
+        console.log("Error on timestamp creation");
+      }
+    }
+  }
+  checkLastSyncDate = () => {
+    let fetchedTimestamps = lastProductFetch.objects('Products_Last_Fetch')
+    let lastTimeStamp = fetchedTimestamps[0]
+    let currentDate = this.getCurrentDate()
+
+    if(lastTimeStamp != null && lastTimeStamp != undefined) {
+      this.setState({
+        lastFetchProductsObject: {
+          year: lastTimeStamp.year,
+          month: lastTimeStamp.month,
+          day: lastTimeStamp.day
+        }
+      })
+      if(currentDate.year === lastTimeStamp.year) {
+        if(currentDate.month === lastTimeStamp.month) {
+          if(currentDate.day > (lastTimeStamp.day + 3)) {
+            this.setState({
+              showSyncFooter: false
+            })
+          }
+          else {
+            this.setState({
+              showSyncFooter: true
+            })
+          }
+        }
+        else {
+          this.setState({
+            showSyncFooter: true
+          })
+        }
+      }
+      else {
+        this.setState({
+          showSyncFooter: true
+        })
+      }
+    }
+  }
+  saveProductTable = (responseproducts) => {
+    let savedProducts = products.objects('Products_Lookup')
+    let newProducts = responseproducts
+
+    if(savedProducts != undefined && savedProducts != null && savedProducts.length > 0) {
+      products.write(() => {
+        products.deleteAll()
+      })
+    }
+    else {
+      newProducts.forEach(function(product, i) {
+        try {
+          products.write(() => {
+            products.create('Products_Lookup', {
+              licenseNumber: product.licenseNumber,
+              productModelNumber: product.productModelNumber,
+              orderThruVendor: product.orderThruVendor,
+              productDescription: product.productDescription,
+              autoReplace: product.autoReplace,
+              discontinued: product.discontinued,
+              productCategory: product.productCategory,
+              hospitalItemNumber: product.hospitalItemNumber,
+              unitOfMeasure: product.unitOfMeasure,
+              unitOfMeasureQuantity: product.unitOfMeasureQuantity,
+              reorderValue: product.reorderValue,
+              quantityOnHand: product.quantityOnHand,
+              quantityOrdered: product.quantityOrdered,
+              lastRequistionNumber: product.lastRequistionNumber,
+              orderStatus: product.orderStatus,
+              active: product.active,
+              accepted: product.accepted,
+              consignment: product.consignment,
+              minimumValue: product.minimumValue,
+              maximumValue: product.maximumValue,
+              nonOrdered: product.nonOrdered,
+              productNote: product.productNote,
+            })
+          })
+          products.compact()
+        }
+        catch (e) {
+          console.log("Error on product table creation");
+        }
+      })
+    }
+  }
   renderDateStamp(dateObject) {
     let yearMonthDay = dateObject
     if(yearMonthDay.year != null) {
@@ -164,7 +279,7 @@ export default class Home extends Component {
     this.setState({
       userInformation: userInformation
     })
-    //this.getSubscriptionData()
+    this.checkLastSyncDate()
   }
   renderSubscriptions() {
     let userSubscriptions = this.state.subscriptions
@@ -224,6 +339,8 @@ export default class Home extends Component {
       console.log("PRODUCT RESPONSE")
       console.log(responseJson)
       productResponse = responseJson;
+      this.saveProductTable(productResponse)
+      this.saveCurrentDate()
       this.setState({
         products: productResponse,
         lastFetchProductsObject: this.getCurrentDate(),
@@ -233,6 +350,10 @@ export default class Home extends Component {
     })
     .catch((error) => {
       console.error(error);
+      this.setState({
+        isFetchingProducts: false,
+        showSyncFooter: true,
+      })
     });
   }
 
@@ -248,7 +369,7 @@ export default class Home extends Component {
     }
     else {
       return(
-        <View style={styles.submitButton}>
+        <View style={styles.submitLoading}>
           <Text style={styles.submitButtonText}>
             <Image
               style={{width: 25,height: 25,}}
@@ -262,7 +383,8 @@ export default class Home extends Component {
   }
 
   render() {
-
+    let outputProducts = products.objects('Products_Lookup')
+    let printProducts = outputProducts.length
     return (
       <View style={this.state.showSyncFooter ? styles.containerContainsFooter : styles.container}>
         <ScrollView style={styles.scrollContainer}>
@@ -270,6 +392,8 @@ export default class Home extends Component {
             <View style={styles.titleRow}>
               <Text style={styles.titleText}>{this.state.userInformation.organization.name}</Text>
             </View>
+            <Text>Show saved products count</Text>
+            <Text>{printProducts}</Text>
             <View style={styles.menuRow}>
               {this.renderSubscriptions()}
             </View>
