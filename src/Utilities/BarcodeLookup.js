@@ -3,7 +3,7 @@ export function BarcodeSearch(barcode, viewFlag) {
   let defaultScanObject = {}
 
   if(viewFlag === 0) {
-    //Intake Scan Configuration
+    //HIBCC Encoding
     defaultScanObject = {
       barcode: "",
       trayState: false,
@@ -17,7 +17,7 @@ export function BarcodeSearch(barcode, viewFlag) {
     }
   }
   else if(viewFlag === 1) {
-    //Cases Scan Configuration
+    //UCC Encoding
     defaultScanObject = {
       barcode: "",
       trayState: false,
