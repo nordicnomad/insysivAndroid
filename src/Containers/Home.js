@@ -46,7 +46,7 @@ export default class Home extends Component {
           postal: ""
         }
       },
-      showSyncFooter: false,
+      showSyncFooter: true,
       isFetchingProducts: false,
       lastFetchProducts: "No Products",
       lastFetchProductsObject: {
@@ -66,13 +66,13 @@ export default class Home extends Component {
           autoReplace: "string",
           discontinued: "string",
           productCategory: "string",
-          hospitalItemNumber: "string",
+          hospitalItemNumber: "string?",
           unitOfMeasure: "string",
           unitOfMeasureQuantity: "int",
           reorderValue: "int",
           quantityOnHand: "int",
           quantityOrdered: "int",
-          lastRequistionNumber: "int",
+          lastRequistionNumber: "int?",
           orderStatus: "string",
           active: "string",
           accepted: "string",
@@ -80,7 +80,7 @@ export default class Home extends Component {
           minimumValue: "int",
           maximumValue: "int",
           nonOrdered: "string",
-          productNote: "string",
+          productNote: "string?",
 
       }}]
     });
@@ -178,7 +178,7 @@ export default class Home extends Component {
         if(currentDate.month === lastTimeStamp.month) {
           if(currentDate.day > (lastTimeStamp.day + 3)) {
             this.setState({
-              showSyncFooter: false
+              showSyncFooter: true
             })
           }
           else {
@@ -210,9 +210,9 @@ export default class Home extends Component {
       })
     }
     else {
-      newProducts.forEach(function(product, i) {
-        try {
-          products.write(() => {
+      products.write(() => {
+        newProducts.forEach(function(product, i) {
+          try {
             products.create('Products_Lookup', {
               licenseNumber: product.licenseNumber,
               productModelNumber: product.productModelNumber,
@@ -237,12 +237,12 @@ export default class Home extends Component {
               nonOrdered: product.nonOrdered,
               productNote: product.productNote,
             })
-          })
-          products.compact()
-        }
-        catch (e) {
-          console.log("Error on product table creation");
-        }
+            products.compact()
+          }
+          catch (e) {
+            console.log("Error on product table creation");
+          }
+        })
       })
     }
   }
