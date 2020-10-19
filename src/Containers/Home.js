@@ -7,6 +7,7 @@ import SubscriptionData from '../dummyData/subscriptions.json'
 
 var Realm = require('realm');
 let products ;
+let productBarCodes ;
 let lastProductFetch ;
 
 import styles from '../Styles/ContainerStyles.js'
@@ -84,6 +85,15 @@ export default class Home extends Component {
 
       }}]
     });
+    productBarCodes = new Realm({
+      schema: [{name: 'Product_Bar_Codes',
+      properties: {
+        productBarCode1: "string",
+        licenseNumber: "string",
+        productModelNumber: "string",
+        encoding: "int?"
+      }}]
+    })
     lastProductFetch = new Realm({
       schema: [{name: 'Products_Last_Fetch',
       properties:
@@ -207,7 +217,40 @@ export default class Home extends Component {
     if(savedProducts != undefined && savedProducts != null && savedProducts.length > 0) {
       products.write(() => {
         products.deleteAll()
+        newProducts.forEach(function(product, i) {
+          try {
+            products.create('Products_Lookup', {
+              licenseNumber: product.licenseNumber,
+              productModelNumber: product.productModelNumber,
+              orderThruVendor: product.orderThruVendor,
+              productDescription: product.productDescription,
+              autoReplace: product.autoReplace,
+              discontinued: product.discontinued,
+              productCategory: product.productCategory,
+              hospitalItemNumber: product.hospitalItemNumber,
+              unitOfMeasure: product.unitOfMeasure,
+              unitOfMeasureQuantity: product.unitOfMeasureQuantity,
+              reorderValue: product.reorderValue,
+              quantityOnHand: product.quantityOnHand,
+              quantityOrdered: product.quantityOrdered,
+              lastRequistionNumber: product.lastRequistionNumber,
+              orderStatus: product.orderStatus,
+              active: product.active,
+              accepted: product.accepted,
+              consignment: product.consignment,
+              minimumValue: product.minimumValue,
+              maximumValue: product.maximumValue,
+              nonOrdered: product.nonOrdered,
+              productNote: product.productNote,
+            })
+          }
+          catch (e) {
+            console.log("Error on product table creation");
+            console.log(e);
+          }
+        })
       })
+      products.compact()
     }
     else {
       products.write(() => {
@@ -237,13 +280,59 @@ export default class Home extends Component {
               nonOrdered: product.nonOrdered,
               productNote: product.productNote,
             })
-            products.compact()
           }
           catch (e) {
             console.log("Error on product table creation");
+            console.log(e);
           }
         })
       })
+      products.compact()
+    }
+  }
+  saveBarCodeTable = (responsebarcodes) => {
+    let savedBarcodes = productBarCodes.objects('Product_Bar_Codes')
+    let newBarcodes = responsebarcodes
+
+    if(savedBarcodes != undefined && savedBarcodes != null && savedBarcodes.length > 0) {
+      productBarCodes.write(() => {
+        productBarCodes.deleteAll()
+        newBarcodes.forEach(function(barcode, i) {
+          try {
+            productBarCodes.create('Product_Bar_Codes', {
+              productBarCode1: barcode.productBarCode1,
+              licenseNumber: barcode.licenseNumber,
+              productModelNumber: barcode.productModelNumber,
+              encoding: barcode.encoding,
+            })
+
+          }
+          catch (e) {
+            console.log("Error on barcode table creation");
+            console.log(e);
+          }
+        })
+      })
+      productBarCodes.compact()
+    }
+    else {
+      productBarCodes.write(() => {
+        newBarcodes.forEach(function(barcode, i) {
+          try {
+            productBarCodes.create('Product_Bar_Codes', {
+              productBarCode1: barcode.productBarCode1,
+              licenseNumber: barcode.licenseNumber,
+              productModelNumber: barcode.productModelNumber,
+              encoding: barcode.encoding,
+            })
+          }
+          catch (e) {
+            console.log("Error on barcode table creation");
+            console.log(e);
+          }
+        })
+      })
+      productBarCodes.compact()
     }
   }
   renderDateStamp(dateObject) {
@@ -325,11 +414,38 @@ export default class Home extends Component {
     return outputSubscriptions
   }
 
-  SynchoronizeProductTable = () => {
-    let productResponse = {}
-    this.setState({
-      isFetchingProducts: true
+  FetchBarcodeTable = () => {
+    let barcodeResponse = []
+
+    //Barcode Calls
+    //test server call
+    return fetch('http://25.78.82.76:5100/api/ProductBarCodes')
+    .then((pbcresponse) => pbcresponse.json())
+    .then((pbcresponseJson) => {
+      console.log("BARCODE RESPONSE")
+      console.log(pbcresponseJson)
+      barcodeResponse = pbcresponseJson;
+      this.saveBarCodeTable(barcodeResponse)
+      this.setState({
+        barcodes: barcodeResponse,
+        syncProgressMessage: 'Barcodes Synced',
+        isFetchingProducts: false,
+        showSyncFooter: false,
+      })
     })
+    .catch((error) => {
+      console.error(error);
+      this.setState({
+        isFetchingProducts: false,
+        showSyncFooter: true,
+        syncProgressMessage: 'Syncing Failed'
+      })
+    });
+
+  }
+
+  FetchProductTable = () => {
+    //Product Calls
     //emulator call
     //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/subscriptions')
     //test server call
@@ -340,12 +456,13 @@ export default class Home extends Component {
       console.log(responseJson)
       productResponse = responseJson;
       this.saveProductTable(productResponse)
-      this.saveCurrentDate()
+
       this.setState({
         products: productResponse,
         lastFetchProductsObject: this.getCurrentDate(),
+        syncProgressMessage: 'Products Synced',
         isFetchingProducts: false,
-        showSyncFooter: false
+        showSyncFooter: false,
       })
     })
     .catch((error) => {
@@ -353,8 +470,28 @@ export default class Home extends Component {
       this.setState({
         isFetchingProducts: false,
         showSyncFooter: true,
+        syncProgressMessage: 'Syncing Failed'
       })
     });
+  }
+
+  FetchRFIDTable = () => {
+    //RFID Call
+
+  }
+
+  SynchoronizeAllTables = () => {
+
+    let productResponse = []
+    this.setState({
+      isFetchingProducts: true,
+      syncProgressMessage: 'Syncing BarCodes'
+    })
+    //this.FetchBarcodeTable()
+    //this.FetchRFIDTable()
+    this.FetchProductTable()
+    //Save timestamp
+    this.saveCurrentDate()
   }
 
   renderSyncButton(fetchState) {
@@ -362,7 +499,7 @@ export default class Home extends Component {
 
     if(syncFetchState === false) {
       return(
-        <TouchableOpacity style={styles.submitButton} onPress={() => this.SynchoronizeProductTable(this.state.isFetchingProducts)}>
+        <TouchableOpacity style={styles.submitButton} onPress={() => this.SynchoronizeAllTables()}>
           <Text style={styles.submitButtonText}>Sync Products</Text>
         </TouchableOpacity>
       )
@@ -385,6 +522,9 @@ export default class Home extends Component {
   render() {
     let outputProducts = products.objects('Products_Lookup')
     let printProducts = outputProducts.length
+    let outputBarcodes = productBarCodes.objects('Product_Bar_Codes')
+    let printBarcodes = outputBarcodes.length
+    let printRFIDLabels = 0
     return (
       <View style={this.state.showSyncFooter ? styles.containerContainsFooter : styles.container}>
         <ScrollView style={styles.scrollContainer}>
@@ -394,6 +534,10 @@ export default class Home extends Component {
             </View>
             <Text>Show saved products count</Text>
             <Text>{printProducts}</Text>
+            <Text>Show saved barcodes count</Text>
+            <Text>{printBarcodes}</Text>
+            <Text>Show saved RFIDLabel count</Text>
+            <Text>{printRFIDLabels}</Text>
             <View style={styles.menuRow}>
               {this.renderSubscriptions()}
             </View>

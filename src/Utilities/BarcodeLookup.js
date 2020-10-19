@@ -1,14 +1,81 @@
+var Realm = require('realm');
+
 export function BarcodeSearch(barcode, viewFlag) {
+  //Initialize global variables
   let passedBarcode = barcode
   let defaultScanObject = {}
+  let products ;
+  let productBarCodes ;
+  let productModelNumber = ''
+  let productVendorLicense = ''
+  let matchedProduct = {}
+  let noDBmatchFlag = false
 
-  if(viewFlag === 0) {
+  //Database schemas
+  products = new Realm({
+    schema: [{name: 'Products_Lookup',
+    properties:
+    {
+        licenseNumber: "string",
+        productModelNumber: "string",
+        orderThruVendor: "string",
+        productDescription: "string",
+        autoReplace: "string",
+        discontinued: "string",
+        productCategory: "string",
+        hospitalItemNumber: "string?",
+        unitOfMeasure: "string",
+        unitOfMeasureQuantity: "int",
+        reorderValue: "int",
+        quantityOnHand: "int",
+        quantityOrdered: "int",
+        lastRequistionNumber: "int?",
+        orderStatus: "string",
+        active: "string",
+        accepted: "string",
+        consignment: "string",
+        minimumValue: "int",
+        maximumValue: "int",
+        nonOrdered: "string",
+        productNote: "string?",
+
+    }}]
+  });
+  productBarCodes = new Realm({
+    schema: [{name: 'Product_Bar_Codes',
+    properties: {
+      productBarCode1: "string",
+      licenseNumber: "string",
+      productModelNumber: "string",
+      encoding: "int?"
+    }}]
+  })
+
+  let productTable = products.objects('Products_Lookup')
+  let barcodeTable = productBarCodes.objects('Product_Bar_Codes')
+
+  if(passedBarcode.subString(0,1) === '+' && passedBarcode.length === 12) {
     //HIBCC Encoding
+    //Seperate barcode elements
+    //Manufacturer License 4 characters starting at position 1
+    productVendorLicense = passedBarcode.subString(1, 4)
+    //Product Number 4 characters starting at position 5
+    productModelNumber = passedBarcode.subString(5, 4)
+
+    //test output
+    console.log("MATCHED HIBCC VENDOR LICENSE NUMBER")
+    console.log(productVendorLicense)
+    console.log("MATCHED HIBCC MODEL NUMBER")
+    console.log(productModelNumber)
+
+    //Search DB tables for vendor and model match
+
+    //Return usable product object to save to working product scan DB.
     defaultScanObject = {
       barcode: "",
       trayState: false,
       isUnknown: true,
-      name: "Unknown Product",
+      name: "HIBCC Barcode Product",
       model: "9188493038",
       lotSerial: "0209485",
       expiration: "08/08/2020",
@@ -16,12 +83,29 @@ export function BarcodeSearch(barcode, viewFlag) {
       scannedTime: "2-20-2020 9:45 PM",
     }
   }
-  else if(viewFlag === 1) {
+  else if(passedBarcode.subString(0,1) === '(' && passedBarcode.length === 18) {
     //UCC Encoding
+    //Seperate barcode elements
+    //Manufacturer License, 7 characters starting at position 5
+    productVendorLicense = passedBarcode.subString(5, 7)
+    //Product Number, 5 characters starting at position 12
+    productModelNumber = passedBarcode.subString(12, 5)
+
+    //Search DB tables for vendor and model match
+
+    //test output
+    console.log("MATCHED UCC VENDOR LICENSE NUMBER")
+    console.log(productVendorLicense)
+    console.log("MATCHED UCC MODEL NUMBER")
+    console.log(productModelNumber)
+
+    //Search DB tables for vendor and model match
+
+    //Return usable product object to save to working product scan DB.
     defaultScanObject = {
       barcode: "",
       trayState: false,
-      name: "55mm Laser Gun",
+      name: "UCC Barcode Product",
       lotSerial: "990283409",
       model: "G4FR4",
       scannedTime: "2-20-2020 9:45 PM",
@@ -31,6 +115,11 @@ export function BarcodeSearch(barcode, viewFlag) {
       scanned: false,
     }
   }
+
+  if(noDBmatchFlag === true) {
+    //Run lookup of local barcode table with passedBarcode string
+  }
+
   defaultScanObject.barcode = passedBarcode
   return (defaultScanObject)
 }
