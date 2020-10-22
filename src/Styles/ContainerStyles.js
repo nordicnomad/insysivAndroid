@@ -118,7 +118,7 @@ export default StyleSheet.create({
   },
   menuRow: {
     display: 'flex',
-    width: width,
+    width: (width - 48),
     flexDirection: 'row',
     marginTop: 25,
     marginBottom: 25,

@@ -70,17 +70,26 @@ export function BarcodeSearch(barcode, viewFlag) {
 
     //Search DB tables for vendor and model match
 
+    productTable.forEach((product, i) => {
+      if(product.licenseNumber === productVendorLicense) {
+        console.log("MATCHED PRODUCT VENDOR LICENSE")
+        matchedProduct = product
+        noDBmatchFlag = false
+      }
+    });
+
+
     //Return usable product object to save to working product scan DB.
     defaultScanObject = {
-      barcode: "",
+      barcode: passedBarcode,
       trayState: false,
       isUnknown: true,
       name: "HIBCC Barcode Product",
-      model: "9188493038",
-      lotSerial: "0209485",
-      expiration: "08/08/2020",
+      model: productModelNumber,
+      lotSerial: productVendorLicense,
+      expiration: "????",
       count: 1,
-      scannedTime: "2-20-2020 9:45 PM",
+      scannedTime: "Now",
     }
   }
   else if(passedBarcode.subString(0,1) === '(' && passedBarcode.length === 18) {
@@ -101,16 +110,25 @@ export function BarcodeSearch(barcode, viewFlag) {
 
     //Search DB tables for vendor and model match
 
+    productTable.forEach((product, i) => {
+      if(product.licenseNumber === productVendorLicense) {
+        console.log("MATCHED PRODUCT VENDOR LICENSE")
+        matchedProduct = product
+        noDBmatchFlag = false
+      }
+    });
+
     //Return usable product object to save to working product scan DB.
     defaultScanObject = {
-      barcode: "",
+      barcode: passedBarcode,
       trayState: false,
-      name: "UCC Barcode Product",
-      lotSerial: "990283409",
-      model: "G4FR4",
-      scannedTime: "2-20-2020 9:45 PM",
-      manufacturer: "medtronic",
-      expiration: "08/08/2020",
+      isUnknown: true,
+      name: "HIBCC Barcode Product",
+      model: productModelNumber,
+      lotSerial: productVendorLicense,
+      expiration: "????",
+      count: 1,
+      scannedTime: "Now",
       waste: false,
       scanned: false,
     }
