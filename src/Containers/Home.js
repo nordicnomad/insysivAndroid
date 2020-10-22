@@ -3,11 +3,12 @@ import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView } f
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.png'
 import ButtonLoader from '../Images/buttonLoader.gif'
-import SubscriptionData from '../dummyData/subscriptions.json'
+//import SubscriptionData from '../dummyData/subscriptions.json'
 
 var Realm = require('realm');
 let products ;
 let productBarCodes ;
+let rfidLabels ;
 let lastProductFetch ;
 
 import styles from '../Styles/ContainerStyles.js'
@@ -93,7 +94,21 @@ export default class Home extends Component {
         productModelNumber: "string",
         encoding: "int?"
       }}]
-    })
+    });
+    rfidLabels = new Realm({
+      schema: [{name: 'RFID_Labels',
+      properties: {
+        productTransactionNumber: "int",
+        licenseNumber: "string",
+        productModelNumber: "string",
+        lotSerialNumber: "string?",
+        expirationDate: "string?",
+        tagid: "string?",
+        caseProductSequence: "int?",
+        bcPrimary: "string?",
+        bcSecondary: "string?",
+      }}]
+    });
     lastProductFetch = new Realm({
       schema: [{name: 'Products_Last_Fetch',
       properties:
@@ -131,6 +146,13 @@ export default class Home extends Component {
       ),
     }
   };
+  componentDidMount() {
+    let userInformation = this.props.navigation.getParam('userInformation')
+    this.setState({
+      userInformation: userInformation
+    })
+    this.checkLastSyncDate()
+  }
   getCurrentDate = () => {
     let dateobject = {
       year: new Date().getFullYear(),
@@ -335,6 +357,60 @@ export default class Home extends Component {
       productBarCodes.compact()
     }
   }
+  saveRfidTable = (responserfids) => {
+    let savedRfidLabels = rfidLabels.objects('RFID_Labels')
+    let newRfidLabels = responserfids
+
+    if(savedRfidLabels != undefined && savedRfidLabels != null && savedRfidLabels.length > 0) {
+      rfidLabels.write(() => {
+        rfidLabels.deleteAll()
+        newRfidLabels.forEach(function(label, i) {
+          try {
+            rfidLabels.create('RFID_Labels', {
+              productTransactionNumber: label.productTransactionNumber,
+              licenseNumber: label.licenseNumber,
+              productModelNumber: label.productModelNumber,
+              lotSerialNumber: label.lotSerialNumber,
+              expirationDate: label.expirationDate,
+              tagid: label.tagid,
+              caseProductSequence: label.caseProductSequence,
+              bcPrimary: label.bcPrimary,
+              bcSecondary: label.bcSecondary,
+            })
+          }
+          catch (e) {
+            console.log("Error on rfid label creation");
+            console.log(e);
+          }
+        })
+      })
+      rfidLabels.compact()
+    }
+    else {
+      rfidLabels.write(() => {
+        newRfidLabels.forEach(function(label, i) {
+          try {
+            rfidLabels.create('RFID_Labels', {
+              productTransactionNumber: label.productTransactionNumber,
+              licenseNumber: label.licenseNumber,
+              productModelNumber: label.productModelNumber,
+              lotSerialNumber: label.lotSerialNumber,
+              expirationDate: label.expirationDate,
+              tagid: label.tagid,
+              caseProductSequence: label.caseProductSequence,
+              bcPrimary: label.bcPrimary,
+              bcSecondary: label.bcSecondary,
+            })
+          }
+          catch (e) {
+            console.log("Error on rfid label creation");
+            console.log(e);
+          }
+        })
+      })
+      rfidLabels.compact()
+    }
+  }
   renderDateStamp(dateObject) {
     let yearMonthDay = dateObject
     if(yearMonthDay.year != null) {
@@ -362,13 +438,6 @@ export default class Home extends Component {
     .catch((error) => {
       console.error(error);
     });
-  }
-  componentDidMount() {
-    let userInformation = this.props.navigation.getParam('userInformation')
-    this.setState({
-      userInformation: userInformation
-    })
-    this.checkLastSyncDate()
   }
   renderSubscriptions() {
     let userSubscriptions = this.state.subscriptions
@@ -429,8 +498,8 @@ export default class Home extends Component {
       this.setState({
         barcodes: barcodeResponse,
         syncProgressMessage: 'Barcodes Synced',
-        isFetchingProducts: false,
-        showSyncFooter: false,
+        isFetchingProducts: true,
+        showSyncFooter: true,
       })
     })
     .catch((error) => {
@@ -461,8 +530,8 @@ export default class Home extends Component {
         products: productResponse,
         lastFetchProductsObject: this.getCurrentDate(),
         syncProgressMessage: 'Products Synced',
-        isFetchingProducts: false,
-        showSyncFooter: false,
+        isFetchingProducts: true,
+        showSyncFooter: true,
       })
     })
     .catch((error) => {
@@ -477,7 +546,32 @@ export default class Home extends Component {
 
   FetchRFIDTable = () => {
     //RFID Call
+    //emulator call
+    //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/subscriptions')
+    //test server call
+    return fetch('http://25.78.82.76:5100/api/rfidLabels')
+    .then((rfidresponse) => rfidresponse.json())
+    .then((rfidresponseJson) => {
+      console.log("RFID RESPONSE")
+      console.log(rfidresponseJson)
+      rfidLabelResponse = rfidresponseJson;
+      this.saveRfidTable(rfidLabelResponse)
 
+      this.setState({
+        rfidLabels: rfidLabelResponse,
+        syncProgressMessage: 'RFID Labels Synced',
+        isFetchingProducts: false,
+        showSyncFooter: false,
+      })
+    })
+    .catch((error) => {
+      console.error(error);
+      this.setState({
+        isFetchingProducts: false,
+        showSyncFooter: true,
+        syncProgressMessage: 'Syncing Failed'
+      })
+    });
   }
 
   SynchoronizeAllTables = () => {
@@ -487,9 +581,9 @@ export default class Home extends Component {
       isFetchingProducts: true,
       syncProgressMessage: 'Syncing BarCodes'
     })
+    this.FetchProductTable()
     //this.FetchBarcodeTable()
     //this.FetchRFIDTable()
-    this.FetchProductTable()
     //Save timestamp
     this.saveCurrentDate()
   }
@@ -520,12 +614,13 @@ export default class Home extends Component {
   }
 
   render() {
-    let outputProducts = products.objects('Products_Lookup')
-    let printProducts = outputProducts.length
-    let outputBarcodes = productBarCodes.objects('Product_Bar_Codes')
-    let printBarcodes = outputBarcodes.length
-    let printRFIDLabels = 0
-    return (
+    let outputProducts = products.objects('Products_Lookup');
+    let printProducts = outputProducts.length;
+    let outputBarcodes = productBarCodes.objects('Product_Bar_Codes');
+    let printBarcodes = outputBarcodes.length;
+    let outputLabels = rfidLabels.objects('RFID_Labels');
+    let printRFIDLabels = outputLabels.length;
+    return(
       <View style={this.state.showSyncFooter ? styles.containerContainsFooter : styles.container}>
         <ScrollView style={styles.scrollContainer}>
           <View style={styles.container}>

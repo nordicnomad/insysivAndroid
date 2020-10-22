@@ -49,7 +49,7 @@ export function BarcodeSearch(barcode, viewFlag) {
       productModelNumber: "string",
       encoding: "int?"
     }}]
-  })
+  });
 
   let productTable = products.objects('Products_Lookup')
   let barcodeTable = productBarCodes.objects('Product_Bar_Codes')
