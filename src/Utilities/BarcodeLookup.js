@@ -80,7 +80,7 @@ export function BarcodeSearch(barcode, viewFlag) {
 
 
     //Return usable product object to save to working product scan DB.
-    defaultScanObject = {
+    matchedProduct = {
       barcode: passedBarcode,
       trayState: false,
       isUnknown: true,
@@ -100,8 +100,6 @@ export function BarcodeSearch(barcode, viewFlag) {
     //Product Number, 5 characters starting at position 12
     productModelNumber = passedBarcode.subString(12, 5)
 
-    //Search DB tables for vendor and model match
-
     //test output
     console.log("MATCHED UCC VENDOR LICENSE NUMBER")
     console.log(productVendorLicense)
@@ -119,7 +117,7 @@ export function BarcodeSearch(barcode, viewFlag) {
     });
 
     //Return usable product object to save to working product scan DB.
-    defaultScanObject = {
+    matchedProduct = {
       barcode: passedBarcode,
       trayState: false,
       isUnknown: true,
@@ -137,7 +135,10 @@ export function BarcodeSearch(barcode, viewFlag) {
   if(noDBmatchFlag === true) {
     //Run lookup of local barcode table with passedBarcode string
   }
+  else {
 
-  defaultScanObject.barcode = passedBarcode
-  return (defaultScanObject)
+  }
+
+
+  return (matchedProduct)
 }
