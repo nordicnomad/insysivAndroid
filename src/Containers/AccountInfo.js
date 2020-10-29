@@ -9,6 +9,8 @@ let products ;
 let productBarCodes ;
 let rfidLabels ;
 let lastProductFetch ;
+let lastBarcodeFetch ;
+let lastRfidFetch ;
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -75,6 +77,24 @@ export default class AccountInfo extends Component {
     });
     lastProductFetch = new Realm({
       schema: [{name: 'Products_Last_Fetch',
+      properties:
+      {
+          year: "int",
+          month: "int",
+          day: "int"
+      }}]
+    });
+    lastBarcodeFetch = new Realm({
+      schema: [{name: 'Barcode_Last_Fetch',
+      properties:
+      {
+          year: "int",
+          month: "int",
+          day: "int"
+      }}]
+    });
+    lastRfidFetch = new Realm({
+      schema: [{name: 'Rfid_Last_Fetch',
       properties:
       {
           year: "int",

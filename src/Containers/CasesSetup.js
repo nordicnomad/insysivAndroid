@@ -4,6 +4,13 @@ import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.png'
 import GateData from '../dummyData/gates.json'
 
+var Realm = require('realm');
+let activeCases ;
+let doctorsList ;
+let locationsList ;
+let proceduresList ;
+let lastCaseDataFetch ;
+
 import styles from '../Styles/ContainerStyles.js'
 
 export default class CasesSetup extends Component {
@@ -25,6 +32,22 @@ export default class CasesSetup extends Component {
       newProcedureLabel: "",
       newProductsValue: [],
     }
+    rfidLabels = new Realm({
+      schema: [{name: 'RFID_Labels',
+      properties: {
+        productTransactionNumber: "int",
+
+      }}]
+    });
+    lastCaseDataFetch = new Realm({
+      schema: [{name: 'Case_Data_Last_Fetch',
+      properties:
+      {
+          year: "int",
+          month: "int",
+          day: "int"
+      }}]
+    });
   }
   componentDidMount() {
     this.getCasesData();

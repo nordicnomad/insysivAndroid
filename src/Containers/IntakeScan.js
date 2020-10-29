@@ -13,6 +13,7 @@ export default class IntakeScan extends Component {
     super(props)
     this.state = {
       scanCount: 0,
+      testCount: 0,
       modalState: false,
       scannedBarcode: '',
       modalProduct: {
@@ -98,7 +99,7 @@ export default class IntakeScan extends Component {
       }.bind(this));
       //If not already existing send request to product lookup and build scanned item object with response
 
-      //If not a known product create and unknown product scanned item object
+      //If not a known product create an unknown product scanned item object
       if(scanMatched === false) {
         let barcodeLookup = BarcodeSearch(scannedBarcode, 0)
         scannedItemsList.push(barcodeLookup)
@@ -110,7 +111,16 @@ export default class IntakeScan extends Component {
         scanCount: totalCount,
       })
     }
+  }
 
+  generateScanTest = (count) => {
+    let testStrings = ['(01)00885380030164', '+B094RC00140N', '$$0000349582']
+
+    this.setState({
+      testCount: (count + 1)
+    })
+
+    return(this.ScanBarcode(testStrings[count].toString()))
   }
 
   RemoveScannedItem(index) {
@@ -288,6 +298,10 @@ export default class IntakeScan extends Component {
           <View style={styles.container}>
             <View style={styles.titleRow}>
               <Text style={styles.titleText}>Intake Scan</Text>
+            </View>
+            <View style={styles.sectionContainer}>
+              <Text>Test Scan Function: </Text>
+              <TouchableOpacity onPress={() => this.generateScanTest(this.state.testCount)} style={styles.miniSubmitButton}><Text style={styles.miniSubmitButtonText}>Scan Test</Text></TouchableOpacity>
             </View>
             <View style={styles.sectionContainer}>
               <View style={styles.menuRow}>

@@ -54,13 +54,13 @@ export function BarcodeSearch(barcode, viewFlag) {
   let productTable = products.objects('Products_Lookup')
   let barcodeTable = productBarCodes.objects('Product_Bar_Codes')
 
-  if(passedBarcode.subString(0,1) === '+' && passedBarcode.length === 12) {
+  if(passedBarcode.substring(0,1) === '+' && passedBarcode.length === 12) {
     //HIBCC Encoding
     //Seperate barcode elements
     //Manufacturer License 4 characters starting at position 1
-    productVendorLicense = passedBarcode.subString(1, 4)
+    productVendorLicense = passedBarcode.substring(1, 4)
     //Product Number 4 characters starting at position 5
-    productModelNumber = passedBarcode.subString(5, 4)
+    productModelNumber = passedBarcode.substring(5, 4)
 
     //test output
     console.log("MATCHED HIBCC VENDOR LICENSE NUMBER")
@@ -83,22 +83,24 @@ export function BarcodeSearch(barcode, viewFlag) {
     matchedProduct = {
       barcode: passedBarcode,
       trayState: false,
-      isUnknown: true,
+      isUnknown: false,
       name: "HIBCC Barcode Product",
       model: productModelNumber,
       lotSerial: productVendorLicense,
       expiration: "????",
       count: 1,
       scannedTime: "Now",
+      waste: false,
+      scanned: false,
     }
   }
-  else if(passedBarcode.subString(0,1) === '(' && passedBarcode.length === 18) {
+  else if(passedBarcode.substring(0,1) === '(' && passedBarcode.length === 18) {
     //UCC Encoding
     //Seperate barcode elements
     //Manufacturer License, 7 characters starting at position 5
-    productVendorLicense = passedBarcode.subString(5, 7)
+    productVendorLicense = passedBarcode.substring(5, 7)
     //Product Number, 5 characters starting at position 12
-    productModelNumber = passedBarcode.subString(12, 5)
+    productModelNumber = passedBarcode.substring(12, 5)
 
     //test output
     console.log("MATCHED UCC VENDOR LICENSE NUMBER")
@@ -107,20 +109,23 @@ export function BarcodeSearch(barcode, viewFlag) {
     console.log(productModelNumber)
 
     //Search DB tables for vendor and model match
-
+    let searchCount = 0
     productTable.forEach((product, i) => {
+      console.log('UCC SEARCHCOUNT')
+      console.log(searchCount)
       if(product.licenseNumber === productVendorLicense) {
         console.log("MATCHED PRODUCT VENDOR LICENSE")
         matchedProduct = product
         noDBmatchFlag = false
       }
+      searchCount = searchCount + 1
     });
 
     //Return usable product object to save to working product scan DB.
     matchedProduct = {
       barcode: passedBarcode,
       trayState: false,
-      isUnknown: true,
+      isUnknown: false,
       name: "HIBCC Barcode Product",
       model: productModelNumber,
       lotSerial: productVendorLicense,
@@ -136,9 +141,22 @@ export function BarcodeSearch(barcode, viewFlag) {
     //Run lookup of local barcode table with passedBarcode string
   }
   else {
-
+    matchedProduct = {
+      barcode: passedBarcode,
+      trayState: false,
+      isUnknown: true,
+      name: "Unknown Product",
+      model: productModelNumber,
+      lotSerial: productVendorLicense,
+      expiration: "????",
+      count: 1,
+      scannedTime: "Now",
+      waste: false,
+      scanned: false,
+    }
   }
 
-
+  console.log("MATCHEDPRODUCT OBJECT")
+  console.log(matchedProduct)
   return (matchedProduct)
 }
