@@ -6,7 +6,7 @@ import GateData from '../dummyData/gates.json'
 
 var Realm = require('realm');
 let activeCases ;
-let doctorsList ;
+let physiciansList ;
 let locationsList ;
 let proceduresList ;
 let lastCaseDataFetch ;
@@ -32,10 +32,36 @@ export default class CasesSetup extends Component {
       newProcedureLabel: "",
       newProductsValue: [],
     }
-    rfidLabels = new Realm({
-      schema: [{name: 'RFID_Labels',
+    physiciansList = new Realm({
+      schema: [{name: 'Physicians_List',
       properties: {
-        productTransactionNumber: "int",
+        physicianId: "string",
+        firstName: "string",
+        middleInitial: "string?",
+        lastName: "string",
+        active: "string",
+      }}]
+    });
+    locationsList = new Realm({
+      schema: [{name: 'Locations_List',
+      properties: {
+        siteId: "int",
+        siteDescription: "string",
+        active: "string",
+      }}]
+    });
+    proceduresList = new Realm({
+      schema: [{name: 'Procedures_List',
+      properties: {
+        procedureCode: "string",
+        procedureDescription: "string",
+        active: "string",
+      }}]
+    });
+    activeCases = new Realm({
+      schema: [{name: 'Active_Cases',
+      properties: {
+        nameProperty: "int",
 
       }}]
     });
@@ -86,23 +112,63 @@ export default class CasesSetup extends Component {
       ),
     }
   };
+  getCurrentDate = () => {
+    let dateobject = {
+      year: new Date().getFullYear(),
+      month: new Date().getMonth() + 1,
+      day: new Date().getDate(),
+    }
+    return(dateobject)
+  }
+  checkLastCaseFetch() {
+    let lastCaseDate = lastCaseDataFetch.objects('Case_Data_Last_Fetch')
+    let currentDate = this.getCurrentDate()
+
+    if(lastCaseDate != null && lastCaseDate != undefined && lastCaseDate.length > 0) {
+      if(currentDate.year === lastCaseDate[0].year) {
+        if(currentDate.month === lastCaseDate[0].month) {
+          if(currentDate.day > lastCaseDate[0].day) {
+            return true
+          }
+          else {
+            return false
+          }
+        }
+        else {
+          return false
+        }
+      }
+      else {
+        return false
+      }
+    }
+    else {
+      return false
+    }
+  }
+
   getCasesData() {
-    let casesResponse = {}
-    //emulator call
-    //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/cases')
-    //test server call
-    return fetch('https://insysivtestapi.herokuapp.com/insysiv/api/v1.0/cases')
-    .then((response) => response.json())
-    .then((responseJson) => {
-      console.log(responseJson)
-      casesResponse = responseJson.cases;
+    let recentFetch = this.checkLastCaseFetch()
+
+    if(recentFetch === true) {
+      let doctorData = physiciansList.objects('Physicians_List')
+      let procedureData = proceduresList.objects('Procedures_List')
+      let locationData = locationsList.objects('Locations_List')
+
       this.setState({
-        cases: casesResponse,
+        cases:{
+          cases:[],
+          Doctors: doctorData,
+          Locations: locationData,
+          Procedures: procedureData
+        },
       })
-    })
-    .catch((error) => {
-      console.error(error);
-    });
+    }
+    else {
+      this.FetchDoctorTable()
+        .then(this.FetchProcedureTable())
+        .then(this.FetchLocationTable())
+    }
   }
   onCaseNumberFocusChange() {
     this.setState({caseNumberHasFocus: !this.state.caseNumberHasFocus})
@@ -146,6 +212,164 @@ export default class CasesSetup extends Component {
       )
     })
     return(existingOutput)
+  }
+  savePhysiciansTable = (responsephysicians) => {
+    let savedPhysicians = physiciansList.objects('Physicians_List')
+    let newPhysicians = responsephysicians
+    let saveCount = 0
+
+    if(savedPhysicians != undefined && savedPhysicians != null && savedPhysicians.length > 0) {
+      physiciansList.write(() => {
+        physiciansList.deleteAll()
+        newPhysicians.forEach(function(physician, i) {
+          try {
+            saveCount = saveCount + 1
+            console.log(saveCount)
+            physiciansList.create('Physicians_List', {
+              physicianId: physician.physicianId,
+              firstName: physician.firstName,
+              middleInitial: physician.middleInitial,
+              lastName: physician.lastName,
+              active: physician.active,
+            })
+          }
+          catch (e) {
+            console.log("Error on physician table creation");
+            console.log(e);
+          }
+        })
+      })
+      physiciansList.compact()
+    }
+  }
+  FetchDoctorTable = () => {
+    let physiciansResponse = []
+
+    //Doctor Calls
+    //test server call
+    console.log("FETCHDOCTORTABLE CALLED FROM CASESSETUP PAGE")
+    return fetch('http://25.78.82.76:5100/api/Physicians')
+    .then((docresponse) => docresponse.json())
+    .then((docresponseJson) => {
+      console.log("PHYSICIANS RESPONSE")
+      console.log(docresponseJson)
+      physiciansResponse = docresponseJson;
+      this.savePhysiciansTable(physiciansResponse)
+      this.setState({
+        cases:{Doctors:physiciansResponse},
+        fetchProgressMessage: 'Physicians Synced',
+      })
+    })
+    .catch((error) => {
+      console.error(error);
+      this.setState({
+        syncProgressMessage: 'Physicians Fetch Failed'
+      })
+    });
+  }
+  saveProcedureTable = (responseprocedures) => {
+    let savedProcedures = proceduresList.objects('Procedures_List')
+    let newProcedures = responseprocedures
+    let saveCount = 0
+
+    if(savedProcedures != undefined && savedProcedures != null && savedProcedures.length > 0) {
+      proceduresList.write(() => {
+        proceduresList.deleteAll()
+        newProcedures.forEach(function(procedure, i) {
+          try {
+            saveCount = saveCount + 1
+            console.log(saveCount)
+            proceduresList.create('Procedures_List', {
+              procedureCode: procedure.procedureCode,
+              procedureDescription: procedure.procedureDescription,
+              active: procedure.active,
+            })
+          }
+          catch (e) {
+            console.log("Error on procedure table creation");
+            console.log(e);
+          }
+        })
+      })
+      proceduresList.compact()
+    }
+  }
+  FetchProcedureTable = () => {
+    let barcodeResponse = []
+
+    //Procedure Calls
+    //test server call
+    console.log("FETCHPROCEDURETABLE CALLED FROM CASESSETUP PAGE")
+    return fetch('http://25.78.82.76:5100/api/ProductBarCodes')
+    .then((proresponse) => proresponse.json())
+    .then((proresponseJson) => {
+      console.log("PROCEDURE RESPONSE")
+      console.log(proresponseJson)
+      procedureResponse = proresponseJson;
+      this.saveProcedureTable(procedureResponse)
+      this.setState({
+        cases:{Procedures:procedureResponse},
+        syncProgressMessage: 'Procedures Synced',
+      })
+    })
+    .catch((error) => {
+      console.error(error);
+      this.setState({
+        syncProgressMessage: 'Procedure Fetch Failed'
+      })
+    });
+  }
+  saveLocationsTable = (responselocations) => {
+    let savedLocations = locationsList.objects('Locations_List')
+    let newLocations = responselocations
+    let saveCount = 0
+
+    if(savedLocations != undefined && savedLocations != null && savedLocations.length > 0) {
+      locationsList.write(() => {
+        locationsList.deleteAll()
+        newLocations.forEach(function(location, i) {
+          try {
+            saveCount = saveCount + 1
+            console.log(saveCount)
+            locationsList.create('Locations_List', {
+              siteId: location.siteId,
+              siteDescription: location.siteDescription,
+              active: location.active,
+            })
+          }
+          catch (e) {
+            console.log("Error on location table creation");
+            console.log(e);
+          }
+        })
+      })
+      locationsList.compact()
+    }
+  }
+  FetchLocationTable = () => {
+    let barcodeResponse = []
+
+    //Location Calls
+    //test server call
+    console.log("FETCHLOCATIONTABLE CALLED FROM CASESSETUP PAGE")
+    return fetch('http://25.78.82.76:5100/api/HospitalSites')
+    .then((siteresponse) => siteresponse.json())
+    .then((siteresponseJson) => {
+      console.log("HOSPITAL SITES RESPONSE")
+      console.log(siteresponseJson)
+      sitesResponse = siteresponseJson;
+      this.saveLocationsTable(sitesResponse)
+      this.setState({
+        cases:{Locations:sitesResponse},
+        syncProgressMessage: 'Sites Synced',
+      })
+    })
+    .catch((error) => {
+      console.error(error);
+      this.setState({
+        syncProgressMessage: 'Sites Fetch Failed'
+      })
+    });
   }
   renderDoctorChoices() {
     let doctors = this.state.cases.Doctors

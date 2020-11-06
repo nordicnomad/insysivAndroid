@@ -6,6 +6,10 @@ import HeaderLogo from '../Images/insysivLogoHorizontal.png'
 import ProductListTrayItem from '../Components/ProductListTrayItem'
 import { BarcodeSearch } from '../Utilities/BarcodeLookup'
 
+var Realm = require('realm');
+let rfidLabels ;
+let lastRfidFetch ;
+
 import styles from '../Styles/ContainerStyles.js'
 
 export default class IntakeScan extends Component {
@@ -27,6 +31,29 @@ export default class IntakeScan extends Component {
       scannedItems: [],
       scannerConnected: false,
     }
+    rfidLabels = new Realm({
+      schema: [{name: 'RFID_Labels',
+      properties: {
+        productTransactionNumber: "int",
+        licenseNumber: "string",
+        productModelNumber: "string",
+        lotSerialNumber: "string?",
+        expirationDate: "string?",
+        tagid: "string?",
+        caseProductSequence: "int?",
+        bcPrimary: "string?",
+        bcSecondary: "string?",
+      }}]
+    });
+    lastRfidFetch = new Realm({
+      schema: [{name: 'Rfid_Last_Fetch',
+      properties:
+      {
+          year: "int",
+          month: "int",
+          day: "int"
+      }}]
+    });
   }
   componentDidMount() {
     this.checkForScanner()
@@ -114,7 +141,7 @@ export default class IntakeScan extends Component {
   }
 
   generateScanTest = (count) => {
-    let testStrings = ['(01)00885380030164', '+B094RC00140N', '$$0000349582']
+    let testStrings = ['(01)00184360867004', '+SPEC6303040N', '$$0000349582']
 
     this.setState({
       testCount: (count + 1)

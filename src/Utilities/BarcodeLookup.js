@@ -9,7 +9,7 @@ export function BarcodeSearch(barcode, viewFlag) {
   let productModelNumber = ''
   let productVendorLicense = ''
   let matchedProduct = {}
-  let noDBmatchFlag = false
+  let noDBmatchFlag = true
 
   //Database schemas
   products = new Realm({
@@ -54,13 +54,16 @@ export function BarcodeSearch(barcode, viewFlag) {
   let productTable = products.objects('Products_Lookup')
   let barcodeTable = productBarCodes.objects('Product_Bar_Codes')
 
-  if(passedBarcode.substring(0,1) === '+' && passedBarcode.length === 12) {
+  console.log("PRODUCT TABLE LENGTH")
+  console.log(productTable.length)
+
+  if(passedBarcode.substring(0,1) === '+') {
     //HIBCC Encoding
     //Seperate barcode elements
     //Manufacturer License 4 characters starting at position 1
-    productVendorLicense = passedBarcode.substring(1, 4)
-    //Product Number 4 characters starting at position 5
-    productModelNumber = passedBarcode.substring(5, 4)
+    productVendorLicense = passedBarcode.substring(1, 5)
+    //Product Number 5 characters starting at position 5
+    productModelNumber = passedBarcode.substring(5, 10)
 
     //test output
     console.log("MATCHED HIBCC VENDOR LICENSE NUMBER")
@@ -71,7 +74,9 @@ export function BarcodeSearch(barcode, viewFlag) {
     //Search DB tables for vendor and model match
 
     productTable.forEach((product, i) => {
-      if(product.licenseNumber === productVendorLicense) {
+      console.log("Search Product Model Number")
+      console.log(product.productModelNumber)
+      if(product.productModelNumber === productModelNumber) {
         console.log("MATCHED PRODUCT VENDOR LICENSE")
         matchedProduct = product
         noDBmatchFlag = false
@@ -94,13 +99,13 @@ export function BarcodeSearch(barcode, viewFlag) {
       scanned: false,
     }
   }
-  else if(passedBarcode.substring(0,1) === '(' && passedBarcode.length === 18) {
+  else if(passedBarcode.substring(0,4) === '(01)') {
     //UCC Encoding
     //Seperate barcode elements
     //Manufacturer License, 7 characters starting at position 5
-    productVendorLicense = passedBarcode.substring(5, 7)
+    productVendorLicense = passedBarcode.substring(4, 11)
     //Product Number, 5 characters starting at position 12
-    productModelNumber = passedBarcode.substring(12, 5)
+    productModelNumber = passedBarcode.substring(12, 17)
 
     //test output
     console.log("MATCHED UCC VENDOR LICENSE NUMBER")
@@ -113,7 +118,7 @@ export function BarcodeSearch(barcode, viewFlag) {
     productTable.forEach((product, i) => {
       console.log('UCC SEARCHCOUNT')
       console.log(searchCount)
-      if(product.licenseNumber === productVendorLicense) {
+      if(product.productModelNumber === productModelNumber) {
         console.log("MATCHED PRODUCT VENDOR LICENSE")
         matchedProduct = product
         noDBmatchFlag = false
@@ -126,7 +131,7 @@ export function BarcodeSearch(barcode, viewFlag) {
       barcode: passedBarcode,
       trayState: false,
       isUnknown: false,
-      name: "HIBCC Barcode Product",
+      name: "UCC Barcode Product",
       model: productModelNumber,
       lotSerial: productVendorLicense,
       expiration: "????",
@@ -139,8 +144,6 @@ export function BarcodeSearch(barcode, viewFlag) {
 
   if(noDBmatchFlag === true) {
     //Run lookup of local barcode table with passedBarcode string
-  }
-  else {
     matchedProduct = {
       barcode: passedBarcode,
       trayState: false,

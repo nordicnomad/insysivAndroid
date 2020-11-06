@@ -235,7 +235,6 @@ export default class AccountInfo extends Component {
         syncProgressMessage: 'Syncing Failed'
       })
     });
-
   }
 
   FetchProductTable = () => {
