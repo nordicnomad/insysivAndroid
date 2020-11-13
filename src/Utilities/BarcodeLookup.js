@@ -1,21 +1,23 @@
-var Realm = require('realm');
+import { DecodeUCC } from '../Utilities/DecodeUCC'
+import { DecodeHIBC } from '../Utilities/DecodeHIBC'
 
-export function BarcodeSearch(barcode, viewFlag) {
+var Realm = require('realm');
+//instatiate database variables
+let products ;
+let productBarCodes ;
+
+export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
   //Initialize global and UI variables
   let passedBarcode = barcode
-  let defaultScanObject = {}
-  let products ;
-  let productBarCodes ;
-  let productModelNumber = ''
-  let productVendorLicense = ''
   let matchedProduct = {}
   let noDBmatchFlag = true
 
-  //Ucc app identifiers
+  //Ucc app identifiers (string lengths do not include App Idenifiers)
   // ucc (00) 18 digits - numeric
   let serialContainerCode = ''
   // ucc (01) 14 digits - numeric
-  let containerCode = ''
+  let containerCodeModelNumber = ''
+  let containerCodeVendorLicense = ''
   // ucc (02) 14 digits - numeric
   let numberOfContainers = ''
   // ucc (10) 1-20 alphanumeric
@@ -28,7 +30,7 @@ export function BarcodeSearch(barcode, viewFlag) {
   let serialNumber = ''
   // ucc (22) 1-29 alphanumeric
   let hibcc = ''
-  // ucc (23) 1-19 alphanumeric 
+  // ucc (23) 1-19 alphanumeric
   let lotNumber = ''
   // ucc (30) number of requisit length
   let quantityEach = ''
@@ -38,10 +40,55 @@ export function BarcodeSearch(barcode, viewFlag) {
   let secondarySerialNumber = ''
   // ucc (37) 1-8 digits
   let quantityOfUnitsContained = ''
+  // ucc state tree for multiple concatenated Application Identifier types in one barcode.
+  let uccDecodeReturnObject = {
+    // ucc (00) 18 digits - numeric
+    serialContainerCode: '',
+    // ucc (01) 14 digits - numeric
+    containerCodeVendorLicense: '',
+    containerCodeModelNumber: '',
+    // ucc (02) 14 digits - numeric
+    numberOfContainers: '',
+    // ucc (10) 1-20 alphanumeric
+    batchOrLotNumber: '',
+    // ucc (17) 6 digit YYMMDD
+    expirationDate: '',
+    // ucc (20) 2 digits
+    productVariant: '',
+    // ucc (21) 1-20 alphanumeric
+    serialNumber: '',
+    // ucc (22) 1-29 alphanumeric
+    hibcc: '',
+    // ucc (23) 1-19 alphanumeric
+    lotNumber: '',
+    // ucc (30) number of requisit length
+    quantityEach: '',
+    // ucc (240) 1-30 alphanumeric
+    secondaryProductAttributes: '',
+    // ucc (250) 1-30 alphanumeric
+    secondarySerialNumber: '',
+    // ucc (37) 1-8 digits
+    quantityOfUnitsContained: '',
+  }
 
   //Hibcc app identifiers
+  //Data delimiters will need to determine decoding format of passedBarcode
+  //Multiple redundant formats
+  let hibcSerialNumber = ''
+  let hibcExpirationDate = ''
+  let hibcLotNumber = ''
+  let hibcQuantity = ''
+  let hibcManufactureDate = ''
   //
-
+  let hibcDecodeReturnObject = {
+    hibcVendorLicense: '',
+    hibcModelNumber: '',
+    hibcSerialNumber: '',
+    hibcExpirationDate: '',
+    hibcLotNumber: '',
+    hibcQuantity: '',
+    hibcManufactureDate: '',
+  }
 
   //Database schemas
   products = new Realm({
@@ -82,26 +129,12 @@ export function BarcodeSearch(barcode, viewFlag) {
       encoding: "int?"
     }}]
   });
-
+  //initialize database objects
   let productTable = products.objects('Products_Lookup')
   let barcodeTable = productBarCodes.objects('Product_Bar_Codes')
 
-  console.log("PRODUCT TABLE LENGTH")
-  console.log(productTable.length)
-
+  //check for encoding identifier
   if(passedBarcode.substring(0,1) === '+') {
-    //HIBCC Encoding
-    //Seperate barcode elements
-    //Manufacturer License 4 characters starting at position 1
-    productVendorLicense = passedBarcode.substring(1, 5)
-    //Product Number 5 characters starting at position 5
-    productModelNumber = passedBarcode.substring(5, 10)
-
-    //test output
-    console.log("MATCHED HIBCC VENDOR LICENSE NUMBER")
-    console.log(productVendorLicense)
-    console.log("MATCHED HIBCC MODEL NUMBER")
-    console.log(productModelNumber)
 
     //Search DB tables for vendor and model match
 
@@ -114,10 +147,6 @@ export function BarcodeSearch(barcode, viewFlag) {
         noDBmatchFlag = false
       }
     });
-
-    if(passedBarcode.includes('(10)')) {
-
-    }
 
 
     //Return usable product object to save to working product scan DB.
@@ -135,32 +164,81 @@ export function BarcodeSearch(barcode, viewFlag) {
       scanned: false,
     }
   }
-  else if(passedBarcode.substring(0,4) === '(01)') {
-    //UCC Encoding
-    //Seperate barcode elements
-    //Manufacturer License, 7 characters starting at position 5
-    productVendorLicense = passedBarcode.substring(4, 11)
-    //Product Number, 5 characters starting at position 12
-    productModelNumber = passedBarcode.substring(12, 17)
+  else if(passedBarcode.substring(0,1) === '(') {
+    let uccAIparenLocations = []
+    let uccAppIdentifiers = []
 
-    //test output
-    console.log("MATCHED UCC VENDOR LICENSE NUMBER")
-    console.log(productVendorLicense)
-    console.log("MATCHED UCC MODEL NUMBER")
-    console.log(productModelNumber)
+    //Seperate barcode elements
+    for(i=0; passedBarcode.length - 1; i++;) {
+      if(passedBarcode.charAt[i] === '(' || passedBarcode.charAt[i] === ')') {
+        uccAIparenLocations.push(
+          {
+            char: passedBarcode.charAt[i],
+            pos: i,
+          }
+        )
+      }
+    }
+    uccAIparenLocations.forEach((location, i) => {
+      let startPosition = 0
+      let endPosition = 0
+      let buildAppIdentifier = ''
+      if(location.char === '(') {
+        startPosition = location.pos
+        //Might need to add a check on array length to ensure all open parens
+        //have a corresponding close.
+        endPosition = uccAIparenLocations[i+1].pos
+
+        for(p=startPosition; endPosition; p++;) {
+          buildAppIdentifier = buildAppIdentifier + passedBarcode[p]
+        }
+        uccAppIdentifiers.push(buildAppIdentifier)
+      }
+    })
+
+    //Decode UCC passedBarcode string
+    uccAppIdentifiers.forEach((identifier, i) => {
+      uccDecodeReturnObject = DecodeUCC(identifier, passedBarcode, uccDecodeReturnObject))
+    })
+
 
     //Search DB tables for vendor and model match
-    let searchCount = 0
-    productTable.forEach((product, i) => {
-      console.log('UCC SEARCHCOUNT')
-      console.log(searchCount)
-      if(product.productModelNumber === productModelNumber) {
-        console.log("MATCHED PRODUCT VENDOR LICENSE")
-        matchedProduct = product
-        noDBmatchFlag = false
-      }
-      searchCount = searchCount + 1
-    });
+    if(uccDecodeReturnObject.productModelNumber != '') {
+      let searchCount = 0
+      productTable.forEach((product, i) => {
+        console.log('UCC SEARCHCOUNT')
+        console.log(searchCount)
+        if(product.productModelNumber === uccDecodeReturnObject.productModelNumber) {
+          console.log("MATCHED PRODUCT VENDOR LICENSE")
+          matchedProduct = {
+            licenseNumber: product.licenseNumber,
+            productModelNumber: product.productModelNumber,
+            orderThruVendor: product.orderThruVendor,
+            productDescription: product.productDescription,
+            autoReplace: product.autoReplace,
+            discontinued: product.discontinued,
+            productCategory: product.productCategory,
+            hospitalItemNumber: product.hospitalItemNumber,
+            unitOfMeasure: product.unitOfMeasure,
+            unitOfMeasureQuantity: product.unitOfMeasureQuantity,
+            reorderValue: product.reorderValue,
+            quantityOnHand: product.quantityOnHand,
+            quantityOrdered: product.quantityOrdered,
+            lastRequistionNumber: product.lastRequistionNumber,
+            orderStatus: product.orderStatus,
+            active: product.active,
+            accepted: product.accepted,
+            consignment: product.consignment,
+            minimumValue: product.minimumValue,
+            maximumValue: product.maximumValue,
+            nonOrdered: product.nonOrdered,
+            productNote: product.productNote,
+          }
+          noDBmatchFlag = false
+        }
+        searchCount = searchCount + 1
+      });
+    }
 
     //Return usable product object to save to working product scan DB.
     matchedProduct = {

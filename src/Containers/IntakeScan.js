@@ -7,8 +7,6 @@ import ProductListTrayItem from '../Components/ProductListTrayItem'
 import { BarcodeSearch } from '../Utilities/BarcodeLookup'
 
 var Realm = require('realm');
-let rfidLabels ;
-let lastRfidFetch ;
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -31,29 +29,7 @@ export default class IntakeScan extends Component {
       scannedItems: [],
       scannerConnected: false,
     }
-    rfidLabels = new Realm({
-      schema: [{name: 'RFID_Labels',
-      properties: {
-        productTransactionNumber: "int",
-        licenseNumber: "string",
-        productModelNumber: "string",
-        lotSerialNumber: "string?",
-        expirationDate: "string?",
-        tagid: "string?",
-        caseProductSequence: "int?",
-        bcPrimary: "string?",
-        bcSecondary: "string?",
-      }}]
-    });
-    lastRfidFetch = new Realm({
-      schema: [{name: 'Rfid_Last_Fetch',
-      properties:
-      {
-          year: "int",
-          month: "int",
-          day: "int"
-      }}]
-    });
+
   }
   componentDidMount() {
     this.checkForScanner()
@@ -128,7 +104,7 @@ export default class IntakeScan extends Component {
 
       //If not a known product create an unknown product scanned item object
       if(scanMatched === false) {
-        let barcodeLookup = BarcodeSearch(scannedBarcode, 0)
+        let barcodeLookup = BarcodeSearch(scannedBarcode)
         scannedItemsList.push(barcodeLookup)
       }
       //Update LocalState with new information
