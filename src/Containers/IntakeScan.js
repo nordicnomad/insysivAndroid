@@ -7,6 +7,7 @@ import ProductListTrayItem from '../Components/ProductListTrayItem'
 import { BarcodeSearch } from '../Utilities/BarcodeLookup'
 
 var Realm = require('realm');
+let workingScanSpace ;
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -28,6 +29,8 @@ export default class IntakeScan extends Component {
       modalErrorMessage: '',
       scannedItems: [],
       scannerConnected: false,
+      lastCompleteFlag: false,
+      lastScannedObject: {}
     }
 
   }
@@ -85,6 +88,8 @@ export default class IntakeScan extends Component {
   };
   ScanBarcode = (newBarcode) => {
     //Instantiate Variables
+    let lastCompleteFlag = this.state.lastCompleteFlag
+
     if(newBarcode != undefined && newBarcode != null) {
       let scannedItemsList = this.state.scannedItems
       let scannedBarcode = newBarcode
@@ -100,11 +105,16 @@ export default class IntakeScan extends Component {
           scannedItemsList[i].count = scannedItemsList[i].count + 1
         }
       }.bind(this));
-      //If not already existing send request to product lookup and build scanned item object with response
 
       //If not a known product create an unknown product scanned item object
       if(scanMatched === false) {
-        let barcodeLookup = BarcodeSearch(scannedBarcode)
+        let barcodeLookup = BarcodeSearch(scannedBarcode, this.state.lastScannedObject, this.state.lastCompleteFlag)
+        if(barcodeLookup.productModelNumber != '') {
+          lastCompleteFlag = true
+        }
+        else {
+          lastCompleteFlag = false
+        }
         scannedItemsList.push(barcodeLookup)
       }
       //Update LocalState with new information
@@ -112,6 +122,7 @@ export default class IntakeScan extends Component {
         scannedItems: scannedItemsList,
         scannedBarcode: scannedBarcode,
         scanCount: totalCount,
+        lastScannedObject: barcodeLookup,
       })
     }
   }

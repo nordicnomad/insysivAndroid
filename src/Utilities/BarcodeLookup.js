@@ -167,6 +167,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
   else if(passedBarcode.substring(0,1) === '(') {
     let uccAIparenLocations = []
     let uccAppIdentifiers = []
+    let uccAppStrings = []
 
     //Seperate barcode elements
     for(i=0; passedBarcode.length - 1; i++;) {
@@ -183,22 +184,38 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
       let startPosition = 0
       let endPosition = 0
       let buildAppIdentifier = ''
+      let buildBarcodeString = ''
       if(location.char === '(') {
         startPosition = location.pos
         //Might need to add a check on array length to ensure all open parens
         //have a corresponding close.
         endPosition = uccAIparenLocations[i+1].pos
 
+        //loop ahead to close position adding contents to AppIdentifier Variable
         for(p=startPosition; endPosition; p++;) {
           buildAppIdentifier = buildAppIdentifier + passedBarcode[p]
         }
         uccAppIdentifiers.push(buildAppIdentifier)
       }
+      else if(location.char === ')') {
+        evalPosition = location.pos + 1
+        endOfString = false
+
+        // Starting with the character after the close add characters to build string
+        // until end of string or new opening character are encountered.
+        while(endOfString === false) {
+          if(passedBarcode.charAt[evalPosition] != '(' && evalPosition < passedBarcode.length) {
+            buildBarcodeString.push(passedBarcode.charAt[evalPosition])
+          }
+          evalPosition = evalPosition + 1
+        }
+        uccAppStrings.push(buildBarcodeString)
+      }
     })
 
     //Decode UCC passedBarcode string
     uccAppIdentifiers.forEach((identifier, i) => {
-      uccDecodeReturnObject = DecodeUCC(identifier, passedBarcode, uccDecodeReturnObject))
+      uccDecodeReturnObject = DecodeUCC(identifier, uccAppStrings[i], uccDecodeReturnObject))
     })
 
 
@@ -243,12 +260,13 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     //Return usable product object to save to working product scan DB.
     matchedProduct = {
       barcode: passedBarcode,
-      trayState: false,
-      isUnknown: false,
       name: "UCC Barcode Product",
       model: productModelNumber,
       lotSerial: productVendorLicense,
       expiration: "????",
+
+      trayState: false,
+      isUnknown: false,
       count: 1,
       scannedTime: "Now",
       waste: false,
