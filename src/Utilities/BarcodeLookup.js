@@ -12,34 +12,6 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
   let matchedProduct = {}
   let noDBmatchFlag = true
 
-  //Ucc app identifiers (string lengths do not include App Idenifiers)
-  // ucc (00) 18 digits - numeric
-  let serialContainerCode = ''
-  // ucc (01) 14 digits - numeric
-  let containerCodeModelNumber = ''
-  let containerCodeVendorLicense = ''
-  // ucc (02) 14 digits - numeric
-  let numberOfContainers = ''
-  // ucc (10) 1-20 alphanumeric
-  let batchOrLotNumber = ''
-  // ucc (17) 6 digit YYMMDD
-  let expirationDate = ''
-  // ucc (20) 2 digits
-  let productVariant = ''
-  // ucc (21) 1-20 alphanumeric
-  let serialNumber = ''
-  // ucc (22) 1-29 alphanumeric
-  let hibcc = ''
-  // ucc (23) 1-19 alphanumeric
-  let lotNumber = ''
-  // ucc (30) number of requisit length
-  let quantityEach = ''
-  // ucc (240) 1-30 alphanumeric
-  let secondaryProductAttributes = ''
-  // ucc (250) 1-30 alphanumeric
-  let secondarySerialNumber = ''
-  // ucc (37) 1-8 digits
-  let quantityOfUnitsContained = ''
   // ucc state tree for multiple concatenated Application Identifier types in one barcode.
   let uccDecodeReturnObject = {
     // ucc (00) 18 digits - numeric
@@ -71,15 +43,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     quantityOfUnitsContained: '',
   }
 
-  //Hibcc app identifiers
-  //Data delimiters will need to determine decoding format of passedBarcode
-  //Multiple redundant formats
-  let hibcSerialNumber = ''
-  let hibcExpirationDate = ''
-  let hibcLotNumber = ''
-  let hibcQuantity = ''
-  let hibcManufactureDate = ''
-  //
+  // hibc state tree for multiple concatenated barcode types
   let hibcDecodeReturnObject = {
     hibcVendorLicense: '',
     hibcModelNumber: '',
@@ -134,10 +98,16 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
   let barcodeTable = productBarCodes.objects('Product_Bar_Codes')
 
   //check for encoding identifier
-  if(passedBarcode.substring(0,1) === '+') {
+  if(passedBarcode.substring(0,1) === '+' || passedBarcode.substring(0,1) === '$') {
+    let hibcAIcharLocations = []
+    let hibcAppIdentifiers = []
+    let hibcAppStrings = []
+
+    //Seperate barcode elements
+
+    //loop ahead to close position adding contents to AppIdentifier Variable
 
     //Search DB tables for vendor and model match
-
     productTable.forEach((product, i) => {
       console.log("Search Product Model Number")
       console.log(product.productModelNumber)
@@ -147,6 +117,9 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
         noDBmatchFlag = false
       }
     });
+
+
+    //Decode HIBC passedBarcode strings
 
 
     //Return usable product object to save to working product scan DB.
@@ -170,7 +143,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     let uccAppStrings = []
 
     //Seperate barcode elements
-    for(i=0; passedBarcode.length - 1; i++;) {
+    for(i=0; (passedBarcode.length - 1); i++) {
       if(passedBarcode.charAt[i] === '(' || passedBarcode.charAt[i] === ')') {
         uccAIparenLocations.push(
           {
@@ -192,7 +165,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
         endPosition = uccAIparenLocations[i+1].pos
 
         //loop ahead to close position adding contents to AppIdentifier Variable
-        for(p=startPosition; endPosition; p++;) {
+        for(p=startPosition; endPosition; p++) {
           buildAppIdentifier = buildAppIdentifier + passedBarcode[p]
         }
         uccAppIdentifiers.push(buildAppIdentifier)
@@ -215,7 +188,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
 
     //Decode UCC passedBarcode string
     uccAppIdentifiers.forEach((identifier, i) => {
-      uccDecodeReturnObject = DecodeUCC(identifier, uccAppStrings[i], uccDecodeReturnObject))
+      uccDecodeReturnObject = DecodeUCC(identifier, uccAppStrings[i], uccDecodeReturnObject)
     })
 
 
@@ -258,6 +231,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     }
 
     //Return usable product object to save to working product scan DB.
+    //Consolidate information from decoded barcode with matched DB values.
     matchedProduct = {
       barcode: passedBarcode,
       name: "UCC Barcode Product",

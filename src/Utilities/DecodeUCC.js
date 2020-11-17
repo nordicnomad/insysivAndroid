@@ -1,8 +1,9 @@
 //UCC Encoding
-export function DecodeUCC(identifier, passedBarcode, uccDecodeReturnObject) {
+export function DecodeUCC(appIdentifier, passedBarcodeString, uccDecodeReturnObject) {
 
-
-  let returnObject = {}
+  let identifier = appIdentifier
+  let passedBarcode = passedBarcodeString
+  let returnObject = uccDecodeReturnObject
   // ucc (00) 18 digits - numeric
   let serialContainerCode = ''
   // ucc (01) 14 digits - numeric
@@ -31,28 +32,92 @@ export function DecodeUCC(identifier, passedBarcode, uccDecodeReturnObject) {
   // ucc (37) 1-8 digits
   let quantityOfUnitsContained = ''
 
+  if(identifier === '(00)') {
+    // ucc (00) 18 digits - numeric
+    serialContainerCode = passedBarcode
 
-  //test output
-  console.log("MATCHED UCC VENDOR LICENSE NUMBER")
-  console.log(productVendorLicense)
-  console.log("MATCHED UCC MODEL NUMBER")
-  console.log(productModelNumber)
-
-
-
-
-
-  if(passedBarcode.includes('(10)')) {
-    //Manufacturer License, 7 characters starting at position 5
-    productVendorLicense = passedBarcode.substring(4, 11)
-    //Product Number, 5 characters starting at position 12
-    productModelNumber = passedBarcode.substring(12, 17)
-
-    uccDecodeReturnObject.
+    returnObject.serialContainerCode = serialContainerCode
   }
+  else if(identifier === '(01)') {
+    //Manufacturer License, 7 characters starting at position 1
+    containerCodeVendorLicense = passedBarcode.substring(1, 7)
+    //Product Number, 5 characters starting at position 8
+    containerCodeModelNumber = passedBarcode.substring(8, 13)
 
+    returnObject.productModelNumber = containerCodeModelNumber
+    returnObject.licenseNumber = containerCodeVendorLicense
+  }
+  else if(identifier === '(02)') {
+    // ucc (02) 14 digits - numeric
+    numberOfContainers = passedBarcode
 
+    returnObject.numberOfContainers = numberOfContainers
+  }
+  else if(identifier === '(10)') {
+    // ucc (10) 1-20 alphanumeric
+    batchOrLotNumber = passedBarcode
 
+    returnObject.batchOrLotNumber = batchOrLotNumber
+  }
+  else if(identifier === '(17)') {
+    // ucc (17) 6 digit YYMMDD
+    expirationDate = passedBarcode
+
+    returnObject.expirationDate = expirationDate
+  }
+  else if(identifier === '(20)') {
+    // ucc (20) 2 digits
+    productVariant = passedBarcode
+
+    returnObject.productVariant = productVariant
+  }
+  else if(identifier === '(21)') {
+    // ucc (21) 1-20 alphanumeric
+    serialNumber = passedBarcode
+
+    returnObject.serialNumber = serialNumber
+  }
+  else if(identifier === '(22)') {
+    // ucc (22) 1-29 alphanumeric
+    hibcc = passedBarcode
+
+    returnObject.hibcc = hibcc
+  }
+  else if(identifier === '(23)') {
+    // ucc (23) 1-19 alphanumeric
+    lotNumber = passedBarcode
+
+    returnObject.lotNumber = lotNumber
+  }
+  else if(identifier === '(30)') {
+    // ucc (30) number of requisit length
+    quantityEach = passedBarcode
+
+    returnObject.quantityEach = quantityEach
+  }
+  else if(identifier === '(240)') {
+    // ucc (240) 1-30 alphanumeric
+    secondaryProductAttributes =  passedBarcode
+
+    returnObject.secondaryProductAttributes = secondaryProductAttributes
+  }
+  else if(identifier === '(250)') {
+    // ucc (250) 1-30 alphanumeric
+    secondarySerialNumber = passedBarcode
+
+    returnObject.secondarySerialNumber = secondarySerialNumber
+  }
+  else if(identifier === '(37)') {
+    // ucc (37) 1-8 digits
+    quantityOfUnitsContained = passedBarcode
+
+    returnObject.quantityOfUnitsContained = quantityOfUnitsContained
+  }
+  else {
+    // Error or skip, unsupported UCC encoding
+    console.log("UCC ENCODING DETECTED OUTSIDE SUPPORTED BOUNDS")
+    // Maybe pass some notifcation forward that the string was skipped eventually.
+  }
 
   return(returnObject)
 }
