@@ -13,44 +13,41 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
   let noDBmatchFlag = true
 
   // ucc state tree for multiple concatenated Application Identifier types in one barcode.
-  let uccDecodeReturnObject = {
+  let decodeReturnObject = {
     // ucc (00) 18 digits - numeric
     serialContainerCode: '',
     // ucc (01) 14 digits - numeric
-    containerCodeVendorLicense: '',
-    containerCodeModelNumber: '',
+    productModelNumber: '',
+    productVendorLicense: '',
     // ucc (02) 14 digits - numeric
     numberOfContainers: '',
     // ucc (10) 1-20 alphanumeric
     batchOrLotNumber: '',
     // ucc (17) 6 digit YYMMDD
     expirationDate: '',
+    hibcExpirationDate: '',
     // ucc (20) 2 digits
     productVariant: '',
     // ucc (21) 1-20 alphanumeric
     serialNumber: '',
+    hibcSerialNumber: '',
     // ucc (22) 1-29 alphanumeric
     hibcc: '',
     // ucc (23) 1-19 alphanumeric
     lotNumber: '',
+    hibcLotNumber: '',
     // ucc (30) number of requisit length
     quantityEach: '',
     // ucc (240) 1-30 alphanumeric
     secondaryProductAttributes: '',
+    hibcSecondaryExpiration: '',
+    hibcSecondaryManufacture: '',
     // ucc (250) 1-30 alphanumeric
     secondarySerialNumber: '',
+    hibcSecondarySerial: '',
     // ucc (37) 1-8 digits
     quantityOfUnitsContained: '',
-  }
-
-  // hibc state tree for multiple concatenated barcode types
-  let hibcDecodeReturnObject = {
-    hibcVendorLicense: '',
-    hibcModelNumber: '',
-    hibcSerialNumber: '',
-    hibcExpirationDate: '',
-    hibcLotNumber: '',
-    hibcQuantity: '',
+    //hibc return properties
     hibcManufactureDate: '',
   }
 
@@ -102,40 +99,70 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     let hibcAIcharLocations = []
     let hibcAppIdentifiers = []
     let hibcAppStrings = []
+    let lastCharacter = ''
+    let lastInitialPosition = 0
 
-    //Seperate barcode elements
-
-    //loop ahead to close position adding contents to AppIdentifier Variable
-
-    //Search DB tables for vendor and model match
-    productTable.forEach((product, i) => {
-      console.log("Search Product Model Number")
-      console.log(product.productModelNumber)
-      if(product.productModelNumber === productModelNumber) {
-        console.log("MATCHED PRODUCT VENDOR LICENSE")
-        matchedProduct = product
-        noDBmatchFlag = false
+    //Seperate barcode elements starting positions
+    for(i=0; (passedBarcode.length - 1); i++) {
+      if(passedBarcode.charAt[i] === "+" && lastCharacter != "$") {
+        hibcAIcharLocations.push({
+          char: passedBarcode.charAt[i],
+          pos: i
+        })
+        lastInitialPosition = i
       }
+      else if(passedBarcode.charAt[i] === "$" && lastCharacter != "$" && (lastInitialPosition + 3) < i) {
+        hibcAIcharLocations.push({
+          char: passedBarcode.charAt[i],
+          pos: i
+        })
+        lastInitialPosition = i
+      }
+      else if (passedBarcode.charAt[i] === "/") {
+        hibcAIcharLocations.push({
+          char: passedBarcode.charAt[i],
+          pos: i
+        })
+        lastInitialPosition = i
+      }
+      lastCharacter = passedBarcode.charAt[i]
+    }
+
+    //Add first four characters from initial locations to app identifier array
+    hibcAIcharLocations.forEach((location, i) => {
+      let buildHibcIdentifierString = ''
+
+      for(s = location.pos; s < (location.pos + 3); s++) {
+        buildHibcIdentifierString = buildHibcIdentifierString + passedBarcode.charAt[s]
+      }
+      hibcAppIdentifiers.push(buildHibcIdentifierString)
     });
 
+    //Add entire string elements between initial locations to app strings array
+    hibcAIcharLocations.forEach((location, i) => {
+      let evalHibcPosition = location.pos
+      let buildHibcBarcodeString = ''
+      if((i+1) < hibcAIcharLocations.length) {
+        let currentHibcPosition = evalHibcPosition
+        while(hibcAIcharLocations[i+1].pos > evalHibcPosition) {
+          buildHibcBarcodeString = buildHibcBarcodeString + passedBarcode.charAt[currentHibcPosition]
+          currentHibcPosition = currentHibcPosition + 1
+        }
+      }
+      else {
+        let currentHibcPosition = evalHibcPosition
+        while(passedBarcode.length > (currentHibcPosition + 1)) {
+          buildHibcBarcodeString = buildHibcBarcodeString + passedBarcode.charAt[currentHibcPosition]
+          currentHibcPosition = currentHibcPosition + 1
+        }
+      }
+      hibcAppStrings.push(buildHibcBarcodeString)
+    });
 
-    //Decode HIBC passedBarcode strings
-
-
-    //Return usable product object to save to working product scan DB.
-    matchedProduct = {
-      barcode: passedBarcode,
-      trayState: false,
-      isUnknown: false,
-      name: "HIBCC Barcode Product",
-      model: productModelNumber,
-      lotSerial: productVendorLicense,
-      expiration: "????",
-      count: 1,
-      scannedTime: "Now",
-      waste: false,
-      scanned: false,
-    }
+    //Decode HIBC string elements and populate return object
+    hibcAppIdentifiers.forEach((identifier, i) => {
+      decodeReturnObject = DecodeHIBC(identifier, hibcAppStrings[i], decodeReturnObject)
+    })
   }
   else if(passedBarcode.substring(0,1) === '(') {
     let uccAIparenLocations = []
@@ -181,6 +208,9 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
             buildBarcodeString.push(passedBarcode.charAt[evalPosition])
           }
           evalPosition = evalPosition + 1
+          if(evalPosition >= passedBarcode.length) {
+            endOfString = true
+          }
         }
         uccAppStrings.push(buildBarcodeString)
       }
@@ -188,64 +218,64 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
 
     //Decode UCC passedBarcode string
     uccAppIdentifiers.forEach((identifier, i) => {
-      uccDecodeReturnObject = DecodeUCC(identifier, uccAppStrings[i], uccDecodeReturnObject)
+      decodeReturnObject = DecodeUCC(identifier, uccAppStrings[i], decodeReturnObject)
     })
 
+  }
 
-    //Search DB tables for vendor and model match
-    if(uccDecodeReturnObject.productModelNumber != '') {
-      let searchCount = 0
-      productTable.forEach((product, i) => {
-        console.log('UCC SEARCHCOUNT')
-        console.log(searchCount)
-        if(product.productModelNumber === uccDecodeReturnObject.productModelNumber) {
-          console.log("MATCHED PRODUCT VENDOR LICENSE")
-          matchedProduct = {
-            licenseNumber: product.licenseNumber,
-            productModelNumber: product.productModelNumber,
-            orderThruVendor: product.orderThruVendor,
-            productDescription: product.productDescription,
-            autoReplace: product.autoReplace,
-            discontinued: product.discontinued,
-            productCategory: product.productCategory,
-            hospitalItemNumber: product.hospitalItemNumber,
-            unitOfMeasure: product.unitOfMeasure,
-            unitOfMeasureQuantity: product.unitOfMeasureQuantity,
-            reorderValue: product.reorderValue,
-            quantityOnHand: product.quantityOnHand,
-            quantityOrdered: product.quantityOrdered,
-            lastRequistionNumber: product.lastRequistionNumber,
-            orderStatus: product.orderStatus,
-            active: product.active,
-            accepted: product.accepted,
-            consignment: product.consignment,
-            minimumValue: product.minimumValue,
-            maximumValue: product.maximumValue,
-            nonOrdered: product.nonOrdered,
-            productNote: product.productNote,
-          }
-          noDBmatchFlag = false
+  //Search DB tables for vendor and model match
+  if(decodeReturnObject.productModelNumber != '') {
+    let searchCount = 0
+    productTable.forEach((product, i) => {
+      console.log('UCC SEARCHCOUNT')
+      console.log(searchCount)
+      if(product.productModelNumber === uccDecodeReturnObject.productModelNumber) {
+        console.log("MATCHED PRODUCT VENDOR LICENSE")
+        matchedProduct = {
+          licenseNumber: product.licenseNumber,
+          productModelNumber: product.productModelNumber,
+          orderThruVendor: product.orderThruVendor,
+          productDescription: product.productDescription,
+          autoReplace: product.autoReplace,
+          discontinued: product.discontinued,
+          productCategory: product.productCategory,
+          hospitalItemNumber: product.hospitalItemNumber,
+          unitOfMeasure: product.unitOfMeasure,
+          unitOfMeasureQuantity: product.unitOfMeasureQuantity,
+          reorderValue: product.reorderValue,
+          quantityOnHand: product.quantityOnHand,
+          quantityOrdered: product.quantityOrdered,
+          lastRequistionNumber: product.lastRequistionNumber,
+          orderStatus: product.orderStatus,
+          active: product.active,
+          accepted: product.accepted,
+          consignment: product.consignment,
+          minimumValue: product.minimumValue,
+          maximumValue: product.maximumValue,
+          nonOrdered: product.nonOrdered,
+          productNote: product.productNote,
         }
-        searchCount = searchCount + 1
-      });
-    }
+        noDBmatchFlag = false
+      }
+      searchCount = searchCount + 1
+    });
+  }
 
-    //Return usable product object to save to working product scan DB.
-    //Consolidate information from decoded barcode with matched DB values.
-    matchedProduct = {
-      barcode: passedBarcode,
-      name: "UCC Barcode Product",
-      model: productModelNumber,
-      lotSerial: productVendorLicense,
-      expiration: "????",
+  //Return usable product object to save to working product scan DB.
+  //Consolidate information from decoded barcode with matched DB values.
+  matchedProduct = {
+    barcode: passedBarcode,
+    name: "UCC Barcode Product",
+    model: productModelNumber,
+    lotSerial: productVendorLicense,
+    expiration: "????",
 
-      trayState: false,
-      isUnknown: false,
-      count: 1,
-      scannedTime: "Now",
-      waste: false,
-      scanned: false,
-    }
+    trayState: false,
+    isUnknown: false,
+    count: 1,
+    scannedTime: "Now",
+    waste: false,
+    scanned: false,
   }
 
   if(noDBmatchFlag === true) {

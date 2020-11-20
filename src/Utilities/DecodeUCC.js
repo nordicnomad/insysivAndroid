@@ -45,7 +45,7 @@ export function DecodeUCC(appIdentifier, passedBarcodeString, uccDecodeReturnObj
     containerCodeModelNumber = passedBarcode.substring(8, 13)
 
     returnObject.productModelNumber = containerCodeModelNumber
-    returnObject.licenseNumber = containerCodeVendorLicense
+    returnObject.productVendorLicense = containerCodeVendorLicense
   }
   else if(identifier === '(02)') {
     // ucc (02) 14 digits - numeric

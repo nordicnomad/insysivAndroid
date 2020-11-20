@@ -1,4 +1,6 @@
 //HIBCC Encoding
+import moment from "moment"
+
 export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnObject) {
 
   let identifier = appIdentifier
@@ -13,181 +15,215 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
   let hibcSerialNumber = ''
   let hibcExpirationDate = ''
   let hibcLotNumber = ''
-  let hibcQuantity = ''
   let hibcManufactureDate = ''
+  let hibcSecondarySerial = ''
+  let hibcSecondaryExpiration = ''
+  let hibcSecondaryManufacture = ''
 
-  if(identifier === '+') {
+  if(identifier.substring(0,1) === '+') {
     //Vendor and Model Number 11 characters + 1 identifier alphanumeric
     //Manufacturer License 4 characters starting at position 1
     productVendorLicense = passedBarcode.substring(1, 5)
     //Product Number 5 characters starting at position 5
     productModelNumber = passedBarcode.substring(5, 10)
 
-    returnObject.hibcVendorLicense = productVendorLicense
+    returnObject.productVendorLicense = productVendorLicense
 
-    returnObject.hibcModelNumber = productModelNumber
+    returnObject.productModelNumber = productModelNumber
   }
-  else if(identifier === '$') {
-    //Lot Number Only 18 characters + 1 idenfitier alphanumeric
-    hibcLotNumber = passedBarcode
+  else if(identifier.substring(0,3) === "$$+") {
+    if(identifier === '$$+7') {
+      //Serial Number only (Alternate Option)
 
-    returnObject.hibcLotNumber = hibcLotNumber
+      //Alphanumeric 18 characters + 4 identifier
+      hibcSerialNumber = passedBarcode.substring(4)
+
+      returnObject.hibcSerialNumber = hibcSerialNumber
+    }
   }
-  else if(identifier === '$$7') {
-    //Lot Number Only (Alternate Option) 18 characters + 3 idenfitier alphanumeric
-    hibcLotNumber = passedBarcode
+  else if(identifier.substring(0,2) === "$+") {
+    if(identifier.substring(0,2) === '$+') {
+      //Serial Number only
 
-    returnObject.hibcLotNumber = hibcLotNumber
+      // Alphanumeric 18 characters + 2
+      hibcSerialNumber = passedBarcode.substring(2)
+
+      returnObject.hibcSerialNumber = hibcSerialNumber
+    }
+    else if(identifier === '$$+2') {
+      //Expiration Date (MMDDYY) followed by Serial Number
+
+      // Exp. Date: Numeric 6 characters + 4 identifier
+      hibcExpirationDate = passedBarcode.substring(4, 10)
+      // Serial #: Alphanumeric 18 characters
+      hibcSerialNumber = passedBarcode.substring(10)
+
+      returnObject.hibcExpirationDate = hibcExpirationDate.substring(4, 6) + hibcExpirationDate.substring(0, 2) + hibcExpirationDate.substring(2, 4)
+      returnObject.hibcSerialNumber = hibcSerialNumber
+    }
+    else if(identifier === '$$+3') {
+      //Expiration Date (YYMMDD) followed by Serial Number
+
+      //Exp. Date: Numeric 6 characters + 4 identifier
+      hibcExpirationDate = passedBarcode.substring(4, 10)
+      //Serial #: Alphanumeric 18 characters
+      hibcSerialNumber = passedBarcode.substring(10)
+
+      returnObject.hibcExpirationDate = hibcExpirationDate
+      returnObject.hibcSerialNumber = hibcSerialNumber
+    }
+    else if(identifier === '$$+4') {
+      //Expiration Date (YYMMDDHH) followed by Serial Number
+
+      //Exp. Date: Numeric 8 characters + 4 identifiers
+      hibcExpirationDate = passedBarcode.substring(4, 12)
+      //Serial #: Alphanumeric 18 characters
+      hibcSerialNumber = passedBarcode.substring(12)
+
+      returnObject.hibcExpirationDate = hibcExpirationDate.substring(0,6)
+      returnObject.hibcSerialNumber = hibcSerialNumber
+    }
+    else if(identifier === '$$+5') {
+      //Expiration Date (YYJJJ) followed by Serial Number
+
+      //Exp. Date: numeric Julian Date format 5 characters plus 4 identifier
+      hibcExpirationDate = passedBarcode.substring(4, 9)
+      //Serial #: Alphanumeric 18 characters
+      hibcSerialNumber = passedBarcode.substring(9)
+
+      returnObject.hibcExpirationDate = moment(hibcExpirationDate, "YYDDDD").format("YYMM[01]")
+      returnObject.hibcSerialNumber = hibcSerialNumber
+    }
+    else if(identifier === '$$+6') {
+      //Expiration Date followed by Serial Number
+
+      // Exp. Date: Numeric Julian Date format with hour 7 characters plus 4 identifier
+      hibcExpirationDate = passedBarcode.substring(4, 11)
+      // Serial #: 18 characters Alphanumeric
+      hibcSerialNumber = passedBarcode.substring(11)
+
+      returnObject.hibcExpirationDate = moment(hibcExpirationDate, "YYDDDDHH").format("YYMMDD")
+      returnObject.hibcSerialNumber = hibcSerialNumber
+    }
+    else if(identifier.substring(0,3) === '$$+') {
+      //Expiration Date (MMYY) followed by Serial Number
+
+      // Exp. Date: Numeric 4 characters + 3 identifier
+      hibcExpirationDate = passedBarcode.substring(3, 7)
+      // Serial #: Alphanumeric 18 characters
+      hibcSerialNumber = passedBarcode.substring(7)
+
+      returnObject.hibcExpirationDate = hibcExpirationDate.substring(2,4) + hibcExpirationDate.substring(0,2) + "01"
+      returnObject.hibcSerialNumber = hibcSerialNumber
+    }
   }
-  else if(identifier === '$$') {
-    //Expiration Date (MMYY) followed by Lot Number
+  else if(identifier.substring(0,2) === "$$") {
+    if(identifier.substring(0,3) === '$$7') {
+      //Lot Number Only (Alternate Option) 18 characters + 3 idenfitier alphanumeric
+      hibcLotNumber = passedBarcode.substring(3)
 
-    //	4 characters MMYY + 2 idenfitier numeric
-    hibcExpirationDate = passedBarcode
-    // 18 characters alphanumeric lot number
-    hibcLotNumber = passedBarcode
+      returnObject.hibcLotNumber = hibcLotNumber
+    }
+    else if(identifier.substring(0,3) === '$$2') {
+      //Expiration Date (MMDDYY) followed by Lot Number
 
-    returnObject.hibcExpirationDate = hibcExpirationDate
-    returnObject.hibcLotNumber = hibcLotNumber
+      // 6 characters MMDDYY + 3 identifier numeric
+      hibcExpirationDate = passedBarcode.substring(3, 9)
+      // Lot Number 18 characters Alphanumeric
+      hibcLotNumber = passedBarcode.substring(9)
+
+      returnObject.hibcExpirationDate = hibcExpirationDate.substring(4, 6) + hibcExpirationDate.substring(0, 2) + hibcExpirationDate.substring(2, 4)
+      returnObject.hibcLotNumber = hibcLotNumber
+    }
+    else if(identifier.substring(0,3) === '$$3') {
+      //Expiration Date (YYMMDD) followed by Lot Number
+
+      // Exp. Date: Numeric 6 characters + 3 identifier
+      hibcExpirationDate = passedBarcode.substring(3, 9)
+      // Lot #: Alphanumeric 18 characters
+      hibcLotNumber = passedBarcode.substring(9)
+
+      returnObject.hibcExpirationDate = hibcExpirationDate
+      returnObject.hibcLotNumber = hibcLotNumber
+    }
+    else if(identifier.substring(0,3) === '$$4') {
+      //Expiration Date (YYMMDDHH) followed by Lot Number
+
+      // Exp. Date: Numeric 8 characters + 3 identifier
+      hibcExpirationDate = passedBarcode.substring(3, 11)
+      // Lot #: Alphanumeric 18 characters
+      hibcLotNumber = passedBarcode.substring(11)
+
+      returnObject.hibcExpirationDate = hibcExpirationDate.substring(0,6)
+      returnObject.hibcLotNumber = hibcLotNumber
+    }
+    else if(identifier.substring(0,3) === '$$5') {
+      //Expiration Date (YYJJJ) followed by Lot Number
+
+      // Exp. Date: numeric Julian Date format 5 characters + 3
+      hibcExpirationDate = passedBarcode.substring(3, 8)
+
+      //Lot #: Alphanumeric 18 characters
+      hibcLotNumber = passedBarcode.substring(8)
+
+      returnObject.hibcExpirationDate = moment(hibcExpirationDate, "YYDDDD").format("YYMMDD")
+      returnObject.hibcLotNumber = hibcLotNumber
+    }
+    else if(identifier.substring(0,3) === '$$6') {
+      //Expiration Date (YYJJJHH) followed by Lot Number
+
+      // Exp. Date: numeric Julian Date format with hour 7 characters + 3 identifier
+      hibcExpirationDate = passedBarcode.substring(3, 10)
+      // Lot #: Alphanumeric 18 characters
+      hibcLotNumber = passedBarcode.substring(10)
+
+      returnObject.hibcExpirationDate = moment(hibcExpirationDate, "YYDDDDHH").format("YYMMDD")
+      returnObject.hibcLotNumber = hibcLotNumber
+    }
+    else if(identifier.substring(0,2) === '$$') {
+      //Expiration Date (MMYY) followed by Lot Number
+
+      //	4 characters MMYY + 2 idenfitier numeric
+      hibcExpirationDate = passedBarcode.substring(2,6)
+      // 18 characters alphanumeric lot number
+      hibcLotNumber = passedBarcode.substring(6)
+
+      returnObject.hibcExpirationDate = hibcExpirationDate.substring(2,4) + hibcExpirationDate.substring(0,2) + "01"
+      returnObject.hibcLotNumber = hibcLotNumber
+    }
   }
-  else if(identifier === '$$2') {
-    //Expiration Date (MMDDYY) followed by Lot Number
+  else if(identifier.substring(0,1) === '$') {
+    if(identifier.substring(0,1) === '$') {
+      //Lot Number Only 18 characters + 1 idenfitier alphanumeric
+      hibcLotNumber = passedBarcode.substring(1)
 
-    // 6 characters MMDDYY + 3 identifier numeric
-    hibcExpirationDate = passedBarcode
-    // Lot Number 18 characters Alphanumeric
-    hibcLotNumber = passedBarcode
-
-    returnObject.hibcExpirationDate = hibcExpirationDate
-    returnObject.hibcLotNumber = hibcLotNumber
+      returnObject.hibcLotNumber = hibcLotNumber
+    }
   }
-  else if(identifier === '$$3') {
-    //Expiration Date (YYMMDD) followed by Lot Number
+  else if(identifier.substring(0,1) === '/') {
+    if(identifier.substring(0,2) === '/S') {
+      //Supplemental Serial Number, where lot number also required and included in main secondary data string
+      //alphanumeric 18 characters plus 2 identifier
+      hibcSecondarySerial = passedBarcode.substring(2)
 
-    // Exp. Date: Numeric 6 characters + 3 identifier
-    hibcExpirationDate = passedBarcode
-    // Lot #: Alphanumeric 18 characters
-    hibcLotNumber = passedBarcode
+      returnObject.hibcSecondarySerial = hibcSecondarySerial
+    }
+    else if(identifier === '/16D') {
+      //Manufacturing Date (YYYYMMDD) (supplemental to secondary barcode)
+      //numeric 8 characters plus 4 identifier
+      hibcSecondaryManufacture = passedBarcode.substring(4)
 
-    returnObject.hibcExpirationDate = hibcExpirationDate
-    returnObject.hibcLotNumber = hibcLotNumber
+      returnObject.hibcSecondaryManufacture = hibcSecondaryManufacture.substring(2)
+    }
+    else if(identifier === '/14D') {
+      //Expiration Date (YYYYMMDD) (supplemental to secondary barcode)
+      //numeric 8 characters plus 4 identifier
+      hibcSecondaryExpiration = passedBarcode.substring(4)
+
+      returnObject.hibcSecondaryExpiration = hibcSecondaryExpiration.substring(2)
+    }
   }
-  else if(identifier === '$$4') {
-    //Expiration Date (YYMMDDHH) followed by Lot Number
 
-    // Exp. Date: Numeric 8 characters + 3 identifier
-    hibcExpirationDate = passedBarcode
-    // Lot #: Alphanumeric 18 characters
-    hibcLotNumber = passedBarcode
-
-    returnObject.hibcExpirationDate = hibcExpirationDate
-    returnObject.hibcLotNumber = hibcLotNumber
-  }
-  else if(identifier === '$$5') {
-    //Expiration Date (YYJJJ) followed by Lot Number
-
-    // Exp. Date: numeric Julian Date format 5 characters + 3
-    hibcExpirationDate = passedBarcode
-
-    //Lot #: Alphanumeric 18 characters
-    hibcLotNumber = passedBarcode
-
-    returnObject.hibcExpirationDate = hibcExpirationDate
-    returnObject.hibcLotNumber = hibcLotNumber
-  }
-  else if(identifier === '$$6') {
-    //Expiration Date (YYJJJHH) followed by Lot Number
-
-    // Exp. Date: numeric Julian Date format with hour 7 characters + 3 identifier
-    hibcExpirationDate = passedBarcode
-    // Lot #: Alphanumeric 18 characters
-    hibcLotNumber = passedBarcode
-
-    returnObject.hibcExpirationDate = hibcExpirationDate
-    returnObject.hibcLotNumber = hibcLotNumber
-  }
-  else if(identifier === '$+') {
-    //Serial Number only
-
-    // Alphanumeric 18 characters + 2
-    hibcSerialNumber = passedBarcode
-
-    returnObject.hibcSerialNumber = hibcSerialNumber
-  }
-  else if(identifier === '$$+7') {
-    //Serial Number only (Alternate Option)
-
-    //Alphanumeric 18 characters + 4 identifier
-    hibcSerialNumber = passedBarcode
-
-    returnObject.hibcSerialNumber = hibcSerialNumber
-  }
-  else if(identifier === '$$+') {
-    //Expiration Date (MMYY) followed by Serial Number
-
-    // Exp. Date: Numeric 4 characters + 3 identifier
-    hibcExpirationDate = passedBarcode
-    // Serial #: Alphanumeric 18 characters
-    hibcSerialNumber = passedBarcode
-
-    returnObject.hibcExpirationDate = hibcExpirationDate
-    returnObject.hibcSerialNumber = hibcSerialNumber
-  }
-  else if(identifier === '$$+2') {
-    //Expiration Date (MMDDYY) followed by Serial Number
-
-    // Exp. Date: Numeric 6 characters + 4 identifier
-    hibcExpirationDate = passedBarcode
-    // Serial #: Alphanumeric 18 characters
-    hibcSerialNumber = passedBarcode
-
-    returnObject.hibcExpirationDate = hibcExpirationDate
-    returnObject.hibcSerialNumber = hibcSerialNumber
-  }
-  else if(identifier === '$$+3') {
-    //Expiration Date (YYMMDD) followed by Serial Number
-
-    //Exp. Date: Numeric 6 characters + 4 identifier
-    hibcExpirationDate = passedBarcode
-    //Serial #: Alphanumeric 18 characters
-    hibcSerialNumber = passedBarcode
-
-    returnObject.hibcExpirationDate = hibcExpirationDate
-    returnObject.hibcSerialNumber = hibcSerialNumber
-  }
-  else if(identifier === '$$+4') {
-    //Expiration Date (YYMMDDHH) followed by Serial Number
-
-    //Exp. Date: Numeric 8 characters + 4 identifiers
-    hibcExpirationDate = passedBarcode
-    //Serial #: Alphanumeric 18 characters
-    hibcSerialNumber = passedBarcode
-
-    returnObject.hibcExpirationDate =
-    returnObject.hibcSerialNumber = hibcSerialNumber
-  }
-  else if(identifier === '$$+5') {
-    //Expiration Date (YYJJJ) followed by Serial Number
-
-    //Exp. Date: numeric Julian Date format 5 characters plus 4 identifier
-    hibcExpirationDate = passedBarcode
-    //Serial #: Alphanumeric 18 characters
-    hibcSerialNumber = passedBarcode
-
-    returnObject.hibcExpirationDate = hibcExpirationDate
-    returnObject.hibcSerialNumber = hibcSerialNumber
-  }
-  else if(identifier === '$$+6') {
-    //Expiration Date followed by Serial Number
-
-    // Exp. Date: Numeric Julian Date format with hour 7 characters plus 4 identifier
-    hibcExpirationDate = passedBarcode
-    // Serial #: 18 characters Alphanumeric
-    hibcSerialNumber = passedBarcode
-
-    returnObject.hibcExpirationDate = hibcExpirationDate
-    returnObject.hibcSerialNumber = hibcSerialNumber
-  }
   else {
     // Error or skip, unsupported UCC encoding
     console.log("HIBC ENCODING DETECTED OUTSIDE SUPPORTED BOUNDS")
