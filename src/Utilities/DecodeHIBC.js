@@ -38,7 +38,7 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       //Alphanumeric 18 characters + 4 identifier
       hibcSerialNumber = passedBarcode.substring(4)
 
-      returnObject.hibcSerialNumber = hibcSerialNumber
+      returnObject.serialNumber = hibcSerialNumber
     }
   }
   else if(identifier.substring(0,2) === "$+") {
@@ -48,7 +48,7 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       // Alphanumeric 18 characters + 2
       hibcSerialNumber = passedBarcode.substring(2)
 
-      returnObject.hibcSerialNumber = hibcSerialNumber
+      returnObject.serialNumber = hibcSerialNumber
     }
     else if(identifier === '$$+2') {
       //Expiration Date (MMDDYY) followed by Serial Number
@@ -58,8 +58,8 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       // Serial #: Alphanumeric 18 characters
       hibcSerialNumber = passedBarcode.substring(10)
 
-      returnObject.hibcExpirationDate = hibcExpirationDate.substring(4, 6) + hibcExpirationDate.substring(0, 2) + hibcExpirationDate.substring(2, 4)
-      returnObject.hibcSerialNumber = hibcSerialNumber
+      returnObject.expirationDate = hibcExpirationDate.substring(4, 6) + hibcExpirationDate.substring(0, 2) + hibcExpirationDate.substring(2, 4)
+      returnObject.serialNumber = hibcSerialNumber
     }
     else if(identifier === '$$+3') {
       //Expiration Date (YYMMDD) followed by Serial Number
@@ -69,8 +69,8 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       //Serial #: Alphanumeric 18 characters
       hibcSerialNumber = passedBarcode.substring(10)
 
-      returnObject.hibcExpirationDate = hibcExpirationDate
-      returnObject.hibcSerialNumber = hibcSerialNumber
+      returnObject.expirationDate = hibcExpirationDate
+      returnObject.serialNumber = hibcSerialNumber
     }
     else if(identifier === '$$+4') {
       //Expiration Date (YYMMDDHH) followed by Serial Number
@@ -80,8 +80,8 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       //Serial #: Alphanumeric 18 characters
       hibcSerialNumber = passedBarcode.substring(12)
 
-      returnObject.hibcExpirationDate = hibcExpirationDate.substring(0,6)
-      returnObject.hibcSerialNumber = hibcSerialNumber
+      returnObject.expirationDate = hibcExpirationDate.substring(0,6)
+      returnObject.serialNumber = hibcSerialNumber
     }
     else if(identifier === '$$+5') {
       //Expiration Date (YYJJJ) followed by Serial Number
@@ -91,8 +91,8 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       //Serial #: Alphanumeric 18 characters
       hibcSerialNumber = passedBarcode.substring(9)
 
-      returnObject.hibcExpirationDate = moment(hibcExpirationDate, "YYDDDD").format("YYMM[01]")
-      returnObject.hibcSerialNumber = hibcSerialNumber
+      returnObject.expirationDate = moment(hibcExpirationDate, "YYDDDD").format("YYMM[01]")
+      returnObject.serialNumber = hibcSerialNumber
     }
     else if(identifier === '$$+6') {
       //Expiration Date followed by Serial Number
@@ -102,8 +102,8 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       // Serial #: 18 characters Alphanumeric
       hibcSerialNumber = passedBarcode.substring(11)
 
-      returnObject.hibcExpirationDate = moment(hibcExpirationDate, "YYDDDDHH").format("YYMMDD")
-      returnObject.hibcSerialNumber = hibcSerialNumber
+      returnObject.expirationDate = moment(hibcExpirationDate, "YYDDDDHH").format("YYMMDD")
+      returnObject.serialNumber = hibcSerialNumber
     }
     else if(identifier.substring(0,3) === '$$+') {
       //Expiration Date (MMYY) followed by Serial Number
@@ -113,8 +113,8 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       // Serial #: Alphanumeric 18 characters
       hibcSerialNumber = passedBarcode.substring(7)
 
-      returnObject.hibcExpirationDate = hibcExpirationDate.substring(2,4) + hibcExpirationDate.substring(0,2) + "01"
-      returnObject.hibcSerialNumber = hibcSerialNumber
+      returnObject.expirationDate = hibcExpirationDate.substring(2,4) + hibcExpirationDate.substring(0,2) + "01"
+      returnObject.serialNumber = hibcSerialNumber
     }
   }
   else if(identifier.substring(0,2) === "$$") {
@@ -122,7 +122,7 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       //Lot Number Only (Alternate Option) 18 characters + 3 idenfitier alphanumeric
       hibcLotNumber = passedBarcode.substring(3)
 
-      returnObject.hibcLotNumber = hibcLotNumber
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,3) === '$$2') {
       //Expiration Date (MMDDYY) followed by Lot Number
@@ -132,8 +132,8 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       // Lot Number 18 characters Alphanumeric
       hibcLotNumber = passedBarcode.substring(9)
 
-      returnObject.hibcExpirationDate = hibcExpirationDate.substring(4, 6) + hibcExpirationDate.substring(0, 2) + hibcExpirationDate.substring(2, 4)
-      returnObject.hibcLotNumber = hibcLotNumber
+      returnObject.expirationDate = hibcExpirationDate.substring(4, 6) + hibcExpirationDate.substring(0, 2) + hibcExpirationDate.substring(2, 4)
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,3) === '$$3') {
       //Expiration Date (YYMMDD) followed by Lot Number
@@ -143,8 +143,8 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       // Lot #: Alphanumeric 18 characters
       hibcLotNumber = passedBarcode.substring(9)
 
-      returnObject.hibcExpirationDate = hibcExpirationDate
-      returnObject.hibcLotNumber = hibcLotNumber
+      returnObject.expirationDate = hibcExpirationDate
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,3) === '$$4') {
       //Expiration Date (YYMMDDHH) followed by Lot Number
@@ -154,8 +154,8 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       // Lot #: Alphanumeric 18 characters
       hibcLotNumber = passedBarcode.substring(11)
 
-      returnObject.hibcExpirationDate = hibcExpirationDate.substring(0,6)
-      returnObject.hibcLotNumber = hibcLotNumber
+      returnObject.expirationDate = hibcExpirationDate.substring(0,6)
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,3) === '$$5') {
       //Expiration Date (YYJJJ) followed by Lot Number
@@ -166,8 +166,8 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       //Lot #: Alphanumeric 18 characters
       hibcLotNumber = passedBarcode.substring(8)
 
-      returnObject.hibcExpirationDate = moment(hibcExpirationDate, "YYDDDD").format("YYMMDD")
-      returnObject.hibcLotNumber = hibcLotNumber
+      returnObject.expirationDate = moment(hibcExpirationDate, "YYDDDD").format("YYMMDD")
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,3) === '$$6') {
       //Expiration Date (YYJJJHH) followed by Lot Number
@@ -177,8 +177,8 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       // Lot #: Alphanumeric 18 characters
       hibcLotNumber = passedBarcode.substring(10)
 
-      returnObject.hibcExpirationDate = moment(hibcExpirationDate, "YYDDDDHH").format("YYMMDD")
-      returnObject.hibcLotNumber = hibcLotNumber
+      returnObject.expirationDate = moment(hibcExpirationDate, "YYDDDDHH").format("YYMMDD")
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,2) === '$$') {
       //Expiration Date (MMYY) followed by Lot Number
@@ -188,8 +188,8 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       // 18 characters alphanumeric lot number
       hibcLotNumber = passedBarcode.substring(6)
 
-      returnObject.hibcExpirationDate = hibcExpirationDate.substring(2,4) + hibcExpirationDate.substring(0,2) + "01"
-      returnObject.hibcLotNumber = hibcLotNumber
+      returnObject.expirationDate = hibcExpirationDate.substring(2,4) + hibcExpirationDate.substring(0,2) + "01"
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
   }
   else if(identifier.substring(0,1) === '$') {
@@ -197,7 +197,7 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       //Lot Number Only 18 characters + 1 idenfitier alphanumeric
       hibcLotNumber = passedBarcode.substring(1)
 
-      returnObject.hibcLotNumber = hibcLotNumber
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
   }
   else if(identifier.substring(0,1) === '/') {

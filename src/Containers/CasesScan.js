@@ -21,9 +21,9 @@ export default class CasesScan extends Component {
       caseInformation: {
         number: '',
         name: '',
-        doctor: '',
-        location: '',
-        procedure: '',
+        doctor: {},
+        location: {},
+        procedure: {},
         products: []
       }
     }
@@ -222,9 +222,9 @@ export default class CasesScan extends Component {
               <View style={styles.shadedBackgroundWrapper}>
                 <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>{this.state.caseInformation.number}</Text>
                 <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Patient Name: </Text>{this.state.caseInformation.name}</Text>
-                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Doctor: </Text> {this.state.caseInformation.doctor}</Text>
-                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Location: </Text>{this.state.caseInformation.location}</Text>
-                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Procedure: </Text>{this.state.caseInformation.procedure}</Text>
+                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Doctor: </Text> {this.state.caseInformation.doctor.firstName + " " + this.state.caseInformation.lastName}</Text>
+                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Location: </Text>{this.state.caseInformation.location.siteDescription}</Text>
+                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Procedure: </Text>{this.state.caseInformation.procedure.procedureDescription}</Text>
               </View>
             </View>
             <View style={styles.sectionContainer}>

@@ -1,0 +1,233 @@
+[
+    {
+        "procedureCode": "00",
+        "procedureDescription": "EXPIRED PRODUCTS",
+        "billingCode": "DEFAULT",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2011-05-24T09:25:46.043",
+        "createUserid": "A42464",
+        "changeTimestamp": "2011-05-24T09:25:46.043",
+        "changeUserid": "A42464"
+    },
+    {
+        "procedureCode": "00.1",
+        "procedureDescription": "PRODUCT RETURN",
+        "billingCode": "DEFAULT",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2019-11-27T12:01:38.583",
+        "createUserid": "A42464",
+        "changeTimestamp": "2019-11-27T12:01:38.583",
+        "changeUserid": "A42464"
+    },
+    {
+        "procedureCode": "93501",
+        "procedureDescription": "93501 RIGHT HEART CATH..",
+        "billingCode": "91266346",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2007-08-13T14:39:39.953",
+        "createUserid": "A42464",
+        "changeTimestamp": "2007-08-13T00:00:00",
+        "changeUserid": "A42464"
+    },
+    {
+        "procedureCode": "93503",
+        "procedureDescription": "93503 SWAN GANZ INSERT FOR MONITORI",
+        "billingCode": "91265545",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2007-08-13T14:39:39.953",
+        "createUserid": "A42464",
+        "changeTimestamp": "2007-08-13T00:00:00",
+        "changeUserid": "A42464"
+    },
+    {
+        "procedureCode": "93505",
+        "procedureDescription": "93505 BIOPSY ENDOMYOCARDIAL.",
+        "billingCode": "91200324",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2007-08-13T14:39:39.967",
+        "createUserid": "A42464",
+        "changeTimestamp": "2007-08-13T00:00:00",
+        "changeUserid": "A42464"
+    },
+    {
+        "procedureCode": "93544",
+        "procedureDescription": "93544 AORTOGRAPHY.",
+        "billingCode": "91266358",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2007-08-13T14:39:40.03",
+        "createUserid": "A42464",
+        "changeTimestamp": "2007-08-13T00:00:00",
+        "changeUserid": "A42464"
+    },
+    {
+        "procedureCode": "93555",
+        "procedureDescription": "93555 IMAGE MANAGEMENT CHAMBERS.",
+        "billingCode": "91266360",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2007-08-13T14:39:40.03",
+        "createUserid": "A42464",
+        "changeTimestamp": "2007-08-13T00:00:00",
+        "changeUserid": "A42464"
+    },
+    {
+        "procedureCode": "93556",
+        "procedureDescription": "93556 IMAGE MANAGEMENT VESSELS.",
+        "billingCode": "91266361",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2007-08-13T14:39:40.03",
+        "createUserid": "A42464",
+        "changeTimestamp": "2007-08-13T00:00:00",
+        "changeUserid": "A42464"
+    },
+    {
+        "procedureCode": "93571",
+        "procedureDescription": "93571 DOPPLER VELOCITY FIRST VESSEL",
+        "billingCode": "91200401",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2007-08-13T14:39:40.047",
+        "createUserid": "A42464",
+        "changeTimestamp": "2007-08-13T00:00:00",
+        "changeUserid": "A42464"
+    },
+    {
+        "procedureCode": "93572",
+        "procedureDescription": "93572 DOPPLER VELOCITY ADDL VESSEL",
+        "billingCode": "91200402",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2007-08-13T14:39:40.047",
+        "createUserid": "A42464",
+        "changeTimestamp": "2007-08-13T00:00:00",
+        "changeUserid": "A42464"
+    },
+    {
+        "procedureCode": "93580",
+        "procedureDescription": "93580 ASD CLOSURE WITH DEVICE CONGE",
+        "billingCode": "91270011",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2007-08-13T14:39:40.047",
+        "createUserid": "A42464",
+        "changeTimestamp": "2007-08-13T00:00:00",
+        "changeUserid": "A42464"
+    },
+    {
+        "procedureCode": "93603",
+        "procedureDescription": "93603 EP RV RECORDING.",
+        "billingCode": "91200337",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2007-08-13T14:39:40.077",
+        "createUserid": "A42464",
+        "changeTimestamp": "2007-08-13T00:00:00",
+        "changeUserid": "A42464"
+    },
+    {
+        "procedureCode": "93612",
+        "procedureDescription": "93612 INTRAVENTRICULAR PACING.",
+        "billingCode": "91200345",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2007-08-13T14:39:40.093",
+        "createUserid": "A42464",
+        "changeTimestamp": "2007-08-13T00:00:00",
+        "changeUserid": "A42464"
+    },
+    {
+        "procedureCode": "CV",
+        "procedureDescription": "00 CV PROCEDURE",
+        "billingCode": "DEFAULT",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2007-03-14T16:22:24.323",
+        "createUserid": "MEDTRONIC",
+        "changeTimestamp": "2007-11-21T10:07:56.203",
+        "changeUserid": "A42464"
+    },
+    {
+        "procedureCode": "DEFAULT",
+        "procedureDescription": "Default Procedure",
+        "billingCode": "DEFAULT",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "1997-06-30T00:00:00",
+        "createUserid": "MEDTRONIC",
+        "changeTimestamp": "2007-03-14T00:00:00",
+        "changeUserid": "MEDTRONIC"
+    },
+    {
+        "procedureCode": "EP",
+        "procedureDescription": "00 EP PROCECURE",
+        "billingCode": "DEFAULT",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2007-03-14T16:22:24.34",
+        "createUserid": "MEDTRONIC",
+        "changeTimestamp": "2007-11-21T10:08:26.017",
+        "changeUserid": "A42464"
+    },
+    {
+        "procedureCode": "G0269",
+        "procedureDescription": "G0269 OCCLUSIVE DEVICE PLACEMENT.",
+        "billingCode": "91265522",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2007-08-13T14:39:40.36",
+        "createUserid": "A42464",
+        "changeTimestamp": "2007-08-13T00:00:00",
+        "changeUserid": "A42464"
+    },
+    {
+        "procedureCode": "G0278",
+        "procedureDescription": "G0278 ANGIO ILIAC ARTERY W CATH",
+        "billingCode": "91200701",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2007-08-13T14:39:40.39",
+        "createUserid": "A42464",
+        "changeTimestamp": "2007-08-13T00:00:00",
+        "changeUserid": "A42464"
+    },
+    {
+        "procedureCode": "G0300",
+        "procedureDescription": "G0300 PCD DUAL CHAMBER GEN LEADS",
+        "billingCode": "91270030",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2007-08-13T14:39:40.42",
+        "createUserid": "A42464",
+        "changeTimestamp": "2007-08-13T00:00:00",
+        "changeUserid": "A42464"
+    },
+    {
+        "procedureCode": "MISC",
+        "procedureDescription": "ZUNKNOWN",
+        "billingCode": "DEFAULT",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2007-03-14T16:22:24.357",
+        "createUserid": "MEDTRONIC",
+        "changeTimestamp": "2007-03-14T16:22:24.357",
+        "changeUserid": "MEDTRONIC"
+    },
+    {
+        "procedureCode": "NEW CODES",
+        "procedureDescription": "ZZ",
+        "billingCode": "DEFAULT",
+        "active": "Y",
+        "accepted": "Y",
+        "createTimestamp": "2007-03-14T16:22:24.357",
+        "createUserid": "MEDTRONIC",
+        "changeTimestamp": "2007-03-14T16:22:24.357",
+        "changeUserid": "MEDTRONIC"
+    }
+]

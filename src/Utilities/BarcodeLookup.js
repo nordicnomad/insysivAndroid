@@ -11,7 +11,8 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
   let passedBarcode = barcode
   let matchedProduct = {}
   let noDBmatchFlag = true
-
+  console.log("BARDCODE PASSED TO BARCODE LOOKUP")
+  console.log(barcode)
   // ucc state tree for multiple concatenated Application Identifier types in one barcode.
   let decodeReturnObject = {
     // ucc (00) 18 digits - numeric
@@ -25,17 +26,14 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     batchOrLotNumber: '',
     // ucc (17) 6 digit YYMMDD
     expirationDate: '',
-    hibcExpirationDate: '',
     // ucc (20) 2 digits
     productVariant: '',
     // ucc (21) 1-20 alphanumeric
     serialNumber: '',
-    hibcSerialNumber: '',
     // ucc (22) 1-29 alphanumeric
     hibcc: '',
     // ucc (23) 1-19 alphanumeric
     lotNumber: '',
-    hibcLotNumber: '',
     // ucc (30) number of requisit length
     quantityEach: '',
     // ucc (240) 1-30 alphanumeric
@@ -103,29 +101,29 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     let lastInitialPosition = 0
 
     //Seperate barcode elements starting positions
-    for(i=0; (passedBarcode.length - 1); i++) {
-      if(passedBarcode.charAt[i] === "+" && lastCharacter != "$") {
+    for(i=0; i < (passedBarcode.length - 1); i++) {
+      if(passedBarcode.charAt(i) === "+" && lastCharacter != "$") {
         hibcAIcharLocations.push({
-          char: passedBarcode.charAt[i],
+          char: passedBarcode.charAt(i),
           pos: i
         })
         lastInitialPosition = i
       }
-      else if(passedBarcode.charAt[i] === "$" && lastCharacter != "$" && (lastInitialPosition + 3) < i) {
+      else if(passedBarcode.charAt(i) === "$" && lastCharacter != "$" && (lastInitialPosition + 3) < i) {
         hibcAIcharLocations.push({
-          char: passedBarcode.charAt[i],
+          char: passedBarcode.charAt(i),
           pos: i
         })
         lastInitialPosition = i
       }
-      else if (passedBarcode.charAt[i] === "/") {
+      else if (passedBarcode.charAt(i) === "/") {
         hibcAIcharLocations.push({
-          char: passedBarcode.charAt[i],
+          char: passedBarcode.charAt(i),
           pos: i
         })
         lastInitialPosition = i
       }
-      lastCharacter = passedBarcode.charAt[i]
+      lastCharacter = passedBarcode.charAt(i)
     }
 
     //Add first four characters from initial locations to app identifier array
@@ -133,7 +131,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
       let buildHibcIdentifierString = ''
 
       for(s = location.pos; s < (location.pos + 3); s++) {
-        buildHibcIdentifierString = buildHibcIdentifierString + passedBarcode.charAt[s]
+        buildHibcIdentifierString = buildHibcIdentifierString + passedBarcode.charAt(s)
       }
       hibcAppIdentifiers.push(buildHibcIdentifierString)
     });
@@ -145,14 +143,14 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
       if((i+1) < hibcAIcharLocations.length) {
         let currentHibcPosition = evalHibcPosition
         while(hibcAIcharLocations[i+1].pos > evalHibcPosition) {
-          buildHibcBarcodeString = buildHibcBarcodeString + passedBarcode.charAt[currentHibcPosition]
+          buildHibcBarcodeString = buildHibcBarcodeString + passedBarcode.charAt(currentHibcPosition)
           currentHibcPosition = currentHibcPosition + 1
         }
       }
       else {
         let currentHibcPosition = evalHibcPosition
         while(passedBarcode.length > (currentHibcPosition + 1)) {
-          buildHibcBarcodeString = buildHibcBarcodeString + passedBarcode.charAt[currentHibcPosition]
+          buildHibcBarcodeString = buildHibcBarcodeString + passedBarcode.charAt(currentHibcPosition)
           currentHibcPosition = currentHibcPosition + 1
         }
       }
@@ -165,21 +163,25 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     })
   }
   else if(passedBarcode.substring(0,1) === '(') {
+    console.log("UCC BARCODE DETECTED")
     let uccAIparenLocations = []
     let uccAppIdentifiers = []
     let uccAppStrings = []
 
     //Seperate barcode elements
-    for(i=0; (passedBarcode.length - 1); i++) {
-      if(passedBarcode.charAt[i] === '(' || passedBarcode.charAt[i] === ')') {
+    for(i=0; i < (passedBarcode.length - 1); i++) {
+      console.log(passedBarcode.charAt(i))
+      if(passedBarcode.charAt(i) === '(' || passedBarcode.charAt(i) === ')') {
         uccAIparenLocations.push(
           {
-            char: passedBarcode.charAt[i],
+            char: passedBarcode.charAt(i),
             pos: i,
           }
         )
       }
     }
+    console.log("UCC API PAREN LOCATIONS")
+    console.log(uccAIparenLocations)
     uccAIparenLocations.forEach((location, i) => {
       let startPosition = 0
       let endPosition = 0
@@ -192,7 +194,8 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
         endPosition = uccAIparenLocations[i+1].pos
 
         //loop ahead to close position adding contents to AppIdentifier Variable
-        for(p=startPosition; endPosition; p++) {
+        for(p=startPosition; p < endPosition + 1; p++) {
+          console.log(passedBarcode[p])
           buildAppIdentifier = buildAppIdentifier + passedBarcode[p]
         }
         uccAppIdentifiers.push(buildAppIdentifier)
@@ -204,8 +207,8 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
         // Starting with the character after the close add characters to build string
         // until end of string or new opening character are encountered.
         while(endOfString === false) {
-          if(passedBarcode.charAt[evalPosition] != '(' && evalPosition < passedBarcode.length) {
-            buildBarcodeString.push(passedBarcode.charAt[evalPosition])
+          if(passedBarcode.charAt(evalPosition) != '(' && evalPosition < passedBarcode.length) {
+            buildBarcodeString = buildBarcodeString + passedBarcode.charAt(evalPosition)
           }
           evalPosition = evalPosition + 1
           if(evalPosition >= passedBarcode.length) {
@@ -215,23 +218,30 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
         uccAppStrings.push(buildBarcodeString)
       }
     })
-
+    console.log("UCC APP IDENTIFIERS")
+    console.log(uccAppIdentifiers)
+    console.log("UCC APP STRINGS")
+    console.log(uccAppStrings)
     //Decode UCC passedBarcode string
     uccAppIdentifiers.forEach((identifier, i) => {
       decodeReturnObject = DecodeUCC(identifier, uccAppStrings[i], decodeReturnObject)
     })
-
+    console.log("DECODED RETURN OBJECT")
+    console.log(decodeReturnObject)
   }
 
   //Search DB tables for vendor and model match
   if(decodeReturnObject.productModelNumber != '') {
     let searchCount = 0
     productTable.forEach((product, i) => {
-      console.log('UCC SEARCHCOUNT')
+      console.log('PRODUCT SEARCHCOUNT')
       console.log(searchCount)
-      if(product.productModelNumber === uccDecodeReturnObject.productModelNumber) {
+      if(product.productModelNumber === decodeReturnObject.productModelNumber) {
         console.log("MATCHED PRODUCT VENDOR LICENSE")
         matchedProduct = {
+          barcode: passedBarcode,
+          trayState: false,
+          isUnknown: false,
           licenseNumber: product.licenseNumber,
           productModelNumber: product.productModelNumber,
           orderThruVendor: product.orderThruVendor,
@@ -254,6 +264,10 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
           maximumValue: product.maximumValue,
           nonOrdered: product.nonOrdered,
           productNote: product.productNote,
+          scannedTime: new Date("YYMMDD"),
+          count: 1,
+          waste: false,
+          scanned: true,
         }
         noDBmatchFlag = false
       }
@@ -261,32 +275,15 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     });
   }
 
-  //Return usable product object to save to working product scan DB.
-  //Consolidate information from decoded barcode with matched DB values.
-  matchedProduct = {
-    barcode: passedBarcode,
-    name: "UCC Barcode Product",
-    model: productModelNumber,
-    lotSerial: productVendorLicense,
-    expiration: "????",
-
-    trayState: false,
-    isUnknown: false,
-    count: 1,
-    scannedTime: "Now",
-    waste: false,
-    scanned: false,
-  }
-
-  if(noDBmatchFlag === true) {
+  if(noDBmatchFlag === true && decodeReturnObject.productModelNumber != '') {
     //Run lookup of local barcode table with passedBarcode string
     matchedProduct = {
       barcode: passedBarcode,
       trayState: false,
       isUnknown: true,
       name: "Unknown Product",
-      model: productModelNumber,
-      lotSerial: productVendorLicense,
+      model: "number",
+      lotSerial: "number",
       expiration: "????",
       count: 1,
       scannedTime: "Now",
@@ -295,7 +292,14 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     }
   }
 
+  //Return usable product object to save to working product scan DB.
+  //Consolidate information from decoded barcode with matched DB values.
+
+  let combinedProductReturn = {...matchedProduct, ...decodeReturnObject}
+
   console.log("MATCHEDPRODUCT OBJECT")
   console.log(matchedProduct)
-  return (matchedProduct)
+  console.log(decodeReturnObject)
+  console.log(combinedProductReturn)
+  return (combinedProductReturn)
 }

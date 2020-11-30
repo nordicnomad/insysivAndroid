@@ -19,7 +19,10 @@ export default class CasesSetup extends Component {
     this.state = {
       showNewTray: false,
       activeCaseValue: 0,
-      cases:{cases:[],Doctors:[],Locations:[],Procedures:[]},
+      cases:[],
+      doctors:[],
+      locations:[],
+      procedures:[],
       caseNumberHasFocus: false,
       patientNameHasFocus: false,
       newCaseNumber: '',
@@ -166,8 +169,8 @@ export default class CasesSetup extends Component {
     }
     else {
       this.FetchDoctorTable()
-        .then(this.FetchProcedureTable())
-        .then(this.FetchLocationTable())
+      this.FetchProcedureTable()
+      this.FetchLocationTable()
     }
   }
   onCaseNumberFocusChange() {
@@ -177,13 +180,13 @@ export default class CasesSetup extends Component {
     this.setState({patientNameHasFocus: !this.state.patientNameHasFocus})
   }
   onDoctorChange = (pickerValue) => {
-    this.setState({newDoctorValue: pickerValue, newDoctorLabel: this.state.cases.Doctors[pickerValue-1]})
+    this.setState({newDoctorValue: pickerValue, newDoctorLabel: this.state.doctors[pickerValue-1]})
   }
   onLocationChange = (pickerValue) => {
-    this.setState({newLocationValue: pickerValue, newLocationLabel:this.state.cases.Locations[pickerValue-1]})
+    this.setState({newLocationValue: pickerValue, newLocationLabel:this.state.locations[pickerValue-1]})
   }
   onProcedureChange = (pickerValue) => {
-    this.setState({newProcedureValue: pickerValue, newProcedureLabel: this.state.cases.Procedures[pickerValue-1]})
+    this.setState({newProcedureValue: pickerValue, newProcedureLabel: this.state.procedures[pickerValue-1]})
   }
   onCaseChange = (pickerValue) => {
     this.setState({activeCaseValue: pickerValue})
@@ -201,16 +204,18 @@ export default class CasesSetup extends Component {
     }
   }
   renderExistingCases() {
-    let existingCases = this.state.cases.cases
+    let existingCases = this.state.cases
     let existingOutput = []
     existingOutput.push(
       <Picker.Item key={"exC" + 0} label='Select an existing case...' value='0' />
     )
-    existingCases.forEach(function(existing, index) {
-      existingOutput.push(
-        <Picker.Item key={"exC"+index} label={existing.name + " - " + existing.number} value={index+1} />
-      )
-    })
+    if(existingCases != null && existingCases != undefined) {
+      existingCases.forEach(function(existing, index) {
+        existingOutput.push(
+          <Picker.Item key={"exC"+index} label={existing.name + " - " + existing.number} value={index+1} />
+        )
+      })
+    }
     return(existingOutput)
   }
   savePhysiciansTable = (responsephysicians) => {
@@ -256,7 +261,7 @@ export default class CasesSetup extends Component {
       physiciansResponse = docresponseJson;
       this.savePhysiciansTable(physiciansResponse)
       this.setState({
-        cases:{Doctors:physiciansResponse},
+        doctors:physiciansResponse,
         fetchProgressMessage: 'Physicians Synced',
       })
     })
@@ -277,8 +282,6 @@ export default class CasesSetup extends Component {
         proceduresList.deleteAll()
         newProcedures.forEach(function(procedure, i) {
           try {
-            saveCount = saveCount + 1
-            console.log(saveCount)
             proceduresList.create('Procedures_List', {
               procedureCode: procedure.procedureCode,
               procedureDescription: procedure.procedureDescription,
@@ -300,7 +303,7 @@ export default class CasesSetup extends Component {
     //Procedure Calls
     //test server call
     console.log("FETCHPROCEDURETABLE CALLED FROM CASESSETUP PAGE")
-    return fetch('http://25.78.82.76:5100/api/ProductBarCodes')
+    return fetch('http://25.78.82.76:5100/api/ProcedureTables')
     .then((proresponse) => proresponse.json())
     .then((proresponseJson) => {
       console.log("PROCEDURE RESPONSE")
@@ -308,7 +311,7 @@ export default class CasesSetup extends Component {
       procedureResponse = proresponseJson;
       this.saveProcedureTable(procedureResponse)
       this.setState({
-        cases:{Procedures:procedureResponse},
+        procedures:procedureResponse,
         syncProgressMessage: 'Procedures Synced',
       })
     })
@@ -329,8 +332,6 @@ export default class CasesSetup extends Component {
         locationsList.deleteAll()
         newLocations.forEach(function(location, i) {
           try {
-            saveCount = saveCount + 1
-            console.log(saveCount)
             locationsList.create('Locations_List', {
               siteId: location.siteId,
               siteDescription: location.siteDescription,
@@ -360,7 +361,7 @@ export default class CasesSetup extends Component {
       sitesResponse = siteresponseJson;
       this.saveLocationsTable(sitesResponse)
       this.setState({
-        cases:{Locations:sitesResponse},
+        locations:sitesResponse,
         syncProgressMessage: 'Sites Synced',
       })
     })
@@ -372,48 +373,67 @@ export default class CasesSetup extends Component {
     });
   }
   renderDoctorChoices() {
-    let doctors = this.state.cases.Doctors
+    let doctors = this.state.doctors
     let doctorsOutput = []
     doctorsOutput.push(
       <Picker.Item key={"Doc" + 0} label='Select a Doctor...' value='0' />
     )
-    doctors.forEach(function(doctor, index) {
-      doctorsOutput.push(
-        <Picker.Item key={"Doc"+index} label={doctor} value={index+1} />
-      )
-    })
+    if(doctors != null && doctors != undefined) {
+      doctors.forEach(function(doctor, index) {
+        if(doctor.active === "Y") {
+          doctorsOutput.push(
+            <Picker.Item key={doctor.physicianId} label={doctor.physicianId + " - - " + doctor.firstName + " " + doctor.lastName} value={index+1} />
+          )
+        }
+      })
+    }
     return(doctorsOutput)
   }
   renderLocationChoices() {
-    let locations = this.state.cases.Locations
+    let locations = this.state.locations
     let locationsOutput = []
     locationsOutput.push(
       <Picker.Item key={"Loc" + 0} label='Select a Location...' value='0' />
     )
-    locations.forEach(function(location, index) {
-      locationsOutput.push(
-        <Picker.Item key={"Loc"+index} label={location} value={index+1} />
-      )
-    })
+    locationsOutput.push(
+      <Picker.Item key={"PlaceHolder" + 1} label='Waiting Room' value='1' />
+    )
+    if(locations != null && locations != undefined) {
+      locations.forEach(function(location, index) {
+        if(location.active === "Y") {
+          locationsOutput.push(
+            <Picker.Item key={location.siteId} label={location.siteDescription} value={index+1} />
+          )
+        }
+      })
+    }
     return(locationsOutput)
   }
   renderProcedureChoices() {
-    let procedures = this.state.cases.Procedures
+    let procedures = this.state.procedures
     let proceduresOutput = []
+    console.log("PROCEDURES IN RENDER")
+    console.log(procedures)
     proceduresOutput.push(
       <Picker.Item key={"Pro" + 0} label='Select a Procedure...' value='0' />
     )
-    procedures.forEach(function(procedure, index) {
-      proceduresOutput.push(
-        <Picker.Item key={"Pro"+index} label={procedure} value={index+1} />
-      )
-    })
+    if(procedures != null && procedures != undefined) {
+      procedures.forEach(function(procedure, index) {
+        if(procedure.active === "Y") {
+          proceduresOutput.push(
+            <Picker.Item key={procedure.procedureCode} label={procedure.procedureDescription} value={index+1} />
+          )
+        }
+      })
+    }
+    console.log("PROCEDURES OUTPUT FROM RENDER")
+    console.log(proceduresOutput)
     return(proceduresOutput)
   }
   selectActiveCase = () => {
     let selectedValue = this.state.activeCaseValue
     if(selectedValue > 0) {
-      let allCases = this.state.cases.cases
+      let allCases = this.state.cases
       let activeSelected = allCases[selectedValue - 1]
       this.props.navigation.navigate('CasesScan', {
         caseInformation: activeSelected

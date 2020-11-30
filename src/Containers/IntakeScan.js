@@ -95,6 +95,7 @@ export default class IntakeScan extends Component {
       let scannedBarcode = newBarcode
       let scanMatched = false
       let totalCount = 1
+      let barcodeLookup = {}
 
       //Check scanned items for existing barcode increase count of identical scans
       scannedItemsList.forEach(function(item, i) {
@@ -108,7 +109,7 @@ export default class IntakeScan extends Component {
 
       //If not a known product create an unknown product scanned item object
       if(scanMatched === false) {
-        let barcodeLookup = BarcodeSearch(scannedBarcode, this.state.lastScannedObject, this.state.lastCompleteFlag)
+        barcodeLookup = BarcodeSearch(scannedBarcode, this.state.lastScannedObject, this.state.lastCompleteFlag)
         if(barcodeLookup.productModelNumber != '') {
           lastCompleteFlag = true
         }
@@ -128,7 +129,7 @@ export default class IntakeScan extends Component {
   }
 
   generateScanTest = (count) => {
-    let testStrings = ['(01)00184360867004', '+SPEC6303040N', '$$0000349582']
+    let testStrings = ['+SPEC6303040N', '(01)00184360867004', '$$0000349582']
 
     this.setState({
       testCount: (count + 1)
@@ -291,12 +292,33 @@ export default class IntakeScan extends Component {
             key={index}
             unknownFlag={item.isUnknown}
             itemBarcode={item.barcode}
-            itemName={item.name}
+            itemName={item.productDescription}
             itemCount={item.count}
-            itemModel={item.model}
+            itemModel={item.productModelNumber}
             itemSerial={item.lotSerial}
-            itemExpiration={item.expiration}
+            itemExpiration={item.expirationDate}
+            itemLicenseNumber={item.licenseNumber}
+            itemOrderVendor={item.orderThruVendor}
+            itemAutoReplace={item.autoReplace}
+            itemDiscontinued={item.discontinued}
+            itemProductCategory={item.productCategory}
+            itemHospitalNumber={item.hospitalItemNumber}
+            itemUnitOfMeasure={item.unitOfMeasure}
+            itemUnitOfMeasureQuantity={item.unitOfMeasureQuantity}
+            itemReorderValue={item.reorderValue}
+            itemQuantityOnHand={item.quantityOnHand}
+            itemQuantityOrdered={item.quantityOrdered}
+            itemLastRequisitionNumber={item.lastRequistionNumber}
+            itemOrderStatus={item.orderStatus}
+            itemActive={item.active}
+            itemAccepted={item.accepted}
+            itemConsignment={item.consignment}
+            itemMinimumValue={item.minimumValue}
+            itemMaximumValue={item.maximumValue}
+            itemNonOrdered={item.nonOrdered}
+            itemProductNote={item.productNote}
             statePosition={index}
+            fullObject={item}
             removeFunction={() => this.RemoveScannedItem(index)}
             adjustmentFunction={() => this.OpenAdjustmentModal(index)}
             />)
