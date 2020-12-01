@@ -276,7 +276,18 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
   }
 
   if(noDBmatchFlag === true && decodeReturnObject.productModelNumber != '') {
+    let barcodeMatchedFlag = false
+
     //Run lookup of local barcode table with passedBarcode string
+
+    //if a match from of the passedBarcode is found in the barcode table lookup the
+    //associated productModelNumber in the product table and output the results reusing the
+    //previous search.
+
+
+
+    //if no match is found then return an unknown product with relevant decoded barcode
+    //information and container state parameters. 
     matchedProduct = {
       barcode: passedBarcode,
       trayState: false,

@@ -346,6 +346,21 @@ export default class CasesSetup extends Component {
       })
       locationsList.compact()
     }
+    if(newLocations.length === 0) {
+      locationsList.write(() => {
+        try {
+          locationsList.create('Locations_List', {
+            siteId: '00001',
+            siteDescription: "Waiting Room",
+            active: "Y",
+          })
+        }
+        catch (e) {
+          console.log("Error on location table creation");
+          console.log(e);
+        }
+      })
+    }
   }
   FetchLocationTable = () => {
     let barcodeResponse = []
