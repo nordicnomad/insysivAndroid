@@ -5,6 +5,7 @@ import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.png'
 import ProductListTrayItem from '../Components/ProductListTrayItem'
 import { BarcodeSearch } from '../Utilities/BarcodeLookup'
+import TestBarcodes from '../dummyData/testBarcodes.json'
 
 var Realm = require('realm');
 let workingScanSpace ;
@@ -129,13 +130,13 @@ export default class IntakeScan extends Component {
   }
 
   generateScanTest = (count) => {
-    let testStrings = ['+SPEC6303040N', '(01)00184360867004', '$$0000349582']
+    let testStrings = TestBarcodes
 
     this.setState({
       testCount: (count + 1)
     })
 
-    return(this.ScanBarcode(testStrings[count].toString()))
+    return(this.ScanBarcode(testStrings[count].barcode.toString()))
   }
 
   RemoveScannedItem(index) {
@@ -295,9 +296,12 @@ export default class IntakeScan extends Component {
             itemName={item.productDescription}
             itemCount={item.count}
             itemModel={item.productModelNumber}
-            itemSerial={item.lotSerial}
+            itemManModel={item.manufacturerModelNumber}
+            itemSerial={item.serialNumber}
+            itemLot={item.lotNumber}
+            itemBatchLot = {item.batchOrLotNumber}
             itemExpiration={item.expirationDate}
-            itemLicenseNumber={item.licenseNumber}
+            itemLicenseNumber={item.productVendorLicense}
             itemOrderVendor={item.orderThruVendor}
             itemAutoReplace={item.autoReplace}
             itemDiscontinued={item.discontinued}

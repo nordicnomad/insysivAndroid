@@ -11,7 +11,7 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
   //Data delimiters will need to determine decoding format of passedBarcode
   //Multiple redundant formats
   let productVendorLicense = ''
-  let productModelNumber = ''
+  let manufacturerModelNumber = ''
   let hibcSerialNumber = ''
   let hibcExpirationDate = ''
   let hibcLotNumber = ''
@@ -25,11 +25,11 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
     //Manufacturer License 4 characters starting at position 1
     productVendorLicense = passedBarcode.substring(1, 5)
     //Product Number 5 characters starting at position 5
-    productModelNumber = passedBarcode.substring(5, 10)
+    manufacturerModelNumber = passedBarcode.substring(5, 10)
 
     returnObject.productVendorLicense = productVendorLicense
 
-    returnObject.productModelNumber = productModelNumber
+    returnObject.manufacturerModelNumber = manufacturerModelNumber
   }
   else if(identifier.substring(0,3) === "$$+") {
     if(identifier === '$$+7') {

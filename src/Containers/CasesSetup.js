@@ -221,15 +221,12 @@ export default class CasesSetup extends Component {
   savePhysiciansTable = (responsephysicians) => {
     let savedPhysicians = physiciansList.objects('Physicians_List')
     let newPhysicians = responsephysicians
-    let saveCount = 0
 
     if(savedPhysicians != undefined && savedPhysicians != null && savedPhysicians.length > 0) {
       physiciansList.write(() => {
         physiciansList.deleteAll()
         newPhysicians.forEach(function(physician, i) {
           try {
-            saveCount = saveCount + 1
-            console.log(saveCount)
             physiciansList.create('Physicians_List', {
               physicianId: physician.physicianId,
               firstName: physician.firstName,
@@ -346,7 +343,8 @@ export default class CasesSetup extends Component {
       })
       locationsList.compact()
     }
-    if(newLocations.length === 0) {
+    if(newLocations.length === 0 || savedLocations === undefined || savedLocations === null) {
+      console.log("NEWLOCATIONS LENGTH ZERO, ADDING DEFAULT LOCATION")
       locationsList.write(() => {
         try {
           locationsList.create('Locations_List', {
@@ -427,8 +425,6 @@ export default class CasesSetup extends Component {
   renderProcedureChoices() {
     let procedures = this.state.procedures
     let proceduresOutput = []
-    console.log("PROCEDURES IN RENDER")
-    console.log(procedures)
     proceduresOutput.push(
       <Picker.Item key={"Pro" + 0} label='Select a Procedure...' value='0' />
     )
@@ -441,8 +437,6 @@ export default class CasesSetup extends Component {
         }
       })
     }
-    console.log("PROCEDURES OUTPUT FROM RENDER")
-    console.log(proceduresOutput)
     return(proceduresOutput)
   }
   selectActiveCase = () => {

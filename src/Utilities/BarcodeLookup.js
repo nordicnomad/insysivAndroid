@@ -9,6 +9,7 @@ let productBarCodes ;
 export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
   //Initialize global and UI variables
   let passedBarcode = barcode
+  let primaryCode = ''
   let matchedProduct = {}
   let noDBmatchFlag = true
   console.log("BARDCODE PASSED TO BARCODE LOOKUP")
@@ -19,7 +20,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     serialContainerCode: '',
     // ucc (01) 14 digits - numeric
     productModelNumber: '',
-    productVendorLicense: '',
+    licenseNumber: '',
     // ucc (02) 14 digits - numeric
     numberOfContainers: '',
     // ucc (10) 1-20 alphanumeric
@@ -102,6 +103,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
 
     //Seperate barcode elements starting positions
     for(i=0; i < (passedBarcode.length - 1); i++) {
+      console.log("SEPERATEBARCODE LOOPING")
       if(passedBarcode.charAt(i) === "+" && lastCharacter != "$") {
         hibcAIcharLocations.push({
           char: passedBarcode.charAt(i),
@@ -131,6 +133,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
       let buildHibcIdentifierString = ''
 
       for(s = location.pos; s < (location.pos + 3); s++) {
+        console.log("BUILDHIBCIDS LOOPING")
         buildHibcIdentifierString = buildHibcIdentifierString + passedBarcode.charAt(s)
       }
       hibcAppIdentifiers.push(buildHibcIdentifierString)
@@ -142,19 +145,31 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
       let buildHibcBarcodeString = ''
       if((i+1) < hibcAIcharLocations.length) {
         let currentHibcPosition = evalHibcPosition
-        while(hibcAIcharLocations[i+1].pos > evalHibcPosition) {
+        let continueEval = true
+        while(continueEval === true) {
+          console.log("AICHARLOC LOOPING")
           buildHibcBarcodeString = buildHibcBarcodeString + passedBarcode.charAt(currentHibcPosition)
           currentHibcPosition = currentHibcPosition + 1
+          if(hibcAIcharLocations[i+1].pos < evalHibcPosition) {
+              continueEval = false
+          }
         }
       }
       else {
         let currentHibcPosition = evalHibcPosition
         while(passedBarcode.length > (currentHibcPosition + 1)) {
+          console.log("CHIBCPOS LOOPING")
           buildHibcBarcodeString = buildHibcBarcodeString + passedBarcode.charAt(currentHibcPosition)
           currentHibcPosition = currentHibcPosition + 1
         }
       }
       hibcAppStrings.push(buildHibcBarcodeString)
+    });
+
+    hibcAppIdentifiers.forEach((aiCode, i) => {
+      if(aiCode === "+") {
+        primaryCode = hibcAppStrings[i]
+      }
     });
 
     //Decode HIBC string elements and populate return object
@@ -195,13 +210,14 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
 
         //loop ahead to close position adding contents to AppIdentifier Variable
         for(p=startPosition; p < endPosition + 1; p++) {
-          console.log(passedBarcode[p])
           buildAppIdentifier = buildAppIdentifier + passedBarcode[p]
         }
         uccAppIdentifiers.push(buildAppIdentifier)
       }
       else if(location.char === ')') {
         evalPosition = location.pos + 1
+        console.log("EVALPOSITION VARIABLE")
+        console.log(evalPosition)
         endOfString = false
 
         // Starting with the character after the close add characters to build string
@@ -209,6 +225,9 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
         while(endOfString === false) {
           if(passedBarcode.charAt(evalPosition) != '(' && evalPosition < passedBarcode.length) {
             buildBarcodeString = buildBarcodeString + passedBarcode.charAt(evalPosition)
+          }
+          else {
+            endOfString = true
           }
           evalPosition = evalPosition + 1
           if(evalPosition >= passedBarcode.length) {
@@ -218,6 +237,12 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
         uccAppStrings.push(buildBarcodeString)
       }
     })
+    uccAppIdentifiers.forEach((aiCode, i) => {
+      if(aiCode === "(01)") {
+        primaryCode = uccAppStrings[i]
+      }
+    });
+
     console.log("UCC APP IDENTIFIERS")
     console.log(uccAppIdentifiers)
     console.log("UCC APP STRINGS")
@@ -230,72 +255,71 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     console.log(decodeReturnObject)
   }
 
-  //Search DB tables for vendor and model match
-  if(decodeReturnObject.productModelNumber != '') {
-    let searchCount = 0
-    productTable.forEach((product, i) => {
-      console.log('PRODUCT SEARCHCOUNT')
-      console.log(searchCount)
-      if(product.productModelNumber === decodeReturnObject.productModelNumber) {
-        console.log("MATCHED PRODUCT VENDOR LICENSE")
-        matchedProduct = {
-          barcode: passedBarcode,
-          trayState: false,
-          isUnknown: false,
-          licenseNumber: product.licenseNumber,
-          productModelNumber: product.productModelNumber,
-          orderThruVendor: product.orderThruVendor,
-          productDescription: product.productDescription,
-          autoReplace: product.autoReplace,
-          discontinued: product.discontinued,
-          productCategory: product.productCategory,
-          hospitalItemNumber: product.hospitalItemNumber,
-          unitOfMeasure: product.unitOfMeasure,
-          unitOfMeasureQuantity: product.unitOfMeasureQuantity,
-          reorderValue: product.reorderValue,
-          quantityOnHand: product.quantityOnHand,
-          quantityOrdered: product.quantityOrdered,
-          lastRequistionNumber: product.lastRequistionNumber,
-          orderStatus: product.orderStatus,
-          active: product.active,
-          accepted: product.accepted,
-          consignment: product.consignment,
-          minimumValue: product.minimumValue,
-          maximumValue: product.maximumValue,
-          nonOrdered: product.nonOrdered,
-          productNote: product.productNote,
-          scannedTime: new Date("YYMMDD"),
-          count: 1,
-          waste: false,
-          scanned: true,
-        }
-        noDBmatchFlag = false
+  //Search barcode table for manufacturer number match and product table for product number match
+  if(primaryCode != '') {
+    let buildBarcodeFilterString = 'productBarCode1 CONTAINS "' + decodeReturnObject.manufacturerModelNumber + '"'
+    let filteredBarcodeMatches = barcodeTable.filtered(buildBarcodeFilterString)
+    let productModelNumber = ""
+    filteredBarcodeMatches.forEach((barcode, i) => {
+      if(productModelNumber === "") {
+        productModelNumber = barcode.productModelNumber
       }
-      searchCount = searchCount + 1
-    });
+    })
+    if(productModelNumber != '') {
+      let buildProductFilterString = 'productModelNumber CONTAINS "' + productModelNumber + '"'
+      let filteredProductMatches = productTable.filtered(buildProductFilterString)
+
+      console.log("FILTERED PRODUCT MATCHES")
+      console.log(filteredProductMatches)
+      filteredProductMatches.forEach((product, i) => {
+        if(product.productModelNumber === productModelNumber) {
+          console.log("MATCHED MODEL NUMBER")
+          matchedProduct = {
+            barcode: passedBarcode,
+            trayState: false,
+            isUnknown: false,
+            licenseNumber: product.licenseNumber,
+            productModelNumber: productModelNumber,
+            orderThruVendor: product.orderThruVendor,
+            productDescription: product.productDescription,
+            autoReplace: product.autoReplace,
+            discontinued: product.discontinued,
+            productCategory: product.productCategory,
+            hospitalItemNumber: product.hospitalItemNumber,
+            unitOfMeasure: product.unitOfMeasure,
+            unitOfMeasureQuantity: product.unitOfMeasureQuantity,
+            reorderValue: product.reorderValue,
+            quantityOnHand: product.quantityOnHand,
+            quantityOrdered: product.quantityOrdered,
+            lastRequistionNumber: product.lastRequistionNumber,
+            orderStatus: product.orderStatus,
+            active: product.active,
+            accepted: product.accepted,
+            consignment: product.consignment,
+            minimumValue: product.minimumValue,
+            maximumValue: product.maximumValue,
+            nonOrdered: product.nonOrdered,
+            productNote: product.productNote,
+            scannedTime: new Date("YYMMDD"),
+            count: 1,
+            waste: false,
+            scanned: true,
+          }
+          noDBmatchFlag = false
+        }
+      });
+    }
+
   }
 
   if(noDBmatchFlag === true && decodeReturnObject.productModelNumber != '') {
-    let barcodeMatchedFlag = false
 
-    //Run lookup of local barcode table with passedBarcode string
-
-    //if a match from of the passedBarcode is found in the barcode table lookup the
-    //associated productModelNumber in the product table and output the results reusing the
-    //previous search.
-
-
-
-    //if no match is found then return an unknown product with relevant decoded barcode
-    //information and container state parameters. 
+    //if no match set unknown product
     matchedProduct = {
       barcode: passedBarcode,
       trayState: false,
       isUnknown: true,
       name: "Unknown Product",
-      model: "number",
-      lotSerial: "number",
-      expiration: "????",
       count: 1,
       scannedTime: "Now",
       waste: false,
