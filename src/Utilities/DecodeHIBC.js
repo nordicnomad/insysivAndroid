@@ -20,7 +20,7 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
   let hibcSecondaryExpiration = ''
   let hibcSecondaryManufacture = ''
 
-  if(identifier.substring(0,1) === '+') {
+  if(identifier.substring(0,1) === '+' && identifier.substring(1,2) != "$" && identifier.substring(1,2) != "/") {
     //Vendor and Model Number 11 characters + 1 identifier alphanumeric
     //Manufacturer License 4 characters starting at position 1
     productVendorLicense = passedBarcode.substring(1, 5)
@@ -31,26 +31,16 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
 
     returnObject.manufacturerModelNumber = manufacturerModelNumber
   }
-  else if(identifier.substring(0,3) === "$$+") {
-    if(identifier === '$$+7') {
+  else if(identifier.substring(0,4) === "+$$+") {
+    if(identifier === '+$$+7') {
       //Serial Number only (Alternate Option)
 
       //Alphanumeric 18 characters + 4 identifier
-      hibcSerialNumber = passedBarcode.substring(4)
+      hibcSerialNumber = passedBarcode.substring(5)
 
       returnObject.serialNumber = hibcSerialNumber
     }
-  }
-  else if(identifier.substring(0,2) === "$+") {
-    if(identifier.substring(0,2) === '$+') {
-      //Serial Number only
-
-      // Alphanumeric 18 characters + 2
-      hibcSerialNumber = passedBarcode.substring(2)
-
-      returnObject.serialNumber = hibcSerialNumber
-    }
-    else if(identifier === '$$+2') {
+    else if(identifier === '+$$+2') {
       //Expiration Date (MMDDYY) followed by Serial Number
 
       // Exp. Date: Numeric 6 characters + 4 identifier
@@ -61,7 +51,7 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       returnObject.expirationDate = hibcExpirationDate.substring(4, 6) + hibcExpirationDate.substring(0, 2) + hibcExpirationDate.substring(2, 4)
       returnObject.serialNumber = hibcSerialNumber
     }
-    else if(identifier === '$$+3') {
+    else if(identifier === '+$$+3') {
       //Expiration Date (YYMMDD) followed by Serial Number
 
       //Exp. Date: Numeric 6 characters + 4 identifier
@@ -72,7 +62,7 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       returnObject.expirationDate = hibcExpirationDate
       returnObject.serialNumber = hibcSerialNumber
     }
-    else if(identifier === '$$+4') {
+    else if(identifier === '+$$+4') {
       //Expiration Date (YYMMDDHH) followed by Serial Number
 
       //Exp. Date: Numeric 8 characters + 4 identifiers
@@ -83,7 +73,7 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       returnObject.expirationDate = hibcExpirationDate.substring(0,6)
       returnObject.serialNumber = hibcSerialNumber
     }
-    else if(identifier === '$$+5') {
+    else if(identifier === '+$$+5') {
       //Expiration Date (YYJJJ) followed by Serial Number
 
       //Exp. Date: numeric Julian Date format 5 characters plus 4 identifier
@@ -94,7 +84,7 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       returnObject.expirationDate = moment(hibcExpirationDate, "YYDDDD").format("YYMM[01]")
       returnObject.serialNumber = hibcSerialNumber
     }
-    else if(identifier === '$$+6') {
+    else if(identifier === '+$$+6') {
       //Expiration Date followed by Serial Number
 
       // Exp. Date: Numeric Julian Date format with hour 7 characters plus 4 identifier
@@ -105,7 +95,7 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       returnObject.expirationDate = moment(hibcExpirationDate, "YYDDDDHH").format("YYMMDD")
       returnObject.serialNumber = hibcSerialNumber
     }
-    else if(identifier.substring(0,3) === '$$+') {
+    else if(identifier.substring(0,4) === '+$$+') {
       //Expiration Date (MMYY) followed by Serial Number
 
       // Exp. Date: Numeric 4 characters + 3 identifier
@@ -114,6 +104,16 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       hibcSerialNumber = passedBarcode.substring(7)
 
       returnObject.expirationDate = hibcExpirationDate.substring(2,4) + hibcExpirationDate.substring(0,2) + "01"
+      returnObject.serialNumber = hibcSerialNumber
+    }
+  }
+  else if(identifier.substring(0,3) === "+$+") {
+    if(identifier.substring(0,3) === '+$+') {
+      //Serial Number only
+
+      // Alphanumeric 18 characters + 2
+      hibcSerialNumber = passedBarcode.substring(2)
+
       returnObject.serialNumber = hibcSerialNumber
     }
   }

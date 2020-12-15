@@ -117,7 +117,7 @@ export default class IntakeScan extends Component {
         else {
           lastCompleteFlag = false
         }
-        scannedItemsList.push(barcodeLookup)
+        scannedItemsList.unshift(barcodeLookup)
       }
       //Update LocalState with new information
       this.setState({
@@ -288,6 +288,9 @@ export default class IntakeScan extends Component {
     }
     else {
       scannedItems.forEach(function(item, index){
+        console.log("ITEMS IN LIST TRAY RENDER")
+        console.log(item)
+        console.log(item.hospitalItemNumber)
         scanOutput.push(
           <ProductListTrayItem
             key={index}

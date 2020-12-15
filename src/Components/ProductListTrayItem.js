@@ -30,7 +30,7 @@ export default class ProductListTrayItem extends Component {
 
   RenderTrayItemContent() {
     let renderAllObject = JSON.stringify(this.props.fullObject)
-    if(this.props.unknownFlag) {
+    if(this.props.unknownFlag === true) {
       return(
         <View style={styles.productListItem}>
           <View style={styles.majorMinorRow}>
@@ -64,10 +64,18 @@ export default class ProductListTrayItem extends Component {
             </View>
             <View style={styles.straightRow}>
               <View style={styles.equalColumn}>
+                <Text style={styles.trayLabel}>Manufacturer Model</Text>
+              </View>
+              <View style={styles.equalColumn}>
+                <Text style={styles.trayText}>{this.props.itemManModel}</Text>
+              </View>
+            </View>
+            <View style={styles.straightRow}>
+              <View style={styles.equalColumn}>
                 <Text style={styles.trayLabel}>Lot / Serial</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.itemBatchLot} {this.props.lotNumber} {this.props.serialNumber}</Text>
+                <Text style={styles.trayText}>{this.props.itemBatchLot} {this.props.itemLot} {this.props.itemSerial}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -84,158 +92,6 @@ export default class ProductListTrayItem extends Component {
               </View>
               <View style={styles.equalColumn}>
                 <Text style={styles.trayText}>{this.props.itemLicenseNumber}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Vendor</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.orderThruVendor}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Auto Replace</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.autoReplace}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Discontinued</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.discontinued}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Product Category</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.productCategory}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Hospital Number</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.hospitalItemNumber}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Unit Of Measure</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.unitOfMeasure}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Unit Of Measure Quantity</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.unitOfMeasureQuantity}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Reorder Value</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.reorderValue}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Quantity On Hand</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.quantityOnHand}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Quantity Ordered</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.quantityOrdered}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Last Requisition</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.lastRequistionNumber}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Order Status</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.orderStatus}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Active</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.active}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Accepted</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.accepted}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Consignment</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.consignment}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Minimum Value</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.minimumValue}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Maximum Value</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.maximumValue}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Non Ordered</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.nonOrdered}</Text>
-              </View>
-            </View>
-            <View style={styles.straightRow}>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Product Note</Text>
-              </View>
-              <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.productNote}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -291,10 +147,18 @@ export default class ProductListTrayItem extends Component {
             </View>
             <View style={styles.straightRow}>
               <View style={styles.equalColumn}>
+                <Text style={styles.trayLabel}>Manufacturer Model</Text>
+              </View>
+              <View style={styles.equalColumn}>
+                <Text style={styles.trayText}>{this.props.itemManModel}</Text>
+              </View>
+            </View>
+            <View style={styles.straightRow}>
+              <View style={styles.equalColumn}>
                 <Text style={styles.trayLabel}>Lot / Serial</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.itemBatchLot} {this.props.lotNumber} {this.props.serialNumber}</Text>
+                <Text style={styles.trayText}>{this.props.itemBatchLot} {this.props.itemLot} {this.props.itemSerial}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -318,7 +182,7 @@ export default class ProductListTrayItem extends Component {
                 <Text style={styles.trayLabel}>Vendor</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.orderThruVendor}</Text>
+                <Text style={styles.trayText}>{this.props.itemOrderVendor}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -326,7 +190,7 @@ export default class ProductListTrayItem extends Component {
                 <Text style={styles.trayLabel}>Auto Replace</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.autoReplace}</Text>
+                <Text style={styles.trayText}>{this.props.itemAutoReplace}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -334,7 +198,7 @@ export default class ProductListTrayItem extends Component {
                 <Text style={styles.trayLabel}>Discontinued</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.discontinued}</Text>
+                <Text style={styles.trayText}>{this.props.itemDiscontinued}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -342,7 +206,7 @@ export default class ProductListTrayItem extends Component {
                 <Text style={styles.trayLabel}>Product Category</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.productCategory}</Text>
+                <Text style={styles.trayText}>{this.props.itemProductCategory}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -350,7 +214,7 @@ export default class ProductListTrayItem extends Component {
                 <Text style={styles.trayLabel}>Hospital Number</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.hospitalItemNumber}</Text>
+                <Text style={styles.trayText}>{this.props.itemHospitalNumber}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -358,15 +222,15 @@ export default class ProductListTrayItem extends Component {
                 <Text style={styles.trayLabel}>Unit Of Measure</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.unitOfMeasure}</Text>
+                <Text style={styles.trayText}>{this.props.itemUnitOfMeasure}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayLabel}>Unit Of Measure Quantity</Text>
+                <Text style={styles.trayLabel}>Unit Quantity</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.unitOfMeasureQuantity}</Text>
+                <Text style={styles.trayText}>{this.props.itemUnitOfMeasureQuantity}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -374,7 +238,7 @@ export default class ProductListTrayItem extends Component {
                 <Text style={styles.trayLabel}>Reorder Value</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.reorderValue}</Text>
+                <Text style={styles.trayText}>{this.props.itemReorderValue}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -382,7 +246,7 @@ export default class ProductListTrayItem extends Component {
                 <Text style={styles.trayLabel}>Quantity On Hand</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.quantityOnHand}</Text>
+                <Text style={styles.trayText}>{this.props.itemQuantityOnHand}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -390,7 +254,7 @@ export default class ProductListTrayItem extends Component {
                 <Text style={styles.trayLabel}>Quantity Ordered</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.quantityOrdered}</Text>
+                <Text style={styles.trayText}>{this.props.itemQuantityOrdered}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -398,7 +262,7 @@ export default class ProductListTrayItem extends Component {
                 <Text style={styles.trayLabel}>Last Requisition</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.lastRequistionNumber}</Text>
+                <Text style={styles.trayText}>{this.props.itemLastRequisitionNumber}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -406,7 +270,7 @@ export default class ProductListTrayItem extends Component {
                 <Text style={styles.trayLabel}>Order Status</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.orderStatus}</Text>
+                <Text style={styles.trayText}>{this.props.itemOrderStatus}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -414,7 +278,7 @@ export default class ProductListTrayItem extends Component {
                 <Text style={styles.trayLabel}>Active</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.active}</Text>
+                <Text style={styles.trayText}>{this.props.itemActive}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -422,7 +286,7 @@ export default class ProductListTrayItem extends Component {
                 <Text style={styles.trayLabel}>Accepted</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.accepted}</Text>
+                <Text style={styles.trayText}>{this.props.itemAccepted}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -430,7 +294,7 @@ export default class ProductListTrayItem extends Component {
                 <Text style={styles.trayLabel}>Consignment</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.consignment}</Text>
+                <Text style={styles.trayText}>{this.props.itemConsignment}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -438,7 +302,7 @@ export default class ProductListTrayItem extends Component {
                 <Text style={styles.trayLabel}>Minimum Value</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.minimumValue}</Text>
+                <Text style={styles.trayText}>{this.props.itemMinimumValue}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -446,7 +310,7 @@ export default class ProductListTrayItem extends Component {
                 <Text style={styles.trayLabel}>Maximum Value</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.maximumValue}</Text>
+                <Text style={styles.trayText}>{this.props.itemMaximumValue}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -454,7 +318,7 @@ export default class ProductListTrayItem extends Component {
                 <Text style={styles.trayLabel}>Non Ordered</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.nonOrdered}</Text>
+                <Text style={styles.trayText}>{this.props.itemNonOrdered}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>
@@ -462,7 +326,7 @@ export default class ProductListTrayItem extends Component {
                 <Text style={styles.trayLabel}>Product Note</Text>
               </View>
               <View style={styles.equalColumn}>
-                <Text style={styles.trayText}>{this.props.productNote}</Text>
+                <Text style={styles.trayText}>{this.props.itemProductNote}</Text>
               </View>
             </View>
             <View style={styles.straightRow}>

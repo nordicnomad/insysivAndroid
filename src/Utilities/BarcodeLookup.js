@@ -19,7 +19,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     // ucc (00) 18 digits - numeric
     serialContainerCode: '',
     // ucc (01) 14 digits - numeric
-    productModelNumber: '',
+    manufacturerModelNumber: '',
     licenseNumber: '',
     // ucc (02) 14 digits - numeric
     numberOfContainers: '',
@@ -128,16 +128,22 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
       lastCharacter = passedBarcode.charAt(i)
     }
 
+    console.log("HIBCAPICHARLOCATIONS AFTER BUILD")
+    console.log(hibcAIcharLocations)
+
     //Add first four characters from initial locations to app identifier array
     hibcAIcharLocations.forEach((location, i) => {
       let buildHibcIdentifierString = ''
 
-      for(s = location.pos; s < (location.pos + 3); s++) {
+      for(s = location.pos; s < (location.pos + 5); s++) {
         console.log("BUILDHIBCIDS LOOPING")
         buildHibcIdentifierString = buildHibcIdentifierString + passedBarcode.charAt(s)
       }
       hibcAppIdentifiers.push(buildHibcIdentifierString)
     });
+
+    console.log("HIBC AI APP IDENTIFIERS AFTER BUILD")
+    console.log(hibcAppIdentifiers)
 
     //Add entire string elements between initial locations to app strings array
     hibcAIcharLocations.forEach((location, i) => {
@@ -147,12 +153,17 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
         let currentHibcPosition = evalHibcPosition
         let continueEval = true
         while(continueEval === true) {
-          console.log("AICHARLOC LOOPING")
           buildHibcBarcodeString = buildHibcBarcodeString + passedBarcode.charAt(currentHibcPosition)
           currentHibcPosition = currentHibcPosition + 1
-          if(hibcAIcharLocations[i+1].pos < evalHibcPosition) {
-              continueEval = false
+          if(passedBarcode.length < currentHibcPosition) {
+            continueEval = false
           }
+          else if(hibcAIcharLocations[i+1].pos < currentHibcPosition) {
+            continueEval = false
+          }
+          console.log("AICHARLOC LOOPING")
+          console.log(hibcAIcharLocations[i+1])
+          console.log(buildHibcBarcodeString)
         }
       }
       else {
@@ -166,8 +177,11 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
       hibcAppStrings.push(buildHibcBarcodeString)
     });
 
+    console.log("HIBCAPPSTRINGS AFTER BUILD")
+    console.log(hibcAppStrings)
+
     hibcAppIdentifiers.forEach((aiCode, i) => {
-      if(aiCode === "+") {
+      if(aiCode.charAt(0) === "+" && aiCode.charAt(2) != "$") {
         primaryCode = hibcAppStrings[i]
       }
     });
@@ -319,7 +333,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
       barcode: passedBarcode,
       trayState: false,
       isUnknown: true,
-      name: "Unknown Product",
+      productDescription: "Unknown Product",
       count: 1,
       scannedTime: "Now",
       waste: false,
@@ -334,7 +348,9 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
 
   console.log("MATCHEDPRODUCT OBJECT")
   console.log(matchedProduct)
+  console.log("DECODE RETURN OBJECT")
   console.log(decodeReturnObject)
+  console.log("COMBINED PRODUCT RETURN OBJECT")
   console.log(combinedProductReturn)
   return (combinedProductReturn)
 }
