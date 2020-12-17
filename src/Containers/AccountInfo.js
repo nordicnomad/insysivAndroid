@@ -3,6 +3,9 @@ import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Al
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.png'
 import UserData from '../dummyData/login.json'
+import DummyProducts from '../dummyData/productsOffline.json'
+import DummyBarcodes from '../dummyData/productBarcodesOffline.json'
+import DummyLabels from '../dummyData/rfidLabelsOffline.json'
 
 var Realm = require('realm');
 let products ;
@@ -64,7 +67,7 @@ export default class AccountInfo extends Component {
     rfidLabels = new Realm({
       schema: [{name: 'RFID_Labels',
       properties: {
-        productTransactionNumber: "int",
+        productTransactionNumber: "int?",
         licenseNumber: "string",
         productModelNumber: "string",
         lotSerialNumber: "string?",
@@ -530,6 +533,27 @@ export default class AccountInfo extends Component {
     this.FetchRFIDTable()
   }
 
+  LoadDummyProductTable = () => {
+    let productResponse = DummyProducts
+
+    this.saveProductTable(productResponse)
+    this.saveCurrentDate()
+  }
+
+  LoadDummyBarcodeTable = () => {
+    let barcodeResponse = DummyBarcodes
+
+    this.saveBarCodeTable(barcodeResponse)
+    this.saveCurrentDate()
+  }
+
+  LoadDummyRFIDTable = () => {
+    let labelResponse = DummyLabels
+
+    this.saveRfidTable(labelResponse)
+    this.saveCurrentDate()
+  }
+
   renderSyncButton(fetchState) {
     let syncFetchState = fetchState
 
@@ -593,6 +617,14 @@ export default class AccountInfo extends Component {
               </View>
               <View style={styles.tabControlRow}>
                 <View style={styles.leftColumn}>
+                  <Text>Test Data</Text>
+                </View>
+                <View style={styles.rightColumn}>
+                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyProductTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                </View>
+              </View>
+              <View style={styles.tabControlRow}>
+                <View style={styles.leftColumn}>
                   <Text>Barcodes</Text>
                   <Text>{printBarcodes}</Text>
                 </View>
@@ -602,11 +634,27 @@ export default class AccountInfo extends Component {
               </View>
               <View style={styles.tabControlRow}>
                 <View style={styles.leftColumn}>
+                  <Text>Test Data</Text>
+                </View>
+                <View style={styles.rightColumn}>
+                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyBarcodeTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                </View>
+              </View>
+              <View style={styles.tabControlRow}>
+                <View style={styles.leftColumn}>
                   <Text>RFID Tags</Text>
                   <Text>{printRFIDLabels}</Text>
                 </View>
                 <View style={styles.rightColumn}>
                   <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.SynchronizeRFIDTable()}><Text style={styles.miniSubmitButtonText}>Sync</Text></TouchableOpacity>
+                </View>
+              </View>
+              <View style={styles.tabControlRow}>
+                <View style={styles.leftColumn}>
+                  <Text>Test Data</Text>
+                </View>
+                <View style={styles.rightColumn}>
+                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyRFIDTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
                 </View>
               </View>
             </View>

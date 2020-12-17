@@ -33,7 +33,61 @@ export default class IntakeScan extends Component {
       lastCompleteFlag: false,
       lastScannedObject: {}
     }
+    workingScanSpace = new Realm({
+      schema: [{name: 'Working_Scan_Space',
+        properties:
+        {
+          barcode: 'string',
+          serialContainerCode: 'string?',
+          manufacturerModelNumber: 'string?',
+          vendorLicenseNumber: 'string?',
+          numberOfContainers: 'string?',
+          batchOrLotNumber: 'string?',
+          expirationDate: 'string?',
+          productVariant: 'string?',
+          serialNumber: 'string?',
+          hibcc: 'string?',
+          lotNumber: 'string?',
+          quantityEach: 'string?',
+          secondaryProductAttributes: 'string?',
+          hibcSecondaryExpiration: 'string?',
+          hibcSecondaryManufacture: 'string?',
+          secondarySerialNumber: 'string?',
+          hibcSecondarySerial: 'string?',
+          quantityOfUnitsContained: 'string?',
+          hibcManufactureDate: 'string?',
+          passThroughCompletenessFlag: 'bool?',
+          trayState: 'bool?',
+          isUnknown: 'bool?',
+          licenseNumber: 'string?',
+          productModelNumber: 'string?',
+          orderThruVendor: 'string?',
+          productDescription: 'string?',
+          autoReplace: 'string?',
+          discontinued: 'string?',
+          productCategory: 'string?',
+          hospitalItemNumber: 'string?',
+          unitOfMeasure: 'string?',
+          unitOfMeasureQuantity: 'string?',
+          reorderValue: 'string?',
+          quantityOnHand: 'string?',
+          quantityOrdered: 'string?',
+          lastRequistionNumber: 'string?',
+          orderStatus: 'string?',
+          active: 'string?',
+          accepted: 'string?',
+          consignment: 'string?',
+          minimumValue: 'string?',
+          maximumValue: 'string?',
+          nonOrdered: 'string?',
+          productNote: 'string?',
+          scannedTime: 'string?',
+          count: 'int?',
+          waste: 'bool?',
+          scanned: 'bool?',
 
+      }}]
+    })
   }
   componentDidMount() {
     this.checkForScanner()
@@ -111,20 +165,29 @@ export default class IntakeScan extends Component {
       //If not a known product create an unknown product scanned item object
       if(scanMatched === false) {
         barcodeLookup = BarcodeSearch(scannedBarcode, this.state.lastScannedObject, this.state.lastCompleteFlag)
-        if(barcodeLookup.productModelNumber != '') {
-          lastCompleteFlag = true
+
+        if(barcodeLookup != null) {
+          if(barcodeLookup.passThroughCompletenessFlag === true) {
+            this.setState({
+              lastCompleteFlag: true,
+              lastScannedObject: barcodeLookup,
+            })
+          }
+          else {
+            this.setState({
+              lastCompleteFlag: false,
+              lastScannedObject: barcodeLookup,
+            })
+          }
+          scannedItemsList.unshift(barcodeLookup)
+          console.log(scannedItemsList)
         }
-        else {
-          lastCompleteFlag = false
-        }
-        scannedItemsList.unshift(barcodeLookup)
       }
       //Update LocalState with new information
       this.setState({
         scannedItems: scannedItemsList,
         scannedBarcode: scannedBarcode,
         scanCount: totalCount,
-        lastScannedObject: barcodeLookup,
       })
     }
   }

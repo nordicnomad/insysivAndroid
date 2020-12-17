@@ -13,6 +13,7 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
   let productVendorLicense = ''
   let manufacturerModelNumber = ''
   let hibcSerialNumber = ''
+  let hibcQuantity = ''
   let hibcExpirationDate = ''
   let hibcLotNumber = ''
   let hibcManufactureDate = ''
@@ -182,45 +183,179 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
     }
     else if(identifier.substring(0,4) === '+$$8') {
       //Qty QQ Exp Date MMYY and Lot Number
+
+      hibcQuantity = passedBarcode.substring(4, 6)
+
+      hibcExpirationDate = passedBarcode.substring(6, 10)
+
+      hibcLotNumber = passedBarcode.substring(10)
+
+      returnObject.quantityEach = hibcQuantity
+      returnObject.expirationDate = hibcExpirationDate.substring(2,4) + hibcExpirationDate.substring(0,2) + "01"
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,5) === '+$$82') {
       //Qty QQ Exp Date MMDDYY and Lot Number
+
+      hibcQuantity = passedBarcode.substring(5, 7)
+
+      hibcExpirationDate = passedBarcode.substring(7, 13)
+
+      hibcLotNumber = passedBarcode.substring(13)
+
+      returnObject.quantityEach = hibcQuantity
+      returnObject.expirationDate = hibcExpirationDate.substring(4, 6) + hibcExpirationDate.substring(0, 2) + hibcExpirationDate.substring(2, 4)
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,5) === '+$$83') {
       //Qty QQ Exp Date YYMMDD and Lot Number
+
+      hibcQuantity = passedBarcode.substring(5, 7)
+
+      hibcExpirationDate = passedBarcode.substring(7, 13)
+
+      hibcLotNumber = passedBarcode.substring(13)
+
+      returnObject.quantityEach = hibcQuantity
+      returnObject.expirationDate = hibcExpirationDate
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,5) === '+$$84') {
       //Qty QQ Exp Date YYMMDDHH and Lot Number
+
+      hibcQuantity = passedBarcode.substring(5, 7)
+
+      hibcExpirationDate = passedBarcode.substring(7, 15)
+
+      hibcLotNumber = passedBarcode.substring(15)
+
+      returnObject.quantityEach = hibcQuantity
+      returnObject.expirationDate = hibcExpirationDate.substring(0,6)
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,5) === '+$$85') {
       //Qty QQ Exp Date YYJJJ and Lot Number
+
+      hibcQuantity = passedBarcode.substring(5, 7)
+
+      hibcExpirationDate = passedBarcode.substring(7, 12)
+
+      hibcLotNumber = passedBarcode.substring(12)
+
+      returnObject.quantityEach = hibcQuantity
+      returnObject.expirationDate = oment(hibcExpirationDate, "YYDDDD").format("YYMMDD")
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,5) === '+$$86') {
       //Qty QQ Exp Date YYJJJHH and Lot Number
+
+      hibcQuantity = passedBarcode.substring(5, 7)
+
+      hibcExpirationDate = passedBarcode.substring(7, 14)
+
+      hibcLotNumber = passedBarcode.substring(14)
+
+      returnObject.quantityEach = hibcQuantity
+      returnObject.expirationDate = moment(hibcExpirationDate, "YYDDDDHH").format("YYMMDD")
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,5) === '+$$87') {
       //Qty QQ and Lot Number
+
+      hibcQuantity = passedBarcode.substring(5, 7)
+
+      hibcLotNumber = passedBarcode.substring(7)
+
+      returnObject.quantityEach = hibcQuantity
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,4) === '+$$9') {
       //Qty QQQQQ Exp Date MMYY and Lot Number
+
+      hibcQuantity = passedBarcode.substring(4, 9)
+
+      hibcExpirationDate = passedBarcode.substring(9, 13)
+
+      hibcLotNumber = passedBarcode.substring(13)
+
+      returnObject.quantityEach = hibcQuantity
+      returnObject.expirationDate = hibcExpirationDate.substring(2,4) + hibcExpirationDate.substring(0,2) + "01"
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,5) === '+$$92') {
       //Qty QQQQQ Exp Date MMDDYY and Lot Number
+
+      hibcQuantity = passedBarcode.substring(5, 10)
+
+      hibcExpirationDate = passedBarcode.substring(10, 16)
+
+      hibcLotNumber = passedBarcode.substring(16)
+
+      returnObject.quantityEach = hibcQuantity
+      returnObject.expirationDate = hibcExpirationDate.substring(4, 6) + hibcExpirationDate.substring(0, 2) + hibcExpirationDate.substring(2, 4)
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,5) === '+$$93') {
       //Qty QQQQQ Exp Date YYMMDD and Lot Number
+
+      hibcQuantity = passedBarcode.substring(5, 10)
+
+      hibcExpirationDate = passedBarcode.substring(10, 16)
+
+      hibcLotNumber = passedBarcode.substring(16)
+
+      returnObject.quantityEach = hibcQuantity
+      returnObject.expirationDate = hibcExpirationDate
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,5) === '+$$94') {
       //Qty QQQQQ Exp Date YYMMDDHH and Lot Number
+
+      hibcQuantity = passedBarcode.substring(5, 10)
+
+      hibcExpirationDate = passedBarcode.substring(10, 18)
+
+      hibcLotNumber = passedBarcode.substring(18)
+
+      returnObject.quantityEach = hibcQuantity
+      returnObject.expirationDate = hibcExpirationDate.substring(0,6)
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,5) === '+$$95') {
       //Qty QQQQQ Exp Date YYJJJ and Lot Number
+
+      hibcQuantity = passedBarcode.substring(5, 10)
+
+      hibcExpirationDate = passedBarcode.substring(10, 15)
+
+      hibcLotNumber = passedBarcode.substring(15)
+
+      returnObject.quantityEach = hibcQuantity
+      returnObject.expirationDate = oment(hibcExpirationDate, "YYDDDD").format("YYMMDD")
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,5) === '+$$96') {
       //Qty QQQQQ Exp Date YYJJJHH and Lot Number
+
+      hibcQuantity = passedBarcode.substring(5, 10)
+
+      hibcExpirationDate = passedBarcode.substring(10, 17)
+
+      hibcLotNumber = passedBarcode.substring(17)
+
+      returnObject.quantityEach = hibcQuantity
+      returnObject.expirationDate = moment(hibcExpirationDate, "YYDDDDHH").format("YYMMDD")
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,5) === '+$$97') {
       //Qty QQQQQ and Lot Number
+
+      hibcQuantity = passedBarcode.substring(5, 10)
+
+      hibcLotNumber = passedBarcode.substring(10)
+
+      returnObject.quantityEach = hibcQuantity
+      returnObject.batchOrLotNumber = hibcLotNumber
     }
     else if(identifier.substring(0,3) === '+$$') {
       //Expiration Date (MMYY) followed by Lot Number

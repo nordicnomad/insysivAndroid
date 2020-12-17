@@ -20,7 +20,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     serialContainerCode: '',
     // ucc (01) 14 digits - numeric
     manufacturerModelNumber: '',
-    licenseNumber: '',
+    vendorLicenseNumber: '',
     // ucc (02) 14 digits - numeric
     numberOfContainers: '',
     // ucc (10) 1-20 alphanumeric
@@ -48,6 +48,12 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     quantityOfUnitsContained: '',
     //hibc return properties
     hibcManufactureDate: '',
+    //Check and return in next call if complete barcode flag
+    passThroughCompletenessFlag: false,
+  }
+
+  if(lastReturnObject != null && lastCompleteFlag === false) {
+    decodeReturnObject = lastReturnObject
   }
 
   //Database schemas
@@ -345,6 +351,20 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
   //Consolidate information from decoded barcode with matched DB values.
 
   let combinedProductReturn = {...matchedProduct, ...decodeReturnObject}
+
+  if(combinedProductReturn.manufacturerModelNumber != '') {
+    if(combinedProductReturn.expirationDate != '' || combinedProductReturn.batchOrLotNumber != '' || combinedProductReturn.serialNumber != '') {
+      combinedProductReturn.passThroughCompletenessFlag = true
+    }
+    else {
+      combinedProductReturn.passThroughCompletenessFlag = false
+    }
+  }
+  else {
+    //scanned secondary barcode first, and is not valid
+    return(null)
+  }
+
 
   console.log("MATCHEDPRODUCT OBJECT")
   console.log(matchedProduct)
