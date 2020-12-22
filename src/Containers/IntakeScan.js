@@ -146,7 +146,7 @@ export default class IntakeScan extends Component {
     let lastCompleteFlag = this.state.lastCompleteFlag
 
     if(newBarcode != undefined && newBarcode != null) {
-      let scannedItemsList = this.state.scannedItems
+      let scannedItemsList = workingScanSpace.objects('Working_Scan_Space')
       let scannedBarcode = newBarcode
       let scanMatched = false
       let totalCount = 1
@@ -182,6 +182,65 @@ export default class IntakeScan extends Component {
           scannedItemsList.unshift(barcodeLookup)
           console.log(scannedItemsList)
         }
+        //Save new scanned product to working scan space
+        workingScanSpace.write(() => {
+          try {
+            workingScanSpace.create('Working_Scan_Space', {
+              barcode: barcodeLookup.barcode,
+              serialContainerCode: barcodeLookup.serialContainerCode,
+              manufacturerModelNumber: barcodeLookup.manufacturerModelNumber,
+              vendorLicenseNumber: barcodeLookup.vendorLicenseNumber,
+              numberOfContainers: barcodeLookup.numberOfContainers,
+              batchOrLotNumber: barcodeLookup.batchOrLotNumber,
+              expirationDate: barcodeLookup.expirationDate,
+              productVariant: barcodeLookup.productVariant,
+              serialNumber: barcodeLookup.serialNumber,
+              hibcc: barcodeLookup.hibcc,
+              lotNumber: barcodeLookup.lotNumber,
+              quantityEach: barcodeLookup.quantityEach,
+              secondaryProductAttributes: barcodeLookup.secondaryProductAttributes,
+              hibcSecondaryExpiration: barcodeLookup.hibcSecondaryExpiration,
+              hibcSecondaryManufacture: barcodeLookup.hibcSecondaryManufacture,
+              secondarySerialNumber: barcodeLookup.secondarySerialNumber,
+              hibcSecondarySerial: barcodeLookup.hibcSecondarySerial,
+              quantityOfUnitsContained: barcodeLookup.quantityOfUnitsContained,
+              hibcManufactureDate: barcodeLookup.hibcManufactureDate,
+              passThroughCompletenessFlag: barcodeLookup.passThroughCompletenessFlag,
+              trayState: barcodeLookup.trayState,
+              isUnknown: barcodeLookup.isUnknown,
+              licenseNumber: barcodeLookup.licenseNumber,
+              productModelNumber: barcodeLookup.productModelNumber,
+              orderThruVendor: barcodeLookup.orderThruVendor,
+              productDescription: barcodeLookup.productDescription,
+              autoReplace: barcodeLookup.autoReplace,
+              discontinued: barcodeLookup.discontinued,
+              productCategory: barcodeLookup.productCategory,
+              hospitalItemNumber: barcodeLookup.hospitalItemNumber,
+              unitOfMeasure: barcodeLookup.unitOfMeasure,
+              unitOfMeasureQuantity: barcodeLookup.unitOfMeasureQuantity,
+              reorderValue: barcodeLookup.reorderValue,
+              quantityOnHand: barcodeLookup.quantityOnHand,
+              quantityOrdered: barcodeLookup.quantityOrdered,
+              lastRequistionNumber: barcodeLookup.lastRequistionNumber,
+              orderStatus: barcodeLookup.orderStatus,
+              active: barcodeLookup.active,
+              accepted: barcodeLookup.accepted,
+              consignment: barcodeLookup.consignment,
+              minimumValue: barcodeLookup.minimumValue,
+              maximumValue: barcodeLookup.maximumValue,
+              nonOrdered: barcodeLookup.nonOrdered,
+              productNote: barcodeLookup.productNote,
+              scannedTime: barcodeLookup.scannedTime,
+              count: barcodeLookup.count,
+              waste: barcodeLookup.waste,
+              scanned: barcodeLookup.scanned,
+            })
+          }
+          catch (e) {
+            console.log("Error on working scan space creation");
+            console.log(e);
+          }
+        })
       }
       //Update LocalState with new information
       this.setState({
@@ -202,13 +261,21 @@ export default class IntakeScan extends Component {
     return(this.ScanBarcode(testStrings[count].barcode.toString()))
   }
 
-  RemoveScannedItem(index) {
-    let scannedItems = this.state.scannedItems
+  RemoveScannedItem(itemBarcode) {
     let newTotalCount = 0
-    scannedItems.splice(index, 1)
+
+    workingScanSpace.write(() => {
+      let removeBuildString = 'barcode CONTAINS "' + itemBarcode + '"'
+      let filteredRemoveMatch = workingScanSpace.filtered(removeBuildString)
+      workingScanSpace.delete(filteredRemoveMatch)
+    })
+
+    let scannedItems = workingScanSpace.objects('Working_Scan_Space')
+
     scannedItems.forEach(function(countScan, index) {
       newTotalCount = newTotalCount + parseFloat(countScan.count)
     })
+
     this.setState({
       scannedItems: scannedItems,
       scanCount: newTotalCount,
@@ -245,10 +312,10 @@ export default class IntakeScan extends Component {
       })
     }
   }
-  OpenAdjustmentModal = (index) => {
-    let productLocation = index
-
-    let modalProductBuild = this.state.scannedItems[index]
+  OpenAdjustmentModal = (itemBarcode) => {
+    let productLocationString = 'barcode CONTAINS "' + itemBarcode + '"'
+    let modalProducts = workingScanSpace.objects('Working_Scan_Space')
+    let modalProductBuild = modalProducts.filtered(productLocationString)
     modalProductBuild.index = index
 
     this.setState({
@@ -270,6 +337,10 @@ export default class IntakeScan extends Component {
       scanCount: 0,
       scannedItems: []
     })
+    workingScanSpace.write(() => {
+      workingScanSpace.deleteAll()
+    })
+
   }
   GetScannerStatus(status) {
     let scannerStatus = status
@@ -351,9 +422,6 @@ export default class IntakeScan extends Component {
     }
     else {
       scannedItems.forEach(function(item, index){
-        console.log("ITEMS IN LIST TRAY RENDER")
-        console.log(item)
-        console.log(item.hospitalItemNumber)
         scanOutput.push(
           <ProductListTrayItem
             key={index}
@@ -389,8 +457,8 @@ export default class IntakeScan extends Component {
             itemProductNote={item.productNote}
             statePosition={index}
             fullObject={item}
-            removeFunction={() => this.RemoveScannedItem(index)}
-            adjustmentFunction={() => this.OpenAdjustmentModal(index)}
+            removeFunction={() => this.RemoveScannedItem(item.barcode)}
+            adjustmentFunction={() => this.OpenAdjustmentModal(item.barcode)}
             />)
       }.bind(this))
     }
@@ -398,6 +466,7 @@ export default class IntakeScan extends Component {
   }
 
   render() {
+    let scannedItems = workingScanSpace.objects('Working_Scan_Space')
     return (
       <View style={styles.containerContainsFooter}>
         <ScrollView style={styles.scrollContainer}>
@@ -423,7 +492,7 @@ export default class IntakeScan extends Component {
               </View>
             </View>
             <View style={styles.sectionContainer}>
-              {this.RenderScannedProducts(this.state.scannedItems)}
+              {this.RenderScannedProducts(scannedItems)}
             </View>
           </View>
         </ScrollView>

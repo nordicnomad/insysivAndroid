@@ -102,15 +102,69 @@ export function RFIDlabelSearch(rfidLabel) {
     })
   }
 
-  if(matchedLabel.productModelNumber === '') {
-    matchedLabel = {
+  if(matchedLabel.productModelNumber === '' || matchedLabel.productModelNumber === null || matchedLabel.productModelNumber === undefined) {
+    matchedRfidProduct = {
       licenseNumber: "Error / No Match",
       productModelNumber: "0000",
       lotSerialNumber: "0000",
       expirationDate: "NA",
       tagid: "0000",
+      orderThruVendor: '',
+      productDescription: 'Unknown Product',
+      autoReplace: '',
+      discontinued: '',
+      productCategory: '',
+      hospitalItemNumber: '',
+      unitOfMeasure: '',
+      unitOfMeasureQuantity: '',
+      reorderValue: '',
+      quantityOnHand: '',
+      quantityOrdered: '',
+      lastRequistionNumber: '',
+      orderStatus: '',
+      active: '',
+      accepted: '',
+      consignment: '',
+      minimumValue: '',
+      maximumValue: '',
+      nonOrdered: '',
+      productNote: '',
     }
   }
+  else {
+    let buildProductFilterString = 'productModelNumber CONTAINS "' + matchedLabel.productModelNumber + '"'
+    let filteredProductMatches = productTable.filtered(buildProductFilterString)
+
+    filteredProductMatches.forEach((product, i) => {
+      matchedRfidProduct = {
+        licenseNumber: product.licenseNumber,
+        lotSerialNumber: matchedLabel.lotSerialNumber,
+        expirationDate: matchedLabel.expirationDate,
+        tagid: matchedLabel.tagid,
+        productModelNumber: product.productModelNumber,
+        orderThruVendor: product.orderThruVendor,
+        productDescription: product.productDescription,
+        autoReplace: product.autoReplace,
+        discontinued: product.discontinued,
+        productCategory: product.productCategory,
+        hospitalItemNumber: product.hospitalItemNumber,
+        unitOfMeasure: product.unitOfMeasure,
+        unitOfMeasureQuantity: product.unitOfMeasureQuantity,
+        reorderValue: product.reorderValue,
+        quantityOnHand: product.quantityOnHand,
+        quantityOrdered: product.quantityOrdered,
+        lastRequistionNumber: product.lastRequistionNumber,
+        orderStatus: product.orderStatus,
+        active: product.active,
+        accepted: product.accepted,
+        consignment: product.consignment,
+        minimumValue: product.minimumValue,
+        maximumValue: product.maximumValue,
+        nonOrdered: product.nonOrdered,
+        productNote: product.productNote,
+      }
+    })
+  }
   //return
-  return(matchedLabel)
+  return(matchedRfidProduct)
 }
