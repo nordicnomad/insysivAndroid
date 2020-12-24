@@ -1,0 +1,30 @@
+[
+  {
+    "siteId": 0,
+    "siteDescription": "Waiting Room",
+    "assetNumber": "00001",
+    "unitId": "00001",
+    "unitPhone": "888-888-8888",
+    "lastLinkDate": "2020-12-22T18:00:33.703Z",
+    "active": "Y",
+    "createTimestamp": "2020-12-22T18:00:33.703Z",
+    "createUserid": "ADMIN",
+    "changeTimestamp": "2020-12-22T18:00:33.703Z",
+    "changeUserid": "ADMIN",
+    "inventoryLocation": "N/A"
+  },
+  {
+    "siteId": 1,
+    "siteDescription": "Hallway",
+    "assetNumber": "00002",
+    "unitId": "00002",
+    "unitPhone": "888-888-8889",
+    "lastLinkDate": "2020-12-22T18:00:33.703Z",
+    "active": "N",
+    "createTimestamp": "2020-12-22T18:00:33.703Z",
+    "createUserid": "ADMIN",
+    "changeTimestamp": "2020-12-22T18:00:33.703Z",
+    "changeUserid": "ADMIN",
+    "inventoryLocation": "N/A"
+  },
+]

@@ -11,9 +11,12 @@ var Realm = require('realm');
 let products ;
 let productBarCodes ;
 let rfidLabels ;
-let lastProductFetch ;
-let lastBarcodeFetch ;
-let lastRfidFetch ;
+let activeCases ;
+let physiciansList ;
+let locationsList ;
+let proceduresList ;
+let usersList ;
+let activeCases ;
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -78,31 +81,58 @@ export default class AccountInfo extends Component {
         bcSecondary: "string?",
       }}]
     });
-    lastProductFetch = new Realm({
-      schema: [{name: 'Products_Last_Fetch',
-      properties:
-      {
-          year: "int",
-          month: "int",
-          day: "int"
+    physiciansList = new Realm({
+      schema: [{name: 'Physicians_List',
+      properties: {
+        physicianId: "string",
+        firstName: "string",
+        middleInitial: "string?",
+        lastName: "string",
+        active: "string",
       }}]
     });
-    lastBarcodeFetch = new Realm({
-      schema: [{name: 'Barcode_Last_Fetch',
-      properties:
-      {
-          year: "int",
-          month: "int",
-          day: "int"
+    locationsList = new Realm({
+      schema: [{name: 'Locations_List',
+      properties: {
+        siteId: "int",
+        siteDescription: "string",
+        active: "string",
       }}]
     });
-    lastRfidFetch = new Realm({
-      schema: [{name: 'Rfid_Last_Fetch',
-      properties:
-      {
-          year: "int",
-          month: "int",
-          day: "int"
+    proceduresList = new Realm({
+      schema: [{name: 'Procedures_List',
+      properties: {
+        procedureCode: "string",
+        procedureDescription: "string",
+        active: "string",
+      }}]
+    });
+    usersList = new Realm({
+      schema: [{name: 'Users_List',
+      properties: {
+        userId: "string",
+        userPassword: "string",
+        userName: "string",
+        scannerCaseAuth: "string",
+        scannerLinkAuth: "string",
+        scannerInquiryAuth: "string",
+        scannerUtilityAuth: "string",
+        scannerInventoryAuth: "string",
+        scannerCheckInAuth: "string",
+      }}]
+    });
+    activeCases = new Realm({
+      schema: [{name: 'Active_Cases',
+      properties: {
+        siteId: "string?",
+        caseNumber: "int",
+        dateIn: "string?",
+        timeIn: "string?",
+        dateOut: "string?",
+        timeOut: "string?",
+        patientId: "string",
+        syncSiteName: "string?",
+        billingVerified: "int?"
       }}]
     });
   }
@@ -412,15 +442,12 @@ export default class AccountInfo extends Component {
   saveRfidTable = (responserfids) => {
     let savedRfidLabels = rfidLabels.objects('RFID_Labels')
     let newRfidLabels = responserfids
-    let saveCount = 0
 
     if(savedRfidLabels != undefined && savedRfidLabels != null && savedRfidLabels.length > 0) {
       rfidLabels.write(() => {
         rfidLabels.deleteAll()
         newRfidLabels.forEach(function(label, i) {
           try {
-            saveCount = saveCount + 1
-            console.log(saveCount)
             rfidLabels.create('RFID_Labels', {
               productTransactionNumber: label.productTransactionNumber,
               licenseNumber: label.licenseNumber,
@@ -445,9 +472,6 @@ export default class AccountInfo extends Component {
       rfidLabels.write(() => {
         newRfidLabels.forEach(function(label, i) {
           try {
-            saveCount = saveCount + 1
-            console.log(saveCount)
-
             rfidLabels.create('RFID_Labels', {
               productTransactionNumber: label.productTransactionNumber,
               licenseNumber: label.licenseNumber,
@@ -554,6 +578,279 @@ export default class AccountInfo extends Component {
     this.saveCurrentDate()
   }
 
+  LoadDummyDocTable = () => {
+    let docResponse = DummyDocs
+
+    this.saveDocTable(docResponse)
+  }
+
+  saveDocTable = (docResponse) => {
+    let savedDocs = physiciansList.objects('Physicians_List')
+    let newDocs = docResponse
+
+    if(savedDocs != undefined && savedDocs != null && savedDocs.length > 0) {
+      physiciansList.write(() => {
+        physiciansList.deleteAll()
+        newDocs.forEach(function(doc, i) {
+          try {
+            physiciansList.create('Physicians_List', {
+              physicianId: doc.physicianId,
+              firstName: doc.firstName,
+              middleInitial: doc.middleInitial,
+              lastName: doc.lastName,
+              active: doc.active,
+            })
+          }
+          catch (e) {
+            console.log("Error on physician creation");
+            console.log(e);
+          }
+        })
+      })
+      rfidLabels.compact()
+    }
+    else {
+      physiciansList.write(() => {
+        newDocs.forEach(function(doc, i) {
+          try {
+            physiciansList.create('Physicians_List', {
+              physicianId: doc.physicianId,
+              firstName: doc.firstName,
+              middleInitial: doc.middleInitial,
+              lastName: doc.lastName,
+              active: doc.active,
+            })
+          }
+          catch (e) {
+            console.log("Error on physician creation");
+            console.log(e);
+          }
+        })
+      })
+      physiciansList.compact()
+    }
+  }
+
+  LoadDummyCaseTable = () => {
+    let caseResponse = DummyCases
+
+    this.saveCaseTable(caseResponse)
+  }
+
+  saveCaseTable = (caseResponse) => {
+    let savedCases = activeCases.objects('Active_Cases')
+    let newCases = caseResponse
+
+    if(savedCases != undefined && savedCases != null && savedCases.length > 0) {
+      activeCases.write(() => {
+        activeCases.deleteAll()
+        newCases.forEach(function(case, i) {
+          try {
+            activeCases.create('Active_Cases', {
+              siteId: case.siteId,
+              caseNumber: case.caseNumber,
+              dateIn: case.dateIn,
+              timeIn: case.timeIn,
+              dateOut: case.dateOut,
+              timeOut: case.timeOut,
+              patientId: case.patientId,
+              syncSiteName: case.syncSiteName,
+              billingVerified: case.billingVerified
+            })
+          }
+          catch (e) {
+            console.log("Error on case creation");
+            console.log(e);
+          }
+        })
+      })
+      activeCases.compact()
+    }
+    else {
+      activeCases.write(() => {
+        newCases.forEach(function(case, i) {
+          try {
+            activeCases.create('Active_Cases', {
+              siteId: case.siteId,
+              caseNumber: case.caseNumber,
+              dateIn: case.dateIn,
+              timeIn: case.timeIn,
+              dateOut: case.dateOut,
+              timeOut: case.timeOut,
+              patientId: case.patientId,
+              syncSiteName: case.syncSiteName,
+              billingVerified: case.billingVerified
+            })
+          }
+          catch (e) {
+            console.log("Error on case creation");
+            console.log(e);
+          }
+        })
+      })
+      activeCases.compact()
+    }
+  }
+
+  LoadDummySiteTable = () => {
+    let siteResponse = DummySites
+
+    this.saveSiteTable(siteResponse)
+  }
+
+  saveSiteTable = (siteResponse) => {
+    let savedSites = locationsList.objects('Locations_List')
+    let newSites = siteResponse
+
+    if(savedSites != undefined && savedSites != null && savedSites.length > 0) {
+      locationsList.write(() => {
+        locationsList.deleteAll()
+        newSites.forEach(function(site, i) {
+          try {
+            locationsList.create('Locations_List', {
+              siteId: site.siteId,
+              siteDescription: site.siteDescription,
+              active: site.active,
+            })
+          }
+          catch (e) {
+            console.log("Error on site creation");
+            console.log(e);
+          }
+        })
+      })
+      locationsList.compact()
+    }
+    else {
+      locationsList.write(() => {
+        newSites.forEach(function(site, i) {
+          try {
+            locationsList.create('Locations_List', {
+              siteId: site.siteId,
+              siteDescription: site.siteDescription,
+              active: site.active,
+            })
+          }
+          catch (e) {
+            console.log("Error on site creation");
+            console.log(e);
+          }
+        })
+      })
+      locationsList.compact()
+    }
+  }
+
+  LoadDummyProcedureTable = () => {
+    let procedureResponse = DummyProcedures
+
+    this.saveProcedureTable(procedureResponse)
+  }
+
+  saveProcedureTable = (procedureResponse) => {
+    let savedProcedures = proceduresList.objects('Procedures_List')
+    let newProcedures = procedureResponse
+
+    if(savedProcedures != undefined && savedProcedures != null && savedProcedures.length > 0) {
+      proceduresList.write(() => {
+        proceduresList.deleteAll()
+        newProcedures.forEach(function(procedure, i) {
+          try {
+            proceduresList.create('Procedures_List', {
+              procedureCode: procedure.procedureCode,
+              procedureDescription: procedure.procedureDescription,
+              active: procedure.active,
+            })
+          }
+          catch (e) {
+            console.log("Error on procedure creation");
+            console.log(e);
+          }
+        })
+      })
+      proceduresList.compact()
+    }
+    else {
+      proceduresList.write(() => {
+        newProcedures.forEach(function(procedure, i) {
+          try {
+            proceduresList.create('Procedures_List', {
+              procedureCode: procedure.procedureCode,
+              procedureDescription: procedure.procedureDescription,
+              active: procedure.active,
+            })
+          }
+          catch (e) {
+            console.log("Error on procedure creation");
+            console.log(e);
+          }
+        })
+      })
+      proceduresList.compact()
+    }
+  }
+
+  LoadDummyUserTable = () => {
+    let userResponse = DummyUsers
+
+    this.saveUserTable(userResponse)
+  }
+
+  saveUserTable = (userResponse) => {
+    let savedUsers = usersList.objects('Users_List')
+    let newUsers = userResponse
+
+    if(savedUsers != undefined && savedUsers != null && savedUsers.length > 0) {
+      usersList.write(() => {
+        usersList.deleteAll()
+        newUsers.forEach(function(user, i) {
+          try {
+            usersList.create('Users_List', {
+              userId: user.userId,
+              userPassword: user.userPassword,
+              userName: user.userName,
+              scannerCaseAuth: user.scannerCaseAuth,
+              scannerLinkAuth: user.scannerLinkAuth,
+              scannerInquiryAuth: user.scannerInquiryAuth,
+              scannerUtilityAuth: user.scannerUtilityAuth,
+              scannerInventoryAuth: user.scannerInventoryAuth,
+              scannerCheckInAuth: user.scannerCheckInAuth,
+            })
+          }
+          catch (e) {
+            console.log("Error on user creation");
+            console.log(e);
+          }
+        })
+      })
+      usersList.compact()
+    }
+    else {
+      usersList.write(() => {
+        newUsers.forEach(function(user, i) {
+          try {
+            usersList.create('Users_List', {
+              userId: user.userId,
+              userPassword: user.userPassword,
+              userName: user.userName,
+              scannerCaseAuth: user.scannerCaseAuth,
+              scannerLinkAuth: user.scannerLinkAuth,
+              scannerInquiryAuth: user.scannerInquiryAuth,
+              scannerUtilityAuth: user.scannerUtilityAuth,
+              scannerInventoryAuth: user.scannerInventoryAuth,
+              scannerCheckInAuth: user.scannerCheckInAuth,
+            })
+          }
+          catch (e) {
+            console.log("Error on user creation");
+            console.log(e);
+          }
+        })
+      })
+      usersList.compact()
+    }
+  }
+
   renderSyncButton(fetchState) {
     let syncFetchState = fetchState
 
@@ -598,6 +895,16 @@ export default class AccountInfo extends Component {
       let printBarcodes = outputBarcodes.length;
       let outputLabels = rfidLabels.objects('RFID_Labels');
       let printRFIDLabels = outputLabels.length;
+      let outputUsers = usersList.objects('Users_List');
+      let printUsers = outputUsers.length;
+      let outputCases = activeCases.objects('Active_Cases');
+      let printCases = outputCases.length;
+      let outputProcedures = proceduresList.objects('Procedures_List');
+      let printProcedures = outputProcedures.length;
+      let outputDocs = physiciansList.objects('Physicians_List');
+      let printDocs = outputDocs.length;
+      let outputSites = locationsList.objects('Locations_List');
+      let printSites = outputSites.length;
       return (
         <ScrollView style={styles.scrollContainer}>
           <View style={styles.container}>
@@ -617,7 +924,8 @@ export default class AccountInfo extends Component {
               </View>
               <View style={styles.tabControlRow}>
                 <View style={styles.leftColumn}>
-                  <Text>Test Data</Text>
+                  <Text>Test Product Data</Text>
+                  <Text>{printProducts}</Text>
                 </View>
                 <View style={styles.rightColumn}>
                   <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyProductTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
@@ -634,7 +942,8 @@ export default class AccountInfo extends Component {
               </View>
               <View style={styles.tabControlRow}>
                 <View style={styles.leftColumn}>
-                  <Text>Test Data</Text>
+                  <Text>Test Barcode Data</Text>
+                  <Text>{printBarcodes}</Text>
                 </View>
                 <View style={styles.rightColumn}>
                   <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyBarcodeTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
@@ -651,10 +960,56 @@ export default class AccountInfo extends Component {
               </View>
               <View style={styles.tabControlRow}>
                 <View style={styles.leftColumn}>
-                  <Text>Test Data</Text>
+                  <Text>Test RFID Data</Text>
+                  <Text>{printRFIDLabels}</Text>
                 </View>
                 <View style={styles.rightColumn}>
                   <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyRFIDTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                </View>
+              </View>
+              <View style={styles.tabControlRow}>
+                <View style={styles.leftColumn}>
+                  <Text>Test User Data</Text>
+                  <Text>{printUsers}</Text>
+                </View>
+                <View style={styles.rightColumn}>
+                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyUserTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                </View>
+              </View>
+              <View style={styles.tabControlRow}>
+                <View style={styles.leftColumn}>
+                  <Text>Test Procedure Data</Text>
+                  <Text>{printProcedures}</Text>
+                </View>
+                <View style={styles.rightColumn}>
+                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyProcedureTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                </View>
+              </View>
+              <View style={styles.tabControlRow}>
+                <View style={styles.leftColumn}>
+                  <Text>Test Doc Data</Text>
+                  <Text>{printDocs}</Text>
+                </View>
+                <View style={styles.rightColumn}>
+                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyDocTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                </View>
+              </View>
+              <View style={styles.tabControlRow}>
+                <View style={styles.leftColumn}>
+                  <Text>Test Site Data</Text>
+                  <Text>{printSites}</Text>
+                </View>
+                <View style={styles.rightColumn}>
+                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummySiteTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                </View>
+              </View>
+              <View style={styles.tabControlRow}>
+                <View style={styles.leftColumn}>
+                  <Text>Test Case Data</Text>
+                  <Text>{printCases}</Text>
+                </View>
+                <View style={styles.rightColumn}>
+                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyCaseTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
                 </View>
               </View>
             </View>

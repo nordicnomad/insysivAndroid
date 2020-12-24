@@ -265,6 +265,8 @@ export default StyleSheet.create({
   tabControlRow: {
     flexDirection: 'row',
     display: 'flex',
+    paddingTop: 5,
+    paddingBottom: 5, 
   },
   tabControlColumn: {
     flex: 1,
