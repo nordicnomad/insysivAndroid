@@ -20,11 +20,7 @@ export default class IntakeScan extends Component {
       testCount: 0,
       modalState: false,
       scannedBarcode: '',
-      modalProduct: {
-        count: 0,
-        name: '',
-      },
-      modalProductIndex: -1,
+      modalProduct: '',
       modalInputHasFocus: false,
       modalItemCount: 0,
       modalErrorMessage: '',
@@ -281,20 +277,23 @@ export default class IntakeScan extends Component {
       scanCount: newTotalCount,
     })
   }
-  AdjustScannedQuantity = (index, newQuantity) => {
+  AdjustScannedQuantity = (itembarcode, newQuantity) => {
+    let productLocationString = 'barcode CONTAINS "' + itemBarcode + '"'
+    let modalProducts = workingScanSpace.objects('Working_Scan_Space')
+    let modalProductBuild = modalProducts.filtered(productLocationString)
+
     let updateCount = newQuantity
     if(updateCount >= 0 && updateCount != null && updateCount != undefined && updateCount != '') {
-      let updatedScannedItems = this.state.scannedItems
-      updatedScannedItems[index].count = updateCount
+      let updatedScannedItem = modalProductBuild[0]
+      updatedScannedItems.count = updateCount
 
       this.setState({
         scannedItems: updatedScannedItems,
       })
       this.CloseAdjustmentModal()
 
-      let scannedItems = this.state.scannedItems
       let newTotalCount = 0
-      scannedItems.forEach(function(product, index) {
+      modalProducts.forEach(function(product, index) {
         newTotalCount = newTotalCount + parseFloat(product.count)
       })
       this.setState({
@@ -313,15 +312,9 @@ export default class IntakeScan extends Component {
     }
   }
   OpenAdjustmentModal = (itemBarcode) => {
-    let productLocationString = 'barcode CONTAINS "' + itemBarcode + '"'
-    let modalProducts = workingScanSpace.objects('Working_Scan_Space')
-    let modalProductBuild = modalProducts.filtered(productLocationString)
-    modalProductBuild.index = index
-
     this.setState({
       modalState: true,
-      modalProduct: this.state.scannedItems[index],
-      modalItemCount: this.state.scannedItems[index].count
+      modalProduct: itemBarcode,
     })
   }
   CloseAdjustmentModal = () => {
@@ -369,12 +362,16 @@ export default class IntakeScan extends Component {
     }
   }
   RenderModal() {
+    let productLocationString = 'barcode CONTAINS "' + this.state.modalProduct + '"'
+    let modalProducts = workingScanSpace.objects('Working_Scan_Space')
+    let modalProductBuild = modalProducts.filtered(productLocationString)
+
     if(this.state.modalState === true) {
       return (
         <View style={styles.modalBackgroundContainer}>
           <View style={styles.modalInnerContainer}>
             <View style={styles.modalTitleWrapper}>
-              <Text style={styles.modalTitleText}>{this.state.modalProduct.name}</Text>
+              <Text style={styles.modalTitleText}>{modalProductBuild[0].name}</Text>
               <TouchableOpacity style={styles.modalCloseButton} onPress={() => this.CloseAdjustmentModal()}>
                 <Text style={styles.modalCloseButtonText}>X</Text>
               </TouchableOpacity>
@@ -394,7 +391,7 @@ export default class IntakeScan extends Component {
                 <View style={styles.modalButtonColumn}>
                   <TouchableOpacity
                     style={styles.modalButton}
-                    onPress={() => this.AdjustScannedQuantity(this.state.modalProduct.index, this.state.modalItemCount)}>
+                    onPress={() => this.AdjustScannedQuantity(this.state.modalProduct, this.state.modalItemCount)}>
                     <Text style={styles.modalButtonText}>Set Quantity</Text>
                   </TouchableOpacity>
                 </View>
