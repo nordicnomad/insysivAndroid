@@ -5,6 +5,7 @@ import HeaderLogo from '../Images/insysivLogoHorizontal.png'
 import GateData from '../dummyData/gates.json'
 
 var Realm = require('realm');
+let activeUser ;
 let activeCases ;
 let physiciansList ;
 let locationsList ;
@@ -35,6 +36,17 @@ export default class CasesSetup extends Component {
       newProcedureLabel: "",
       newProductsValue: [],
     }
+    activeUser = new Realm({
+      schema: [{name: 'Active_User',
+        properties: {
+          userId:"string",
+          userName: "string",
+          userToken: "string",
+          tokenExpiration: "string?",
+          syncAddress: "string?",
+          //Additional Organization Level Configuration Options go Here.
+      }}]
+    });
     physiciansList = new Realm({
       schema: [{name: 'Physicians_List',
       properties: {
@@ -488,121 +500,127 @@ export default class CasesSetup extends Component {
   }
 
   render() {
-    return (
-      <ScrollView style={styles.scrollContainer}>
-        <View style={styles.container}>
-          <View style={styles.titleRow}>
-            <Text style={styles.titleText}>Cases Setup</Text>
-          </View>
-          <View style={styles.sectionContainer}>
-            <View style={styles.shadedBackgroundWrapper}>
-              <View style={styles.formTitleWrapper}>
-                <Text style={styles.bodyTextHeading}>Select an Active Case</Text>
+    let isLoggedIn = activeUser.objects('Active_Users')
+    if(isLoggedIn.length === 0) {
+      navigation.navigate('Login')
+    }
+    else {
+      return (
+        <ScrollView style={styles.scrollContainer}>
+          <View style={styles.container}>
+            <View style={styles.titleRow}>
+              <Text style={styles.titleText}>Cases Setup</Text>
+            </View>
+            <View style={styles.sectionContainer}>
+              <View style={styles.shadedBackgroundWrapper}>
+                <View style={styles.formTitleWrapper}>
+                  <Text style={styles.bodyTextHeading}>Select an Active Case</Text>
+                </View>
+                <View style={styles.majorMinorRow}>
+                  <View style={styles.majorColumn}>
+                    <View style={styles.formPickerWrapper}>
+                      <Picker
+                        style={styles.formPicker}
+                        selectedValue={this.state.activeCaseValue}
+                        onValueChange={this.onCaseChange}
+                        >
+                        {this.renderExistingCases()}
+                      </Picker>
+                    </View>
+                  </View>
+                  <View style={styles.minorColumn}>
+                    <TouchableOpacity
+                      style={styles.submitButton}
+                      onPress={() => this.selectActiveCase()}>
+                      <Text style={styles.submitButtonText}>GO</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                <View style={styles.majorMinorRow}>
+                  <View style={styles.minorColumn}>
+                    <Text style={styles.seperatorHeading}>Or</Text>
+                  </View>
+                  <View style={styles.majorColumn}>
+                    <TouchableOpacity
+                      style={styles.submitButton}
+                      onPress={() => this.toggleCreateTray(this.state.showNewTray)}>
+                      <Text style={styles.submitButtonText}>Start a New Case</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
-              <View style={styles.majorMinorRow}>
-                <View style={styles.majorColumn}>
+            </View>
+            <View style={this.state.showNewTray === true ? styles.sectionContainer : styles.inactiveListTray}>
+              <View style={styles.shadedBackgroundWrapper}>
+                <View style={styles.formTitleWrapper}>
+                  <Text style={styles.bodyTextHeading}>New Case Setup</Text>
+                </View>
+                <View style={styles.formItemWrapper}>
+                  <Text style={styles.inputTextLabel}>Case Number</Text>
+                  <TextInput
+                    style={this.state.caseNumberHasFocus === true ? styles.formInputFocus : styles.formInput}
+                    onFocus={() => this.onCaseNumberFocusChange()}
+                    onBlur={() => this.onCaseNumberFocusChange()}
+                    onChangeText={value => this.setState({newCaseNumber: value})}
+                    />
+                </View>
+                <View style={styles.formItemWrapper}>
+                  <Text style={styles.inputTextLabel}>Patient Name</Text>
+                  <TextInput
+                    style={this.state.patientNameHasFocus === true ? styles.formInputFocus : styles.formInput}
+                    onFocus={() => this.onPatientNameFocusChange()}
+                    onBlur={() => this.onPatientNameFocusChange()}
+                    onChangeText={value => this.setState({newPatientName: value})}
+                    />
+                </View>
+                <View style={styles.formItemWrapper}>
+                  <Text style={styles.inputTextLabel}>Doctor</Text>
                   <View style={styles.formPickerWrapper}>
                     <Picker
                       style={styles.formPicker}
-                      selectedValue={this.state.activeCaseValue}
-                      onValueChange={this.onCaseChange}
+                      selectedValue={this.state.newDoctorValue}
+                      onValueChange={this.onDoctorChange}
                       >
-                      {this.renderExistingCases()}
+                      {this.renderDoctorChoices()}
                     </Picker>
                   </View>
                 </View>
-                <View style={styles.minorColumn}>
+                <View style={styles.formItemWrapper}>
+                  <Text style={styles.inputTextLabel}>Location</Text>
+                  <View style={styles.formPickerWrapper}>
+                    <Picker
+                      style={styles.formPicker}
+                      selectedValue={this.state.newLocationValue}
+                      onValueChange={this.onLocationChange}
+                      >
+                      {this.renderLocationChoices()}
+                    </Picker>
+                  </View>
+                </View>
+                <View style={styles.formItemWrapper}>
+                  <Text style={styles.inputTextLabel}>Procedure</Text>
+                  <View style={styles.formPickerWrapper}>
+                    <Picker
+                      style={styles.formPicker}
+                      selectedValue={this.state.newProcedureValue}
+                      onValueChange={this.onProcedureChange}
+                      >
+                      {this.renderProcedureChoices()}
+                    </Picker>
+                  </View>
+                </View>
+                <View style={styles.buttonRow}>
                   <TouchableOpacity
                     style={styles.submitButton}
-                    onPress={() => this.selectActiveCase()}>
-                    <Text style={styles.submitButtonText}>GO</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-              <View style={styles.majorMinorRow}>
-                <View style={styles.minorColumn}>
-                  <Text style={styles.seperatorHeading}>Or</Text>
-                </View>
-                <View style={styles.majorColumn}>
-                  <TouchableOpacity
-                    style={styles.submitButton}
-                    onPress={() => this.toggleCreateTray(this.state.showNewTray)}>
-                    <Text style={styles.submitButtonText}>Start a New Case</Text>
+                    onPress={() => this.createNewCase(this.state.newCaseNumber, this.state.newPatientName, this.state.newDoctorLabel, this.state.newLocationLabel, this.state.newProcedureLabel, this.state.newProductsValue)}>
+                    <Text style={styles.submitButtonText}>Start Case</Text>
                   </TouchableOpacity>
                 </View>
               </View>
             </View>
           </View>
-          <View style={this.state.showNewTray === true ? styles.sectionContainer : styles.inactiveListTray}>
-            <View style={styles.shadedBackgroundWrapper}>
-              <View style={styles.formTitleWrapper}>
-                <Text style={styles.bodyTextHeading}>New Case Setup</Text>
-              </View>
-              <View style={styles.formItemWrapper}>
-                <Text style={styles.inputTextLabel}>Case Number</Text>
-                <TextInput
-                  style={this.state.caseNumberHasFocus === true ? styles.formInputFocus : styles.formInput}
-                  onFocus={() => this.onCaseNumberFocusChange()}
-                  onBlur={() => this.onCaseNumberFocusChange()}
-                  onChangeText={value => this.setState({newCaseNumber: value})}
-                  />
-              </View>
-              <View style={styles.formItemWrapper}>
-                <Text style={styles.inputTextLabel}>Patient Name</Text>
-                <TextInput
-                  style={this.state.patientNameHasFocus === true ? styles.formInputFocus : styles.formInput}
-                  onFocus={() => this.onPatientNameFocusChange()}
-                  onBlur={() => this.onPatientNameFocusChange()}
-                  onChangeText={value => this.setState({newPatientName: value})}
-                  />
-              </View>
-              <View style={styles.formItemWrapper}>
-                <Text style={styles.inputTextLabel}>Doctor</Text>
-                <View style={styles.formPickerWrapper}>
-                  <Picker
-                    style={styles.formPicker}
-                    selectedValue={this.state.newDoctorValue}
-                    onValueChange={this.onDoctorChange}
-                    >
-                    {this.renderDoctorChoices()}
-                  </Picker>
-                </View>
-              </View>
-              <View style={styles.formItemWrapper}>
-                <Text style={styles.inputTextLabel}>Location</Text>
-                <View style={styles.formPickerWrapper}>
-                  <Picker
-                    style={styles.formPicker}
-                    selectedValue={this.state.newLocationValue}
-                    onValueChange={this.onLocationChange}
-                    >
-                    {this.renderLocationChoices()}
-                  </Picker>
-                </View>
-              </View>
-              <View style={styles.formItemWrapper}>
-                <Text style={styles.inputTextLabel}>Procedure</Text>
-                <View style={styles.formPickerWrapper}>
-                  <Picker
-                    style={styles.formPicker}
-                    selectedValue={this.state.newProcedureValue}
-                    onValueChange={this.onProcedureChange}
-                    >
-                    {this.renderProcedureChoices()}
-                  </Picker>
-                </View>
-              </View>
-              <View style={styles.buttonRow}>
-                <TouchableOpacity
-                  style={styles.submitButton}
-                  onPress={() => this.createNewCase(this.state.newCaseNumber, this.state.newPatientName, this.state.newDoctorLabel, this.state.newLocationLabel, this.state.newProcedureLabel, this.state.newProductsValue)}>
-                  <Text style={styles.submitButtonText}>Start Case</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-      </ScrollView>
-    );
+        </ScrollView>
+      );  
+    }
   }
 }

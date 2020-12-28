@@ -8,6 +8,7 @@ import { BarcodeSearch } from '../Utilities/BarcodeLookup'
 import TestBarcodes from '../dummyData/testBarcodes.json'
 
 var Realm = require('realm');
+let activeUser ;
 let workingScanSpace ;
 
 import styles from '../Styles/ContainerStyles.js'
@@ -29,6 +30,19 @@ export default class IntakeScan extends Component {
       lastCompleteFlag: false,
       lastScannedObject: {}
     }
+
+    activeUser = new Realm({
+      schema: [{name: 'Active_User',
+        properties: {
+          userId:"string",
+          userName: "string",
+          userToken: "string",
+          tokenExpiration: "string?",
+          syncAddress: "string?",
+          //Additional Organization Level Configuration Options go Here.
+      }}]
+    });
+
     workingScanSpace = new Realm({
       schema: [{name: 'Working_Scan_Space',
         properties:
@@ -463,49 +477,55 @@ export default class IntakeScan extends Component {
   }
 
   render() {
-    let scannedItems = workingScanSpace.objects('Working_Scan_Space')
-    return (
-      <View style={styles.containerContainsFooter}>
-        <ScrollView style={styles.scrollContainer}>
-          <View style={styles.container}>
-            <View style={styles.titleRow}>
-              <Text style={styles.titleText}>Intake Scan</Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text>Test Scan Function: </Text>
-              <TouchableOpacity onPress={() => this.generateScanTest(this.state.testCount)} style={styles.miniSubmitButton}><Text style={styles.miniSubmitButtonText}>Scan Test</Text></TouchableOpacity>
-            </View>
-            <View style={styles.sectionContainer}>
-              <View style={styles.menuRow}>
-                <View style={styles.majorColumn}>
-                  {this.GetScannerStatus(this.state.scannerConnected)}
-                </View>
-                <View style={styles.majorColumn}>
-                  <Text style={styles.countText}>
-                    Total Count
-                    <Text style={styles.countTextNumber}> {this.state.scanCount}</Text>
-                  </Text>
+    let isLoggedIn = activeUser.objects('Active_Users')
+    if(isLoggedIn.length === 0) {
+      navigation.navigate('Login')
+    }
+    else {
+      let scannedItems = workingScanSpace.objects('Working_Scan_Space')
+      return (
+        <View style={styles.containerContainsFooter}>
+          <ScrollView style={styles.scrollContainer}>
+            <View style={styles.container}>
+              <View style={styles.titleRow}>
+                <Text style={styles.titleText}>Intake Scan</Text>
+              </View>
+              <View style={styles.sectionContainer}>
+                <Text>Test Scan Function: </Text>
+                <TouchableOpacity onPress={() => this.generateScanTest(this.state.testCount)} style={styles.miniSubmitButton}><Text style={styles.miniSubmitButtonText}>Scan Test</Text></TouchableOpacity>
+              </View>
+              <View style={styles.sectionContainer}>
+                <View style={styles.menuRow}>
+                  <View style={styles.majorColumn}>
+                    {this.GetScannerStatus(this.state.scannerConnected)}
+                  </View>
+                  <View style={styles.majorColumn}>
+                    <Text style={styles.countText}>
+                      Total Count
+                      <Text style={styles.countTextNumber}> {this.state.scanCount}</Text>
+                    </Text>
+                  </View>
                 </View>
               </View>
+              <View style={styles.sectionContainer}>
+                {this.RenderScannedProducts(scannedItems)}
+              </View>
             </View>
-            <View style={styles.sectionContainer}>
-              {this.RenderScannedProducts(scannedItems)}
+          </ScrollView>
+          <View style={styles.footerContainer}>
+            <View style={styles.leftColumn}>
+              <Text style={styles.bodyTextLabel}>Synchronize</Text>
+              <Text style={styles.bodyTextLabel}>to Desktop</Text>
+            </View>
+            <View style={styles.rightColumn}>
+              <TouchableOpacity style={styles.submitButton} onPress={() => this.SynchoronizeIntakeToDesktop()}>
+                <Text style={styles.submitButtonText}>Synchronize</Text>
+              </TouchableOpacity>
             </View>
           </View>
-        </ScrollView>
-        <View style={styles.footerContainer}>
-          <View style={styles.leftColumn}>
-            <Text style={styles.bodyTextLabel}>Synchronize</Text>
-            <Text style={styles.bodyTextLabel}>to Desktop</Text>
-          </View>
-          <View style={styles.rightColumn}>
-            <TouchableOpacity style={styles.submitButton} onPress={() => this.SynchoronizeIntakeToDesktop()}>
-              <Text style={styles.submitButtonText}>Synchronize</Text>
-            </TouchableOpacity>
-          </View>
+          {this.RenderModal()}
         </View>
-        {this.RenderModal()}
-      </View>
-    );
+      );  
+    }
   }
 }

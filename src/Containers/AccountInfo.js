@@ -6,8 +6,10 @@ import UserData from '../dummyData/login.json'
 import DummyProducts from '../dummyData/productsOffline.json'
 import DummyBarcodes from '../dummyData/productBarcodesOffline.json'
 import DummyLabels from '../dummyData/rfidLabelsOffline.json'
+import {Logout} from '../Utilities/NavigationActions'
 
 var Realm = require('realm');
+let activeUser ;
 let products ;
 let productBarCodes ;
 let rfidLabels ;
@@ -29,6 +31,19 @@ export default class AccountInfo extends Component {
       account: {},
       user: {},
     }
+
+    activeUser = new Realm({
+      schema: [{name: 'Active_User',
+        properties: {
+          userId:"string",
+          userName: "string",
+          userToken: "string",
+          tokenExpiration: "string?",
+          syncAddress: "string?",
+          //Additional Organization Level Configuration Options go Here.
+      }}]
+    });
+
     products = new Realm({
       schema: [{name: 'Products_Lookup',
       properties:
@@ -877,186 +892,191 @@ export default class AccountInfo extends Component {
   }
 
   render() {
-    if(this.state.account.organization === null || this.state.account.organization === undefined) {
-      return(
-        <ScrollView style={styles.scrollContainer}>
-          <View style={styles.container}>
-            <View style={styles.titleRow}>
-              <Text style={styles.titleText}>Account Information</Text>
-            </View>
-          </View>
-        </ScrollView>
-      )
+    let isLoggedIn = activeUser.objects('Active_Users')
+    if(isLoggedIn.length === 0) {
+      navigation.navigate('Login')
     }
     else {
-      let outputProducts = products.objects('Products_Lookup');
-      let printProducts = outputProducts.length;
-      let outputBarcodes = productBarCodes.objects('Product_Bar_Codes');
-      let printBarcodes = outputBarcodes.length;
-      let outputLabels = rfidLabels.objects('RFID_Labels');
-      let printRFIDLabels = outputLabels.length;
-      let outputUsers = usersList.objects('Users_List');
-      let printUsers = outputUsers.length;
-      let outputCases = activeCases.objects('Active_Cases');
-      let printCases = outputCases.length;
-      let outputProcedures = proceduresList.objects('Procedures_List');
-      let printProcedures = outputProcedures.length;
-      let outputDocs = physiciansList.objects('Physicians_List');
-      let printDocs = outputDocs.length;
-      let outputSites = locationsList.objects('Locations_List');
-      let printSites = outputSites.length;
-      return (
-        <ScrollView style={styles.scrollContainer}>
-          <View style={styles.container}>
-            <View style={styles.titleRow}>
-              <Text style={styles.titleText}>Account Information</Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.bodyTextHeading}>Application Data</Text>
-              <View style={styles.tabControlRow}>
-                <View style={styles.leftColumn}>
-                  <Text>Product Table</Text>
-                  <Text>{printProducts}</Text>
-                </View>
-                <View style={styles.rightColumn}>
-                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.SynchronizeProductTable()}><Text style={styles.miniSubmitButtonText}>Sync</Text></TouchableOpacity>
-                </View>
-              </View>
-              <View style={styles.tabControlRow}>
-                <View style={styles.leftColumn}>
-                  <Text>Test Product Data</Text>
-                  <Text>{printProducts}</Text>
-                </View>
-                <View style={styles.rightColumn}>
-                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyProductTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
-                </View>
-              </View>
-              <View style={styles.tabControlRow}>
-                <View style={styles.leftColumn}>
-                  <Text>Barcodes</Text>
-                  <Text>{printBarcodes}</Text>
-                </View>
-                <View style={styles.rightColumn}>
-                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.SynchronizeBarcodeTable()}><Text style={styles.miniSubmitButtonText}>Sync</Text></TouchableOpacity>
-                </View>
-              </View>
-              <View style={styles.tabControlRow}>
-                <View style={styles.leftColumn}>
-                  <Text>Test Barcode Data</Text>
-                  <Text>{printBarcodes}</Text>
-                </View>
-                <View style={styles.rightColumn}>
-                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyBarcodeTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
-                </View>
-              </View>
-              <View style={styles.tabControlRow}>
-                <View style={styles.leftColumn}>
-                  <Text>RFID Tags</Text>
-                  <Text>{printRFIDLabels}</Text>
-                </View>
-                <View style={styles.rightColumn}>
-                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.SynchronizeRFIDTable()}><Text style={styles.miniSubmitButtonText}>Sync</Text></TouchableOpacity>
-                </View>
-              </View>
-              <View style={styles.tabControlRow}>
-                <View style={styles.leftColumn}>
-                  <Text>Test RFID Data</Text>
-                  <Text>{printRFIDLabels}</Text>
-                </View>
-                <View style={styles.rightColumn}>
-                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyRFIDTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
-                </View>
-              </View>
-              <View style={styles.tabControlRow}>
-                <View style={styles.leftColumn}>
-                  <Text>Test User Data</Text>
-                  <Text>{printUsers}</Text>
-                </View>
-                <View style={styles.rightColumn}>
-                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyUserTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
-                </View>
-              </View>
-              <View style={styles.tabControlRow}>
-                <View style={styles.leftColumn}>
-                  <Text>Test Procedure Data</Text>
-                  <Text>{printProcedures}</Text>
-                </View>
-                <View style={styles.rightColumn}>
-                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyProcedureTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
-                </View>
-              </View>
-              <View style={styles.tabControlRow}>
-                <View style={styles.leftColumn}>
-                  <Text>Test Doc Data</Text>
-                  <Text>{printDocs}</Text>
-                </View>
-                <View style={styles.rightColumn}>
-                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyDocTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
-                </View>
-              </View>
-              <View style={styles.tabControlRow}>
-                <View style={styles.leftColumn}>
-                  <Text>Test Site Data</Text>
-                  <Text>{printSites}</Text>
-                </View>
-                <View style={styles.rightColumn}>
-                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummySiteTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
-                </View>
-              </View>
-              <View style={styles.tabControlRow}>
-                <View style={styles.leftColumn}>
-                  <Text>Test Case Data</Text>
-                  <Text>{printCases}</Text>
-                </View>
-                <View style={styles.rightColumn}>
-                  <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyCaseTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
-                </View>
+      if(this.state.account.organization === null || this.state.account.organization === undefined) {
+        return(
+          <ScrollView style={styles.scrollContainer}>
+            <View style={styles.container}>
+              <View style={styles.titleRow}>
+                <Text style={styles.titleText}>Account Information</Text>
               </View>
             </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.bodyTextHeading}>System Information</Text>
-              <Text style={styles.bodyText}>
-                <Text style={styles.bodyTextLabel}>System Version: </Text>
-                {this.state.account.organization.systemVersion}
-              </Text>
-              <Text style={styles.bodyText}>
-                <Text style={styles.bodyTextLabel}>Host Account: </Text>
-                {this.state.account.organization.name}
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.bodyTextHeading}>Customer Service</Text>
-              <Text style={styles.bodyText}>
-                <Text style={styles.bodyTextLabel}>Phone: </Text>
-                {this.state.account.organization.customerServicePhone}
-              </Text>
-              <Text style={styles.bodyText}>
-                <Text style={styles.bodyTextLabel}>Email: </Text>
-                {this.state.account.organization.customerServiceEmail}
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.bodyText}>
-                <Text style={styles.bodyTextLabel}>Current User: </Text>
-                {this.state.user.username}
-              </Text>
-              <View style={styles.accountCenterWrapper}>
-                <View style={styles.buttonRow}>
-                  <TouchableOpacity
-                    style={styles.loginButton}
-                    activeOpacity={0.6}
-                    onPress={() =>
-                    this.props.navigation.navigate('Login')
-                  }>
-                    <Text style={styles.loginButtonText}>Log Out</Text>
-                  </TouchableOpacity>
+          </ScrollView>
+        )
+      }
+      else {
+        let outputProducts = products.objects('Products_Lookup');
+        let printProducts = outputProducts.length;
+        let outputBarcodes = productBarCodes.objects('Product_Bar_Codes');
+        let printBarcodes = outputBarcodes.length;
+        let outputLabels = rfidLabels.objects('RFID_Labels');
+        let printRFIDLabels = outputLabels.length;
+        let outputUsers = usersList.objects('Users_List');
+        let printUsers = outputUsers.length;
+        let outputCases = activeCases.objects('Active_Cases');
+        let printCases = outputCases.length;
+        let outputProcedures = proceduresList.objects('Procedures_List');
+        let printProcedures = outputProcedures.length;
+        let outputDocs = physiciansList.objects('Physicians_List');
+        let printDocs = outputDocs.length;
+        let outputSites = locationsList.objects('Locations_List');
+        let printSites = outputSites.length;
+        return (
+          <ScrollView style={styles.scrollContainer}>
+            <View style={styles.container}>
+              <View style={styles.titleRow}>
+                <Text style={styles.titleText}>Account Information</Text>
+              </View>
+              <View style={styles.sectionContainer}>
+                <Text style={styles.bodyTextHeading}>Application Data</Text>
+                <View style={styles.tabControlRow}>
+                  <View style={styles.leftColumn}>
+                    <Text>Product Table</Text>
+                    <Text>{printProducts}</Text>
+                  </View>
+                  <View style={styles.rightColumn}>
+                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.SynchronizeProductTable()}><Text style={styles.miniSubmitButtonText}>Sync</Text></TouchableOpacity>
+                  </View>
+                </View>
+                <View style={styles.tabControlRow}>
+                  <View style={styles.leftColumn}>
+                    <Text>Test Product Data</Text>
+                    <Text>{printProducts}</Text>
+                  </View>
+                  <View style={styles.rightColumn}>
+                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyProductTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                  </View>
+                </View>
+                <View style={styles.tabControlRow}>
+                  <View style={styles.leftColumn}>
+                    <Text>Barcodes</Text>
+                    <Text>{printBarcodes}</Text>
+                  </View>
+                  <View style={styles.rightColumn}>
+                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.SynchronizeBarcodeTable()}><Text style={styles.miniSubmitButtonText}>Sync</Text></TouchableOpacity>
+                  </View>
+                </View>
+                <View style={styles.tabControlRow}>
+                  <View style={styles.leftColumn}>
+                    <Text>Test Barcode Data</Text>
+                    <Text>{printBarcodes}</Text>
+                  </View>
+                  <View style={styles.rightColumn}>
+                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyBarcodeTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                  </View>
+                </View>
+                <View style={styles.tabControlRow}>
+                  <View style={styles.leftColumn}>
+                    <Text>RFID Tags</Text>
+                    <Text>{printRFIDLabels}</Text>
+                  </View>
+                  <View style={styles.rightColumn}>
+                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.SynchronizeRFIDTable()}><Text style={styles.miniSubmitButtonText}>Sync</Text></TouchableOpacity>
+                  </View>
+                </View>
+                <View style={styles.tabControlRow}>
+                  <View style={styles.leftColumn}>
+                    <Text>Test RFID Data</Text>
+                    <Text>{printRFIDLabels}</Text>
+                  </View>
+                  <View style={styles.rightColumn}>
+                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyRFIDTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                  </View>
+                </View>
+                <View style={styles.tabControlRow}>
+                  <View style={styles.leftColumn}>
+                    <Text>Test User Data</Text>
+                    <Text>{printUsers}</Text>
+                  </View>
+                  <View style={styles.rightColumn}>
+                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyUserTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                  </View>
+                </View>
+                <View style={styles.tabControlRow}>
+                  <View style={styles.leftColumn}>
+                    <Text>Test Procedure Data</Text>
+                    <Text>{printProcedures}</Text>
+                  </View>
+                  <View style={styles.rightColumn}>
+                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyProcedureTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                  </View>
+                </View>
+                <View style={styles.tabControlRow}>
+                  <View style={styles.leftColumn}>
+                    <Text>Test Doc Data</Text>
+                    <Text>{printDocs}</Text>
+                  </View>
+                  <View style={styles.rightColumn}>
+                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyDocTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                  </View>
+                </View>
+                <View style={styles.tabControlRow}>
+                  <View style={styles.leftColumn}>
+                    <Text>Test Site Data</Text>
+                    <Text>{printSites}</Text>
+                  </View>
+                  <View style={styles.rightColumn}>
+                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummySiteTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                  </View>
+                </View>
+                <View style={styles.tabControlRow}>
+                  <View style={styles.leftColumn}>
+                    <Text>Test Case Data</Text>
+                    <Text>{printCases}</Text>
+                  </View>
+                  <View style={styles.rightColumn}>
+                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyCaseTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                  </View>
                 </View>
               </View>
-            </View>
+              <View style={styles.sectionContainer}>
+                <Text style={styles.bodyTextHeading}>System Information</Text>
+                <Text style={styles.bodyText}>
+                  <Text style={styles.bodyTextLabel}>System Version: </Text>
+                  {this.state.account.organization.systemVersion}
+                </Text>
+                <Text style={styles.bodyText}>
+                  <Text style={styles.bodyTextLabel}>Host Account: </Text>
+                  {this.state.account.organization.name}
+                </Text>
+              </View>
+              <View style={styles.sectionContainer}>
+                <Text style={styles.bodyTextHeading}>Customer Service</Text>
+                <Text style={styles.bodyText}>
+                  <Text style={styles.bodyTextLabel}>Phone: </Text>
+                  {this.state.account.organization.customerServicePhone}
+                </Text>
+                <Text style={styles.bodyText}>
+                  <Text style={styles.bodyTextLabel}>Email: </Text>
+                  {this.state.account.organization.customerServiceEmail}
+                </Text>
+              </View>
+              <View style={styles.sectionContainer}>
+                <Text style={styles.bodyText}>
+                  <Text style={styles.bodyTextLabel}>Current User: </Text>
+                  {this.state.user.username}
+                </Text>
+                <View style={styles.accountCenterWrapper}>
+                  <View style={styles.buttonRow}>
+                    <TouchableOpacity
+                      style={styles.loginButton}
+                      activeOpacity={0.6}
+                      onPress={() => Logout()
+                    }>
+                      <Text style={styles.loginButtonText}>Log Out</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
 
-          </View>
-        </ScrollView>
-      );
+            </View>
+          </ScrollView>
+        );
+      }
     }
   }
 }

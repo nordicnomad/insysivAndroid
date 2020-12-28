@@ -6,6 +6,7 @@ import ButtonLoader from '../Images/buttonLoader.gif'
 //import SubscriptionData from '../dummyData/subscriptions.json'
 
 var Realm = require('realm');
+let activeUser ;
 let lastProductFetch ;
 
 import styles from '../Styles/ContainerStyles.js'
@@ -54,6 +55,18 @@ export default class Home extends Component {
         day: null,
       }
     }
+
+    activeUser = new Realm({
+      schema: [{name: 'Active_User',
+        properties: {
+          userId:"string",
+          userName: "string",
+          userToken: "string",
+          tokenExpiration: "string?",
+          syncAddress: "string?",
+          //Additional Organization Level Configuration Options go Here.
+      }}]
+    });
 
     lastProductFetch = new Realm({
       schema: [{name: 'Products_Last_Fetch',
@@ -221,33 +234,38 @@ export default class Home extends Component {
   }
 
   render() {
-
-    return(
-      <View style={this.state.showSyncFooter ? styles.containerContainsFooter : styles.container}>
-        <ScrollView style={styles.scrollContainer}>
-          <View style={styles.container}>
-            <View style={styles.titleRow}>
-              <Text style={styles.titleText}>{this.state.userInformation.organization.name}</Text>
+    let isLoggedIn = activeUser.objects('Active_Users')
+    if(isLoggedIn.length === 0) {
+      navigation.navigate('Login')
+    }
+    else {
+      return(
+        <View style={this.state.showSyncFooter ? styles.containerContainsFooter : styles.container}>
+          <ScrollView style={styles.scrollContainer}>
+            <View style={styles.container}>
+              <View style={styles.titleRow}>
+                <Text style={styles.titleText}>{this.state.userInformation.organization.name}</Text>
+              </View>
+              <View style={styles.menuRow}>
+                {this.renderSubscriptions()}
+              </View>
             </View>
-            <View style={styles.menuRow}>
-              {this.renderSubscriptions()}
+          </ScrollView>
+          <View style={this.state.showSyncFooter ? styles.footerContainer : styles.hideFooterContainer}>
+            <View style={styles.leftColumn}>
+              <Text style={styles.bodyTextLabel}>Sync Product Table</Text>
+              <Text style={styles.syncTimeLabel}>Last Sync: {this.renderDateStamp(this.state.lastFetchProductsObject)}</Text>
             </View>
-          </View>
-        </ScrollView>
-        <View style={this.state.showSyncFooter ? styles.footerContainer : styles.hideFooterContainer}>
-          <View style={styles.leftColumn}>
-            <Text style={styles.bodyTextLabel}>Sync Product Table</Text>
-            <Text style={styles.syncTimeLabel}>Last Sync: {this.renderDateStamp(this.state.lastFetchProductsObject)}</Text>
-          </View>
-          <View style={styles.rightColumn}>
-            <TouchableOpacity style={styles.submitButton} onPress={() => this.props.navigation.navigate("AccountInfo", {
-              userInformation: this.state.userInformation
-            })}>
-              <Text style={styles.submitButtonText}>Sync Products</Text>
-            </TouchableOpacity>
+            <View style={styles.rightColumn}>
+              <TouchableOpacity style={styles.submitButton} onPress={() => this.props.navigation.navigate("AccountInfo", {
+                userInformation: this.state.userInformation
+              })}>
+                <Text style={styles.submitButtonText}>Sync Products</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
-    );
+      );
+    }
   }
 }

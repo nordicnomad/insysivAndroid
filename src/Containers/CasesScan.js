@@ -7,6 +7,7 @@ import CaseProductItem from '../Components/CaseProductItem'
 import { BarcodeSearch } from '../Utilities/BarcodeLookup'
 
 var Realm = require('realm');
+let activeUser ;
 let rfidLabels ;
 let lastRfidFetch ;
 
@@ -27,6 +28,19 @@ export default class CasesScan extends Component {
         products: []
       }
     }
+
+    activeUser = new Realm({
+      schema: [{name: 'Active_User',
+        properties: {
+          userId:"string",
+          userName: "string",
+          userToken: "string",
+          tokenExpiration: "string?",
+          syncAddress: "string?",
+          //Additional Organization Level Configuration Options go Here.
+      }}]
+    });
+
     rfidLabels = new Realm({
       schema: [{name: 'RFID_Labels',
       properties: {
@@ -41,6 +55,7 @@ export default class CasesScan extends Component {
         bcSecondary: "string?",
       }}]
     });
+
     lastRfidFetch = new Realm({
       schema: [{name: 'Rfid_Last_Fetch',
       properties:
@@ -206,51 +221,58 @@ export default class CasesScan extends Component {
 
   synchronizeCaseData = () => {
     //Synchronize changes with a post method.
+    //http://25.78.82.76:5100/api/AddCaseProductSproc
     alert("Add Post Method so Data is Synched to Backend.")
     this.props.navigation.navigate("Home")
   }
 
   render() {
-    return (
-      <View style={{flex: 1}}>
-        <ScrollView style={styles.scrollContainer}>
-          <View style={styles.container}>
-            <View style={styles.titleRow}>
-              <Text style={styles.titleText}>Case Information</Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <View style={styles.shadedBackgroundWrapper}>
-                {/*<Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>{this.state.caseInformation.number}</Text>
-                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Patient Name: </Text>{this.state.caseInformation.name}</Text>
-                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Doctor: </Text> {this.state.caseInformation.doctor.firstName + " " + this.state.caseInformation.lastName}</Text>
-                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Location: </Text>{this.state.caseInformation.location.siteDescription}</Text>
-                <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Procedure: </Text>{this.state.caseInformation.procedure.procedureDescription}</Text>*/}
+    let isLoggedIn = activeUser.objects('Active_Users')
+    if(isLoggedIn.length === 0) {
+      navigation.navigate('Login')
+    }
+    else {
+      return (
+        <View style={{flex: 1}}>
+          <ScrollView style={styles.scrollContainer}>
+            <View style={styles.container}>
+              <View style={styles.titleRow}>
+                <Text style={styles.titleText}>Case Information</Text>
               </View>
-            </View>
-            <View style={styles.sectionContainer}>
-              <View style={styles.menuRow}>
-                <View style={styles.majorColumn}>
-                  {this.GetScannerStatus(this.state.scannerConnected)}
-                </View>
-                <View style={styles.majorColumn}>
+              <View style={styles.sectionContainer}>
+                <View style={styles.shadedBackgroundWrapper}>
+                  {/*<Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>{this.state.caseInformation.number}</Text>
+                  <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Patient Name: </Text>{this.state.caseInformation.name}</Text>
+                  <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Doctor: </Text> {this.state.caseInformation.doctor.firstName + " " + this.state.caseInformation.lastName}</Text>
+                  <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Location: </Text>{this.state.caseInformation.location.siteDescription}</Text>
+                  <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Procedure: </Text>{this.state.caseInformation.procedure.procedureDescription}</Text>*/}
                 </View>
               </View>
-              {this.renderCaseProducts()}
+              <View style={styles.sectionContainer}>
+                <View style={styles.menuRow}>
+                  <View style={styles.majorColumn}>
+                    {this.GetScannerStatus(this.state.scannerConnected)}
+                  </View>
+                  <View style={styles.majorColumn}>
+                  </View>
+                </View>
+                {this.renderCaseProducts()}
+              </View>
             </View>
-          </View>
-        </ScrollView>
-        <View style={styles.footerContainer}>
-          <View style={styles.leftColumn}>
-            <Text style={styles.bodyTextLabel}>Complete</Text>
-            <Text style={styles.bodyTextLabel}>Case Scanning</Text>
-          </View>
-          <View style={styles.rightColumn}>
-            <TouchableOpacity style={styles.submitButton} onPress={() => this.synchronizeCaseData()}>
-              <Text style={styles.submitButtonText}>Synchronize</Text>
-            </TouchableOpacity>
+          </ScrollView>
+          <View style={styles.footerContainer}>
+            <View style={styles.leftColumn}>
+              <Text style={styles.bodyTextLabel}>Complete</Text>
+              <Text style={styles.bodyTextLabel}>Case Scanning</Text>
+            </View>
+            <View style={styles.rightColumn}>
+              <TouchableOpacity style={styles.submitButton} onPress={() => this.synchronizeCaseData()}>
+                <Text style={styles.submitButtonText}>Synchronize</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
-    );
+      );
+    }
   }
 }
