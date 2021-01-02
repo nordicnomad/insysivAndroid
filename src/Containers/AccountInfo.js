@@ -18,7 +18,6 @@ let physiciansList ;
 let locationsList ;
 let proceduresList ;
 let usersList ;
-let activeCases ;
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -40,6 +39,7 @@ export default class AccountInfo extends Component {
           userToken: "string",
           tokenExpiration: "string?",
           syncAddress: "string?",
+          organizationName: "string?"
           //Additional Organization Level Configuration Options go Here.
       }}]
     });
@@ -659,18 +659,18 @@ export default class AccountInfo extends Component {
     if(savedCases != undefined && savedCases != null && savedCases.length > 0) {
       activeCases.write(() => {
         activeCases.deleteAll()
-        newCases.forEach(function(case, i) {
+        newCases.forEach(function(caseRec, i) {
           try {
             activeCases.create('Active_Cases', {
-              siteId: case.siteId,
-              caseNumber: case.caseNumber,
-              dateIn: case.dateIn,
-              timeIn: case.timeIn,
-              dateOut: case.dateOut,
-              timeOut: case.timeOut,
-              patientId: case.patientId,
-              syncSiteName: case.syncSiteName,
-              billingVerified: case.billingVerified
+              siteId: caseRec.siteId,
+              caseNumber: caseRec.caseNumber,
+              dateIn: caseRec.dateIn,
+              timeIn: caseRec.timeIn,
+              dateOut: caseRec.dateOut,
+              timeOut: caseRec.timeOut,
+              patientId: caseRec.patientId,
+              syncSiteName: caseRec.syncSiteName,
+              billingVerified: caseRec.billingVerified
             })
           }
           catch (e) {
@@ -683,18 +683,18 @@ export default class AccountInfo extends Component {
     }
     else {
       activeCases.write(() => {
-        newCases.forEach(function(case, i) {
+        newCases.forEach(function(caseRec, i) {
           try {
             activeCases.create('Active_Cases', {
-              siteId: case.siteId,
-              caseNumber: case.caseNumber,
-              dateIn: case.dateIn,
-              timeIn: case.timeIn,
-              dateOut: case.dateOut,
-              timeOut: case.timeOut,
-              patientId: case.patientId,
-              syncSiteName: case.syncSiteName,
-              billingVerified: case.billingVerified
+              siteId: caseRec.siteId,
+              caseNumber: caseRec.caseNumber,
+              dateIn: caseRec.dateIn,
+              timeIn: caseRec.timeIn,
+              dateOut: caseRec.dateOut,
+              timeOut: caseRec.timeOut,
+              patientId: caseRec.patientId,
+              syncSiteName: caseRec.syncSiteName,
+              billingVerified: caseRec.billingVerified
             })
           }
           catch (e) {
@@ -892,9 +892,9 @@ export default class AccountInfo extends Component {
   }
 
   render() {
-    let isLoggedIn = activeUser.objects('Active_Users')
+    let isLoggedIn = activeUser.objects('Active_User')
     if(isLoggedIn.length === 0) {
-      navigation.navigate('Login')
+      return(this.props.navigation.navigate('Login'))
     }
     else {
       if(this.state.account.organization === null || this.state.account.organization === undefined) {

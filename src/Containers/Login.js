@@ -22,9 +22,6 @@ export default class Login extends Component {
       networkConnected: false,
       loginError: ''
     }
-    this.onUserChange = this.onUserChange.bind(this)
-    this.onPassChange = this.onPassChange.bind(this)
-
 
     activeUser = new Realm({
       schema: [{name: 'Active_User',
@@ -34,6 +31,7 @@ export default class Login extends Component {
           userToken: "string",
           tokenExpiration: "string?",
           syncAddress: "string?",
+          organizationName: "string?",
           //Additional Organization Level Configuration Options go Here.
       }}]
     });
@@ -54,6 +52,11 @@ export default class Login extends Component {
     });
   }
 
+  componentDidMount() {
+    let usersLoaded = usersList.objects('Users_List')
+      this.fetchUsersTable()
+  }
+
   static navigationOptions = {
     header: null,
   };
@@ -64,12 +67,87 @@ export default class Login extends Component {
   onPassFocusChange() {
     this.setState({passHasFocus: !this.state.passHasFocus})
   }
-  onUserChange(event) {
-    this.setState({username: event.target.value});
+
+  fetchUsersTable = () => {
+    let usersResponse = []
+
+    //Barcode Calls
+    //test server call
+    console.log("FETCHBARCODETABLE CALLED FROM ACCOUNT INFORMATION PAGE")
+    return fetch('http://25.78.82.76:5100/api/UserTables')
+    .then((userTableResponse) => userTableResponse.json())
+    .then((userTableResponseJson) => {
+      console.log("USERS RESPONSE")
+      console.log(userTableResponseJson)
+      usersResponse = userTableResponseJson;
+      this.saveUserTable(usersResponse)
+      this.setState({
+        loginError: 'Users Synced',
+      })
+    })
+    .catch((error) => {
+      console.error(error);
+      this.setState({
+        loginError: 'Users Load Failure'
+      })
+    });
   }
-  onPassChange(event) {
-    this.setState({password: event.target.value});
+
+  saveUserTable = (userResponse) => {
+    let savedUsers = usersList.objects('Users_List')
+    let newUsers = userResponse
+
+    if(savedUsers != undefined && savedUsers != null && savedUsers.length > 0) {
+      usersList.write(() => {
+        usersList.deleteAll()
+        newUsers.forEach(function(user, i) {
+          try {
+            usersList.create('Users_List', {
+              userId: user.userId,
+              userPassword: user.userPassword,
+              userName: user.userName,
+              scannerCaseAuth: user.scannerCaseAuth,
+              scannerLinkAuth: user.scannerLinkAuth,
+              scannerInquiryAuth: user.scannerInquiryAuth,
+              scannerUtilityAuth: user.scannerUtilityAuth,
+              scannerInventoryAuth: user.scannerInventoryAuth,
+              scannerCheckInAuth: user.scannerCheckInAuth,
+            })
+          }
+          catch (e) {
+            console.log("Error on user creation");
+            console.log(e);
+          }
+        })
+      })
+      usersList.compact()
+    }
+    else {
+      usersList.write(() => {
+        newUsers.forEach(function(user, i) {
+          try {
+            usersList.create('Users_List', {
+              userId: user.userId,
+              userPassword: user.userPassword,
+              userName: user.userName,
+              scannerCaseAuth: user.scannerCaseAuth,
+              scannerLinkAuth: user.scannerLinkAuth,
+              scannerInquiryAuth: user.scannerInquiryAuth,
+              scannerUtilityAuth: user.scannerUtilityAuth,
+              scannerInventoryAuth: user.scannerInventoryAuth,
+              scannerCheckInAuth: user.scannerCheckInAuth,
+            })
+          }
+          catch (e) {
+            console.log("Error on user creation");
+            console.log(e);
+          }
+        })
+      })
+      usersList.compact()
+    }
   }
+
   activeUserCall = () => {
     let userTokenResponse = ''
     //make API call to JWT Service
@@ -81,11 +159,6 @@ export default class Login extends Component {
       console.log("TOKEN RESPONSE")
       console.log(tokenresponseJson)
       userTokenResponse = tokenresponseJson;
-
-      this.setState({
-        isFetchingToken: false,
-        loginError: 'Authentication Connection Failed'
-      })
     })
     .catch((error) => {
       userTokenResponse = null
@@ -97,46 +170,93 @@ export default class Login extends Component {
     });
     return(userTokenResponse)
   }
-  makeLoginRequest(username, password) {
+  makeLoginRequest = () => {
     // Change to look up on the user table.
-    let lookupUsername = username
-    let lookupPassword = password
+    console.log("USERNAME IN FUNCTION")
+    console.log(this.state.username)
+    console.log("PASSWORD IN FUNCTION")
+    console.log(this.state.password)
+    let lookupUsername = this.state.username
+    let lookupPassword = this.state.password
     let usersTable = usersList.objects('Users_List')
-    let matchUsernameBuild = 'userName CONTAINS "' + lookupUsername + '"'
-    let matchedUser = usersList.filtered(matchUsernameBuild)
+    let matchUsernameBuild = 'userId CONTAINS "' + lookupUsername + '"'
+    let matchedUser = usersTable.filtered(matchUsernameBuild)
     let userToken = ''
 
+    console.log("MATCHED USER")
+    console.log(matchedUser[0])
     // if credentials match make token request
-    if(matchedUser[0].userPassword === password) {
-      // save token to active user database and navigate to home page.
-      userToken = this.activeUserCall(matchedUser[0])
-      if(userToken != '' || userToken != null) {
-        try {
-          activeUser.write(() => {
-            activeUser.create('Active_User', {
-              userId: matchedUser.userId,
-              userName: matchedUser.userName,
-              userToken: userToken,
-              tokenExpiration:"FIGURE OUT TIMING",
-              syncAddress:"Get From CONFIG Logic",
-              //Any other config variables for organization
-            })
-          })
-          navigation.navigate('Home')
-        }
-        catch (e) {
-          console.log("Error on active user creation");
+    if(matchedUser != null && matchedUser != undefined && matchedUser.length > 0) {
+      if(matchedUser[0].userPassword === lookupPassword) {
+        // save token to active user database and navigate to home page.
+        userToken = this.activeUserCall(matchedUser[0])
+        if(userToken.error != null && userToken.error != undefined && userToken.error != '') {
+          console.log("Token Request Failed")
           this.setState({
-            loginError: "Login Error: " + e
+            loginError: "Faile Token Request"
           })
+        }
+        else if(userToken.token != '' && userToken.token != null && userToken.token != undefined) {
+          try {
+            activeUser.write(() => {
+              activeUser.create('Active_User', {
+                userId: matchedUser[0].userId,
+                userName: matchedUser[0].userName,
+                userToken: userToken.token,
+                tokenExpiration:"FIGURE OUT TIMING",
+                syncAddress:"Get From CONFIG Logic",
+                organizationName: "Hospital Name",
+                //Any other config variables for organization
+              })
+            })
+            this.props.navigation.navigate('Home')
+          }
+          catch (e) {
+            console.log("Error on active user creation");
+            this.setState({
+              loginError: "Login Active User Error: " + e
+            })
+          }
+        }
+        else {
+          //REMOVE AFTER TESTING OR CHANGE RESPONSE TO SHOW INVALID TOKEN REQUEST
+          this.setState({
+            loginError: "Token Request Failed"
+          })
+          try {
+            activeUser.write(() => {
+              activeUser.create('Active_User', {
+                userId: matchedUser[0].userId,
+                userName: matchedUser[0].userName,
+                userToken: "0000",
+                tokenExpiration:"FIGURE OUT TIMING",
+                syncAddress:"TOKEN REQUEST FAILED",
+                //Any other config variables for organization
+              })
+            })
+            this.props.navigation.navigate('Home')
+          }
+          catch (e) {
+            console.log("Error on active user creation");
+            this.setState({
+              loginError: "Login Active User Error: " + e
+            })
+          }
+
         }
       }
     }
+    else {
+      console.log("No LOGIN Match")
+      this.setState({
+        loginError: "Credentials Invalid"
+      })
+    }
   }
   render() {
-    let isLoggedIn = activeUser.objects('Active_Users')
+    let isLoggedIn = activeUser.objects('Active_User')
     if(isLoggedIn.length > 0) {
-      navigation.navigate('Home')
+      return(this.props.navigation.navigate('Home'))
     }
     else {
       return (
@@ -150,11 +270,11 @@ export default class Login extends Component {
               />
             </View>
             <View style={styles.loginRow}>
-              <Text style={styles.loginLabel}>Username</Text>
+              <Text style={styles.loginLabel}>User Id</Text>
               <TextInput value={this.state.username}
                 onFocus={() => this.onEmailFocusChange()}
                 onBlur={() => this.onEmailFocusChange()}
-                onChange={this.onUserChange}
+                onChangeText={value => this.setState({username: value})}
                 autoCorrect={false}
                 style={this.state.emailHasFocus ? styles.textInputFocus : styles.textInput}
                 />
@@ -164,7 +284,7 @@ export default class Login extends Component {
               <TextInput value={this.state.password}
               onFocus={() => this.onPassFocusChange()}
               onBlur={() => this.onPassFocusChange()}
-              onChange={this.onPassChange}
+              onChangeText={value => this.setState({password: value})}
               autoCompleteType="password"
               secureTextEntry={true}
               autoCorrect={false}
@@ -175,10 +295,11 @@ export default class Login extends Component {
               <TouchableOpacity
                 style={styles.loginButton}
                 activeOpacity={0.6}
-                onPress={() => this.makeLoginRequest(this.state.username, this.state.password)}>
+                onPress={() => this.makeLoginRequest()}>
                 <Text style={styles.loginButtonText}>Log In</Text>
               </TouchableOpacity>
             </View>
+            <View><Text style={styles.errorText}>{this.state.loginError}</Text></View>
           </View>
         </ScrollView>
       );

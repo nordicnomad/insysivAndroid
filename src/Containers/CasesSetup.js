@@ -76,8 +76,15 @@ export default class CasesSetup extends Component {
     activeCases = new Realm({
       schema: [{name: 'Active_Cases',
       properties: {
-        nameProperty: "int",
-
+        siteId: "string?",
+        caseNumber: "int",
+        dateIn: "string?",
+        timeIn: "string?",
+        dateOut: "string?",
+        timeOut: "string?",
+        patientId: "string",
+        syncSiteName: "string?",
+        billingVerified: "int?"
       }}]
     });
     lastCaseDataFetch = new Realm({
@@ -500,9 +507,9 @@ export default class CasesSetup extends Component {
   }
 
   render() {
-    let isLoggedIn = activeUser.objects('Active_Users')
+    let isLoggedIn = activeUser.objects('Active_User')
     if(isLoggedIn.length === 0) {
-      navigation.navigate('Login')
+      return(this.props.navigation.navigate('Login'))
     }
     else {
       return (
@@ -620,7 +627,7 @@ export default class CasesSetup extends Component {
             </View>
           </View>
         </ScrollView>
-      );  
+      );
     }
   }
 }

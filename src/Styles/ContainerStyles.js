@@ -266,7 +266,7 @@ export default StyleSheet.create({
     flexDirection: 'row',
     display: 'flex',
     paddingTop: 5,
-    paddingBottom: 5, 
+    paddingBottom: 5,
   },
   tabControlColumn: {
     flex: 1,
@@ -734,7 +734,7 @@ export default StyleSheet.create({
     textAlign: 'center',
     fontWeight: '800',
   },
-  modalErrorText: {
+  errorText: {
     color: '#EE7A38',
     fontWeight: '800',
     marginBottom: 10,

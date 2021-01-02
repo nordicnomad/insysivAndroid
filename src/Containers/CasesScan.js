@@ -9,7 +9,7 @@ import { BarcodeSearch } from '../Utilities/BarcodeLookup'
 var Realm = require('realm');
 let activeUser ;
 let rfidLabels ;
-let lastRfidFetch ;
+let workingCaseSpace ;
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -56,15 +56,44 @@ export default class CasesScan extends Component {
       }}]
     });
 
-    lastRfidFetch = new Realm({
-      schema: [{name: 'Rfid_Last_Fetch',
-      properties:
-      {
-          year: "int",
-          month: "int",
-          day: "int"
+    workingCaseSpace = new Realm({
+      schema: [{name: 'Working_Case_Space',
+      properties: {
+        chead_pk_case_number: "int",
+        chead_pk_site_id: "string",
+        chead_patient_id: "string",
+        cproc_pk_procedure_code: "string",
+        cproc_physician_id: "string",
+        cproc_billing_code: "string?",
+        cproc_sync_site_name: "string?",
+
+        chead_datetime_in: "string?",
+        chead_datetime_out: "string?",
+        chead_user_one: "string?",
+        chead_user_two: "string?",
+        chead_user_three: "string?",
+        chead_user_four: "string?",
+
+        products: [
+          {
+            cprod_pk_product_sequence: "int?",
+            cprod_line_number: "int?",
+            cprod_billing_code: "string?",
+            cprod_change_timestamp: "string?",
+            cprod_change_userid: "string?",
+            cprod_expiration_date: "string?",
+            cprod_license_number: "string?",
+            cprod_product_model_number: "string",
+            cprod_lot_serial_number: "string",
+            cprod_no_charge_reason: "string?",
+            cprod_no_charge_type: "string?",
+            cprod_remote_id: "string?",
+            cprod_requisition_number: "int?"
+          }
+        ],
       }}]
-    });
+    })
+
   }
   componentDidMount() {
     let caseInformation = this.props.navigation.getParam('caseInformation')
@@ -227,9 +256,9 @@ export default class CasesScan extends Component {
   }
 
   render() {
-    let isLoggedIn = activeUser.objects('Active_Users')
+    let isLoggedIn = activeUser.objects('Active_User')
     if(isLoggedIn.length === 0) {
-      navigation.navigate('Login')
+      return(this.props.navigation.navigate('Login'))
     }
     else {
       return (

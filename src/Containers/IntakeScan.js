@@ -273,10 +273,11 @@ export default class IntakeScan extends Component {
 
   RemoveScannedItem(itemBarcode) {
     let newTotalCount = 0
+    let scanSpaceItems = workingScanSpace.objects("Working_Scan_Space")
+    let removeBuildString = 'barcode CONTAINS "' + itemBarcode + '"'
+    let filteredRemoveMatch = scanSpaceItems.filtered(removeBuildString)
 
     workingScanSpace.write(() => {
-      let removeBuildString = 'barcode CONTAINS "' + itemBarcode + '"'
-      let filteredRemoveMatch = workingScanSpace.filtered(removeBuildString)
       workingScanSpace.delete(filteredRemoveMatch)
     })
 
@@ -399,7 +400,7 @@ export default class IntakeScan extends Component {
                 keyboardType={'numeric'}
                 value={String(this.state.modalItemCount)} />
               <Text style={styles.modalInputLabel}>Item quantity</Text>
-              <View><Text style={styles.modalErrorText}>{this.RenderModalValidation()}</Text></View>
+              <View><Text style={styles.errorText}>{this.RenderModalValidation()}</Text></View>
               <View style={styles.modalButtonRow}>
                 <View style={styles.modalButtonColumn}></View>
                 <View style={styles.modalButtonColumn}>
@@ -477,9 +478,9 @@ export default class IntakeScan extends Component {
   }
 
   render() {
-    let isLoggedIn = activeUser.objects('Active_Users')
+    let isLoggedIn = activeUser.objects('Active_User')
     if(isLoggedIn.length === 0) {
-      navigation.navigate('Login')
+      return(this.props.navigation.navigate('Login'))
     }
     else {
       let scannedItems = workingScanSpace.objects('Working_Scan_Space')
@@ -525,7 +526,7 @@ export default class IntakeScan extends Component {
           </View>
           {this.RenderModal()}
         </View>
-      );  
+      );
     }
   }
 }

@@ -234,9 +234,9 @@ export default class Home extends Component {
   }
 
   render() {
-    let isLoggedIn = activeUser.objects('Active_Users')
+    let isLoggedIn = activeUser.objects('Active_User')
     if(isLoggedIn.length === 0) {
-      navigation.navigate('Login')
+      return(this.props.navigation.navigate('Login'))
     }
     else {
       return(
@@ -244,7 +244,7 @@ export default class Home extends Component {
           <ScrollView style={styles.scrollContainer}>
             <View style={styles.container}>
               <View style={styles.titleRow}>
-                <Text style={styles.titleText}>{this.state.userInformation.organization.name}</Text>
+                <Text style={styles.titleText}>Organization</Text>
               </View>
               <View style={styles.menuRow}>
                 {this.renderSubscriptions()}
