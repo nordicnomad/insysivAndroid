@@ -54,7 +54,13 @@ export default class Login extends Component {
 
   componentDidMount() {
     let usersLoaded = usersList.objects('Users_List')
+    let activeUsers = activeUser.objects('Active_User')
+    if(activeUsers.length === 0 || activeUsers === null || activeUsers === undefined) {
       this.fetchUsersTable()
+    }
+    else {
+      this.props.navigation.navigate('Home')
+    }
   }
 
   static navigationOptions = {
@@ -254,55 +260,50 @@ export default class Login extends Component {
     }
   }
   render() {
-    let isLoggedIn = activeUser.objects('Active_User')
-    if(isLoggedIn.length > 0) {
-      return(this.props.navigation.navigate('Home'))
-    }
-    else {
-      return (
-        <ScrollView style={styles.scrollContainer}>
-          <OfflineBanner showBanner={this.state.networkConnected} />
-          <View style={styles.loginContainer}>
-            <View style={styles.loginLogoRow}>
-              <Image
-                style={styles.loginLogo}
-                source={LoginLogo}
-              />
-            </View>
-            <View style={styles.loginRow}>
-              <Text style={styles.loginLabel}>User Id</Text>
-              <TextInput value={this.state.username}
-                onFocus={() => this.onEmailFocusChange()}
-                onBlur={() => this.onEmailFocusChange()}
-                onChangeText={value => this.setState({username: value})}
-                autoCorrect={false}
-                style={this.state.emailHasFocus ? styles.textInputFocus : styles.textInput}
-                />
-            </View>
-            <View style={styles.loginRow}>
-              <Text style={styles.loginLabel}>Password</Text>
-              <TextInput value={this.state.password}
-              onFocus={() => this.onPassFocusChange()}
-              onBlur={() => this.onPassFocusChange()}
-              onChangeText={value => this.setState({password: value})}
-              autoCompleteType="password"
-              secureTextEntry={true}
-              autoCorrect={false}
-              style={this.state.passHasFocus ? styles.textInputFocus : styles.textInput}
-              />
-            </View>
-            <View style={styles.buttonRow}>
-              <TouchableOpacity
-                style={styles.loginButton}
-                activeOpacity={0.6}
-                onPress={() => this.makeLoginRequest()}>
-                <Text style={styles.loginButtonText}>Log In</Text>
-              </TouchableOpacity>
-            </View>
-            <View><Text style={styles.errorText}>{this.state.loginError}</Text></View>
+    return (
+      <ScrollView style={styles.scrollContainer}>
+        <OfflineBanner showBanner={this.state.networkConnected} />
+        <View style={styles.loginContainer}>
+          <View style={styles.loginLogoRow}>
+            <Image
+              style={styles.loginLogo}
+              source={LoginLogo}
+            />
           </View>
-        </ScrollView>
-      );
-    }
+          <View style={styles.loginRow}>
+            <Text style={styles.loginLabel}>User Id</Text>
+            <TextInput value={this.state.username}
+              onFocus={() => this.onEmailFocusChange()}
+              onBlur={() => this.onEmailFocusChange()}
+              onChangeText={value => this.setState({username: value})}
+              autoCorrect={false}
+              style={this.state.emailHasFocus ? styles.textInputFocus : styles.textInput}
+              />
+          </View>
+          <View style={styles.loginRow}>
+            <Text style={styles.loginLabel}>Password</Text>
+            <TextInput value={this.state.password}
+            onFocus={() => this.onPassFocusChange()}
+            onBlur={() => this.onPassFocusChange()}
+            onChangeText={value => this.setState({password: value})}
+            autoCompleteType="password"
+            secureTextEntry={true}
+            autoCorrect={false}
+            style={this.state.passHasFocus ? styles.textInputFocus : styles.textInput}
+            />
+          </View>
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              style={styles.loginButton}
+              activeOpacity={0.6}
+              onPress={() => this.makeLoginRequest()}>
+              <Text style={styles.loginButtonText}>Log In</Text>
+            </TouchableOpacity>
+          </View>
+          <View><Text style={styles.errorText}>{this.state.loginError}</Text></View>
+        </View>
+      </ScrollView>
+    );
+
   }
 }

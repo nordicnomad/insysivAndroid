@@ -39,6 +39,7 @@ export default class IntakeScan extends Component {
           userToken: "string",
           tokenExpiration: "string?",
           syncAddress: "string?",
+          organizationName: "string?",
           //Additional Organization Level Configuration Options go Here.
       }}]
     });
@@ -340,15 +341,25 @@ export default class IntakeScan extends Component {
       modalItemCount: 0,
     })
   }
-  SynchoronizeIntakeToDesktop = () => {
+  SynchronizeIntakeToDesktop = () => {
+    //Instantiate Scanned Products
+
+    //Loop products and individually post to server
+
+    //Completeness check
+
+    //Reset State and DB if all transmit successfully
+    workingScanSpace.write(() => {
+      workingScanSpace.deleteAll()
+    })
     this.setState({
       scanCount: 0,
       scannedItems: []
     })
-    workingScanSpace.write(() => {
-      workingScanSpace.deleteAll()
-    })
 
+    //Redirect to home page if necessary
+    //otherwise state should update in place
+    this.props.navigation.navigate("Home")
   }
   GetScannerStatus(status) {
     let scannerStatus = status
@@ -519,7 +530,7 @@ export default class IntakeScan extends Component {
               <Text style={styles.bodyTextLabel}>to Desktop</Text>
             </View>
             <View style={styles.rightColumn}>
-              <TouchableOpacity style={styles.submitButton} onPress={() => this.SynchoronizeIntakeToDesktop()}>
+              <TouchableOpacity style={styles.submitButton} onPress={() => this.SynchronizeIntakeToDesktop()}>
                 <Text style={styles.submitButtonText}>Synchronize</Text>
               </TouchableOpacity>
             </View>

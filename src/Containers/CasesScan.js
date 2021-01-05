@@ -4,11 +4,16 @@ import ZebraScanner from 'react-native-zebra-scanner'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.png'
 import CaseProductItem from '../Components/CaseProductItem'
-import { BarcodeSearch } from '../Utilities/BarcodeLookup'
+import TestLabels from '../dummyData/rfidLabelsOffline'
+import { RFIDLabelLookup } from '../Utilities/RFIDLabelLookup'
 
 var Realm = require('realm');
 let activeUser ;
+let physiciansList ;
+let locationsList ;
+let proceduresList ;
 let rfidLabels ;
+let activeScanableCase ;
 let workingCaseSpace ;
 
 import styles from '../Styles/ContainerStyles.js'
@@ -19,6 +24,7 @@ export default class CasesScan extends Component {
     this.state = {
       scannedBarcode: '',
       scannerConnected: false,
+      testCount: 0,
       caseInformation: {
         number: '',
         name: '',
@@ -37,6 +43,7 @@ export default class CasesScan extends Component {
           userToken: "string",
           tokenExpiration: "string?",
           syncAddress: "string?",
+          organizationName: "string?",
           //Additional Organization Level Configuration Options go Here.
       }}]
     });
@@ -44,7 +51,7 @@ export default class CasesScan extends Component {
     rfidLabels = new Realm({
       schema: [{name: 'RFID_Labels',
       properties: {
-        productTransactionNumber: "int",
+        productTransactionNumber: "int?",
         licenseNumber: "string",
         productModelNumber: "string",
         lotSerialNumber: "string?",
@@ -55,9 +62,34 @@ export default class CasesScan extends Component {
         bcSecondary: "string?",
       }}]
     });
-
-    workingCaseSpace = new Realm({
-      schema: [{name: 'Working_Case_Space',
+    physiciansList = new Realm({
+      schema: [{name: 'Physicians_List',
+      properties: {
+        physicianId: "string",
+        firstName: "string",
+        middleInitial: "string?",
+        lastName: "string",
+        active: "string",
+      }}]
+    });
+    locationsList = new Realm({
+      schema: [{name: 'Locations_List',
+      properties: {
+        siteId: "int",
+        siteDescription: "string",
+        active: "string",
+      }}]
+    });
+    proceduresList = new Realm({
+      schema: [{name: 'Procedures_List',
+      properties: {
+        procedureCode: "string",
+        procedureDescription: "string",
+        active: "string",
+      }}]
+    });
+    activeScanableCase = new Realm({
+      schema: [{name: 'Active_Scanable_Case',
       properties: {
         chead_pk_case_number: "int",
         chead_pk_site_id: "string",
@@ -73,35 +105,32 @@ export default class CasesScan extends Component {
         chead_user_two: "string?",
         chead_user_three: "string?",
         chead_user_four: "string?",
-
-        products: [
-          {
-            cprod_pk_product_sequence: "int?",
-            cprod_line_number: "int?",
-            cprod_billing_code: "string?",
-            cprod_change_timestamp: "string?",
-            cprod_change_userid: "string?",
-            cprod_expiration_date: "string?",
-            cprod_license_number: "string?",
-            cprod_product_model_number: "string",
-            cprod_lot_serial_number: "string",
-            cprod_no_charge_reason: "string?",
-            cprod_no_charge_type: "string?",
-            cprod_remote_id: "string?",
-            cprod_requisition_number: "int?"
-          }
-        ],
       }}]
-    })
+    });
+    workingCaseSpace = new Realm({
+      schema: [{name: 'Working_Case_Space',
+      properties: {
+        barcode: "string",
+        description: "string",
+        cprod_pk_product_sequence: "int?",
+        cprod_line_number: "int?",
+        cprod_billing_code: "string?",
+        cprod_change_timestamp: "string?",
+        cprod_change_userid: "string?",
+        cprod_expiration_date: "string?",
+        cprod_license_number: "string?",
+        cprod_product_model_number: "string",
+        cprod_lot_serial_number: "string",
+        cprod_no_charge_reason: "string?",
+        cprod_no_charge_type: "string?",
+        cprod_remote_id: "string?",
+        cprod_requisition_number: "int?"
+      }}]
+    });
 
   }
   componentDidMount() {
-    let caseInformation = this.props.navigation.getParam('caseInformation')
-    this.setState({
-      caseInformation: caseInformation
-    })
-    console.log("DATA ENTERING FROM SETUP")
-    console.log(caseInformation)
+
     this.checkForScanner()
   }
   async checkForScanner () {
@@ -157,8 +186,8 @@ export default class CasesScan extends Component {
   };
 
   renderCaseProducts() {
-    let caseInformation = this.state.caseInformation
-    let caseProducts = this.state.caseInformation.products
+    let caseInformation = activeScanableCase.objects("Active_Scanable_Case")
+    let caseProducts = workingCaseSpace.objects("Working_Case_Space")
     let caseProductsOutput = []
     if(caseProducts != undefined && caseProducts != null) {
       caseProducts.forEach(function(product, index){
@@ -166,15 +195,15 @@ export default class CasesScan extends Component {
           <CaseProductItem
             key={"CPI"+index}
             barcode={product.barcode}
-            name={product.name}
-            lotSerial={product.lotSerial}
-            model={product.model}
-            scannedTime={product.scannedTime}
+            name={product.description}
+            lotSerial={product.cprod_lot_serial_number}
+            model={product.cprod_product_model_number}
+            scannedTime={product.cprod_change_timestamp}
             manufacturer={product.manufacturer}
-            waste={product.waste}
-            scanned={product.scanned}
-            wasteFunction={() => this.wasteScannedItem(product.name)}
-            removeFunction={() => this.removeScannedItem(index)} />
+            waste={false}
+            scanned={true}
+            wasteFunction={() => this.wasteScannedItem(product.description)}
+            removeFunction={() => this.removeScannedItem(product.barcode)} />
         )
       }.bind(this))
     }
@@ -200,29 +229,40 @@ export default class CasesScan extends Component {
     }
   }
   ScanBarcode = (newBarcode) => {
+    let scannedBarcode = newBarcode
     //Instantiate Variables
-    if(newBarcode != undefined && newBarcode != null) {
-      let scannedItemsList = this.state.caseInformation.products
-      let scannedBarcode = newBarcode
+    if(scannedBarcode != undefined && scannedBarcode != null) {
+      let scannedItemsList = workingCaseSpace.objects("Working_Case_Space")
 
-
-      //If not a known product create and unknown product scanned item object
-      let barcodeLookup = BarcodeSearch(scannedBarcode, 1)
-      scannedItemsList.push(barcodeLookup)
-      //Update LocalState with new information
-      this.setState({
-        caseInformation: {
-          number: this.state.caseInformation.number,
-          name: this.state.caseInformation.name,
-          doctor: this.state.caseInformation.doctor,
-          location: this.state.caseInformation.location,
-          procedure: this.state.caseInformation.procedure,
-          products:scannedItemsList,
-        },
-        scannedBarcode: scannedBarcode,
+      //Behaves differently than intake scan since like items aren't grouped.
+      //Each unique RFID tag is a line item and all RFID tags are unique.
+      let barcodeLookup = RFIDLabelLookup(scannedBarcode)
+      workingCaseSpace.write(() => {
+        try {
+          workingCaseSpace.create('Working_Case_Space', {
+            barcode: scannedBarcode,
+            description: barcodeLookup.productDescription,
+            cprod_pk_product_sequence: null,
+            cprod_line_number: null,
+            cprod_billing_code: null,
+            cprod_change_timestamp: "NOW",
+            cprod_change_userid: "Scanner",
+            cprod_expiration_date: barcodeLookup.expirationDate,
+            cprod_license_number: barcodeLookup.licenseNumber,
+            cprod_product_model_number: barcodeLookup.productModelNumber,
+            cprod_lot_serial_number: barcodeLookup.lotSerialNumber,
+            cprod_no_charge_reason: null,
+            cprod_no_charge_type: null,
+            cprod_remote_id: null,
+            cprod_requisition_number: null
+          })
+        }
+        catch (e) {
+          console.log("Error on Working Case Space Create")
+          console.log(e)
+        }
       })
     }
-
   }
 
   wasteScannedItem = (productName) => {
@@ -230,28 +270,44 @@ export default class CasesScan extends Component {
     //our system and the EMR system used by the hospital.
     alert("Connect to a call to the back end and from there EMR marking the item as waste for item: " + productName)
   }
-  removeScannedItem = (stateIndex) => {
-    let scannedItems = this.state.caseInformation.products
-    let newTotalCount = 0
-    scannedItems.splice(stateIndex, 1)
-    console.log("CASE INFORMATION AFTER REMOVAL")
-    console.log(this.state.caseInformation)
-    this.setState({
-      caseInformation: {
-        number: this.state.caseInformation.number,
-        name: this.state.caseInformation.name,
-        doctor: this.state.caseInformation.doctor,
-        location: this.state.caseInformation.location,
-        procedure: this.state.caseInformation.procedure,
-        products: scannedItems
-      }
+
+  removeScannedItem = (barcode) => {
+    let buildRemoveString = 'barcode CONTAINS "' + barcode + '"'
+    let scannedItems = workingCaseSpace.objects("Working_Case_Space")
+    let matchScanRemove = scannedItems.filtered(buildRemoveString)
+
+    workingCaseSpace.write(() => {
+      workingCaseSpace.delete(matchScanRemove)
     })
   }
 
+  generateScanTest = (count) => {
+    let testStrings = TestLabels
+
+    this.setState({
+      testCount: (count + 1)
+    })
+
+    return(this.ScanBarcode(testStrings[count].barcode.toString()))
+  }
+
   synchronizeCaseData = () => {
-    //Synchronize changes with a post method.
-    //http://25.78.82.76:5100/api/AddCaseProductSproc
-    alert("Add Post Method so Data is Synched to Backend.")
+    //Instantiate Scanned Products and Case Detail
+
+    //Loop products and individually post to product and case data to sproc
+
+    //Completeness check 
+
+    //If successfully synced all products delete working DB's and
+    //redirect to home page. ? setup page?
+    activeScanableCase.write(() => {
+      activeScanableCase.deleteAll()
+    })
+    workingCaseSpace.write(() => {
+      workingCaseSpace.deleteAll()
+    })
+    //Reset state as needed
+
     this.props.navigation.navigate("Home")
   }
 
@@ -261,6 +317,18 @@ export default class CasesScan extends Component {
       return(this.props.navigation.navigate('Login'))
     }
     else {
+      let activeCaseDetail = activeScanableCase.objects("Active_Scanable_Case")
+      let displayCaseDetail = activeCaseDetail[0]
+      let buildPhysiciansString = 'physicianId CONTAINS "' + displayCaseDetail.cproc_physician_id + '"'
+      let physiciansObjects = physiciansList.objects("Physicians_List")
+      let physiciansDisplayObject = physiciansList.filtered(buildPhysiciansString)
+      let buildProcedureString = 'procedureCode CONTAINS "' + displayCaseDetail.cproc_pk_procedure_code + '"'
+      let proceduresObjects = proceduresList.objects("Procedures_List")
+      let proceduresDisplayObject = proceduresObjects.filtered(buildProcedureString)
+      let buildLocationString = 'siteId CONTAINS "' + displayCaseDetail.chead_pk_site_id + '"'
+      let sitesObjects = locationsList.objects("Locations_List")
+      let sitesDisplayObject = locationsList.filtered(buildLocationString)
+
       return (
         <View style={{flex: 1}}>
           <ScrollView style={styles.scrollContainer}>
@@ -270,12 +338,16 @@ export default class CasesScan extends Component {
               </View>
               <View style={styles.sectionContainer}>
                 <View style={styles.shadedBackgroundWrapper}>
-                  {/*<Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>{this.state.caseInformation.number}</Text>
-                  <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Patient Name: </Text>{this.state.caseInformation.name}</Text>
-                  <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Doctor: </Text> {this.state.caseInformation.doctor.firstName + " " + this.state.caseInformation.lastName}</Text>
-                  <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Location: </Text>{this.state.caseInformation.location.siteDescription}</Text>
-                  <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Procedure: </Text>{this.state.caseInformation.procedure.procedureDescription}</Text>*/}
+                  <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>{displayCaseDetail.chead_pk_case_number}</Text>
+                  <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Patient Id: </Text>{displayCaseDetail.chead_patient_id}</Text>
+                  <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Doctor: </Text>{physiciansDisplayObject.firstName + " " + physiciansDisplayObject.lastName}</Text>
+                  <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Location: </Text>{sitesDisplayObject.siteDescription}</Text>
+                  <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Procedure: </Text>{proceduresDisplayObject.procedureDescription}</Text>
                 </View>
+              </View>
+              <View style={styles.sectionContainer}>
+                <Text>Test Scan Function: </Text>
+                <TouchableOpacity onPress={() => this.generateScanTest(this.state.testCount)} style={styles.miniSubmitButton}><Text style={styles.miniSubmitButtonText}>Scan Test</Text></TouchableOpacity>
               </View>
               <View style={styles.sectionContainer}>
                 <View style={styles.menuRow}>

@@ -51,7 +51,7 @@ export default StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 2,
     borderBottomColor: '#ddd',
-    marginBottom: 5,
+    marginBottom: 0,
     paddingTop: 9,
     paddingLeft: 8,
     paddingBottom: 9,
@@ -62,7 +62,7 @@ export default StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 2,
     borderBottomColor: '#ed9a1a',
-    marginBottom: 5,
+    marginBottom: 0,
     paddingTop: 9,
     paddingLeft: 8,
     paddingBottom: 9,
@@ -79,7 +79,7 @@ export default StyleSheet.create({
   },
   buttonRow: {
     flex: 1,
-    paddingTop: 25,
+    paddingTop: 15,
   },
   loginButton: {
     backgroundColor: '#ed9a1a',
@@ -343,8 +343,8 @@ export default StyleSheet.create({
   },
   shadedBackgroundWrapper: {
     backgroundColor: '#eee',
-    paddingTop: 15,
-    paddingBottom: 15,
+    paddingTop: 10,
+    paddingBottom: 10,
     paddingRight: 10,
     paddingLeft: 10,
   },
@@ -481,7 +481,7 @@ export default StyleSheet.create({
     paddingBottom: 5,
   },
   formItemWrapper: {
-    marginBottom: 25,
+    marginBottom: 15,
   },
   formTitleWrapper: {
     marginBottom: 15
@@ -489,7 +489,7 @@ export default StyleSheet.create({
   formPickerWrapper: {
     borderColor: '#ccc',
     borderWidth: 1,
-    marginBottom: 15,
+    marginBottom: 0,
     backgroundColor: '#fff'
   },
   formPicker: {
@@ -600,7 +600,7 @@ export default StyleSheet.create({
   sectionContainer: {
     flexDirection: 'column',
     alignSelf: 'stretch',
-    marginTop: 32,
+    marginTop: 25,
     paddingHorizontal: 24,
   },
   sectionTitle: {

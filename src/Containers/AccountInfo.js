@@ -6,6 +6,10 @@ import UserData from '../dummyData/login.json'
 import DummyProducts from '../dummyData/productsOffline.json'
 import DummyBarcodes from '../dummyData/productBarcodesOffline.json'
 import DummyLabels from '../dummyData/rfidLabelsOffline.json'
+import DummyCases from '../dummyData/casesOffline.json'
+import DummyDocs from '../dummyData/physiciansOffline.json'
+import DummySites from '../dummyData/sitesOffline.json'
+import DummyProcedures from '../dummyData/proceduresOffline.json'
 import {Logout} from '../Utilities/NavigationActions'
 
 var Realm = require('realm');
@@ -39,7 +43,7 @@ export default class AccountInfo extends Component {
           userToken: "string",
           tokenExpiration: "string?",
           syncAddress: "string?",
-          organizationName: "string?"
+          organizationName: "string?",
           //Additional Organization Level Configuration Options go Here.
       }}]
     });

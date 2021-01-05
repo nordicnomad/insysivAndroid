@@ -64,6 +64,7 @@ export default class Home extends Component {
           userToken: "string",
           tokenExpiration: "string?",
           syncAddress: "string?",
+          organizationName: "string?",
           //Additional Organization Level Configuration Options go Here.
       }}]
     });
@@ -251,7 +252,7 @@ export default class Home extends Component {
               </View>
             </View>
           </ScrollView>
-          <View style={this.state.showSyncFooter ? styles.footerContainer : styles.hideFooterContainer}>
+          {/*<View style={this.state.showSyncFooter ? styles.footerContainer : styles.hideFooterContainer}>
             <View style={styles.leftColumn}>
               <Text style={styles.bodyTextLabel}>Sync Product Table</Text>
               <Text style={styles.syncTimeLabel}>Last Sync: {this.renderDateStamp(this.state.lastFetchProductsObject)}</Text>
@@ -263,7 +264,7 @@ export default class Home extends Component {
                 <Text style={styles.submitButtonText}>Sync Products</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </View>*/}
         </View>
       );
     }

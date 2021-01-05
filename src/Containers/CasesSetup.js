@@ -6,10 +6,11 @@ import GateData from '../dummyData/gates.json'
 
 var Realm = require('realm');
 let activeUser ;
-let activeCases ;
 let physiciansList ;
 let locationsList ;
 let proceduresList ;
+let activeScanableCase ;
+let workingCaseSpace ;
 let lastCaseDataFetch ;
 
 import styles from '../Styles/ContainerStyles.js'
@@ -25,16 +26,18 @@ export default class CasesSetup extends Component {
       locations:[],
       procedures:[],
       caseNumberHasFocus: false,
-      patientNameHasFocus: false,
+      patientIdHasFocus: false,
       newCaseNumber: '',
-      newPatientName: '',
+      newPatientId: '',
       newDoctorValue: 0,
-      newLocationValue: 0,
-      newProcedureValue: 0,
       newDoctorLabel: "",
+      newDoctorId: '',
+      newLocationValue: 0,
       newLocationLabel: "",
+      newLocationId: '',
+      newProcedureValue: 0,
       newProcedureLabel: "",
-      newProductsValue: [],
+      newProcedureId: '',
     }
     activeUser = new Realm({
       schema: [{name: 'Active_User',
@@ -44,6 +47,7 @@ export default class CasesSetup extends Component {
           userToken: "string",
           tokenExpiration: "string?",
           syncAddress: "string?",
+          organizationName: "string?",
           //Additional Organization Level Configuration Options go Here.
       }}]
     });
@@ -73,18 +77,43 @@ export default class CasesSetup extends Component {
         active: "string",
       }}]
     });
-    activeCases = new Realm({
-      schema: [{name: 'Active_Cases',
+    activeScanableCase = new Realm({
+      schema: [{name: 'Active_Scanable_Case',
       properties: {
-        siteId: "string?",
-        caseNumber: "int",
-        dateIn: "string?",
-        timeIn: "string?",
-        dateOut: "string?",
-        timeOut: "string?",
-        patientId: "string",
-        syncSiteName: "string?",
-        billingVerified: "int?"
+        chead_pk_case_number: "int",
+        chead_pk_site_id: "string",
+        chead_patient_id: "string",
+        cproc_pk_procedure_code: "string",
+        cproc_physician_id: "string",
+        cproc_billing_code: "string?",
+        cproc_sync_site_name: "string?",
+
+        chead_datetime_in: "string?",
+        chead_datetime_out: "string?",
+        chead_user_one: "string?",
+        chead_user_two: "string?",
+        chead_user_three: "string?",
+        chead_user_four: "string?",
+      }}]
+    });
+    workingCaseSpace = new Realm({
+      schema: [{name: 'Working_Case_Space',
+      properties: {
+        barcode: "string",
+        description: "string",
+        cprod_pk_product_sequence: "int?",
+        cprod_line_number: "int?",
+        cprod_billing_code: "string?",
+        cprod_change_timestamp: "string?",
+        cprod_change_userid: "string?",
+        cprod_expiration_date: "string?",
+        cprod_license_number: "string?",
+        cprod_product_model_number: "string",
+        cprod_lot_serial_number: "string",
+        cprod_no_charge_reason: "string?",
+        cprod_no_charge_type: "string?",
+        cprod_remote_id: "string?",
+        cprod_requisition_number: "int?"
       }}]
     });
     lastCaseDataFetch = new Realm({
@@ -98,7 +127,13 @@ export default class CasesSetup extends Component {
     });
   }
   componentDidMount() {
-    this.getCasesData();
+    let spaceCheck = activeScanableCase.objects('Active_Scanable_Case')
+    if(spaceCheck === null || spaceCheck === undefined || spaceCheck.length === 0) {
+      this.getCasesData();
+    }
+    else {
+      this.props.navigation.navigate('CasesScan')
+    }
   }
   static navigationOptions = ({navigation}) => {
     return {
@@ -170,42 +205,46 @@ export default class CasesSetup extends Component {
   }
 
   getCasesData() {
-    let recentFetch = this.checkLastCaseFetch()
+    let doctorData = physiciansList.objects('Physicians_List')
+    let procedureData = proceduresList.objects('Procedures_List')
+    let locationData = locationsList.objects('Locations_List')
 
-    if(recentFetch === true) {
-      let doctorData = physiciansList.objects('Physicians_List')
-      let procedureData = proceduresList.objects('Procedures_List')
-      let locationData = locationsList.objects('Locations_List')
+    this.setState({
+      doctors: doctorData,
+      locations: locationData,
+      procedures: procedureData,
+    })
 
-      this.setState({
-        cases:{
-          cases:[],
-          Doctors: doctorData,
-          Locations: locationData,
-          Procedures: procedureData
-        },
-      })
-    }
-    else {
-      this.FetchDoctorTable()
-      this.FetchProcedureTable()
-      this.FetchLocationTable()
-    }
+    //this.FetchDoctorTable()
+    //this.FetchProcedureTable()
+    //this.FetchLocationTable()
   }
   onCaseNumberFocusChange() {
     this.setState({caseNumberHasFocus: !this.state.caseNumberHasFocus})
   }
-  onPatientNameFocusChange() {
-    this.setState({patientNameHasFocus: !this.state.patientNameHasFocus})
+  onPatientIdFocusChange() {
+    this.setState({patientIdHasFocus: !this.state.patientIdHasFocus})
   }
   onDoctorChange = (pickerValue) => {
-    this.setState({newDoctorValue: pickerValue, newDoctorLabel: this.state.doctors[pickerValue-1]})
+    this.setState({
+      newDoctorValue: pickerValue,
+      newDoctorLabel: this.state.doctors[pickerValue-1],
+      newDoctorId: this.state.doctors[pickerValue-1].physicianId,
+    })
   }
   onLocationChange = (pickerValue) => {
-    this.setState({newLocationValue: pickerValue, newLocationLabel:this.state.locations[pickerValue-1]})
+    this.setState({
+      newLocationValue: pickerValue,
+      newLocationLabel: this.state.locations[pickerValue-1],
+      newLocationId: this.state.locations[pickerValue-1].siteId,
+    })
   }
   onProcedureChange = (pickerValue) => {
-    this.setState({newProcedureValue: pickerValue, newProcedureLabel: this.state.procedures[pickerValue-1]})
+    this.setState({
+      newProcedureValue: pickerValue,
+      newProcedureLabel: this.state.procedures[pickerValue-1],
+      newProcedureId: this.state.procedures[pickerValue-1].procedureCode,
+    })
   }
   onCaseChange = (pickerValue) => {
     this.setState({activeCaseValue: pickerValue})
@@ -263,7 +302,7 @@ export default class CasesSetup extends Component {
       physiciansList.compact()
     }
   }
-  FetchDoctorTable = () => {
+  async FetchDoctorTable() {
     let physiciansResponse = []
 
     //Doctor Calls
@@ -313,7 +352,7 @@ export default class CasesSetup extends Component {
       proceduresList.compact()
     }
   }
-  FetchProcedureTable = () => {
+  async FetchProcedureTable() {
     let barcodeResponse = []
 
     //Procedure Calls
@@ -367,7 +406,7 @@ export default class CasesSetup extends Component {
       locationsList.write(() => {
         try {
           locationsList.create('Locations_List', {
-            siteId: '00001',
+            siteId: 10,
             siteDescription: "Waiting Room",
             active: "Y",
           })
@@ -379,7 +418,7 @@ export default class CasesSetup extends Component {
       })
     }
   }
-  FetchLocationTable = () => {
+  async FetchLocationTable() {
     let barcodeResponse = []
 
     //Location Calls
@@ -423,12 +462,11 @@ export default class CasesSetup extends Component {
   }
   renderLocationChoices() {
     let locations = this.state.locations
+    console.log("LOCATIONS STATE")
+    console.log(locations)
     let locationsOutput = []
     locationsOutput.push(
       <Picker.Item key={"Loc" + 0} label='Select a Location...' value='0' />
-    )
-    locationsOutput.push(
-      <Picker.Item key={"PlaceHolder" + 1} label='Waiting Room' value='1' />
     )
     if(locations != null && locations != undefined) {
       locations.forEach(function(location, index) {
@@ -471,44 +509,43 @@ export default class CasesSetup extends Component {
       alert("Please Select an Active Case to Continue.")
     }
   }
-  createNewCase = (caseNumber, patientName, doctor, location, procedure, products) => {
-    //Here we'll need a post method to the python API that creates a New
-    //Case object in the database for an associated patient.
+  createNewCase = (caseNumber, patientId, doctorId, locationId, procedureId) => {
 
-    let userResponse = {
-      number: '',
-      name: '',
-      doctor: '',
-      location: '',
-      procedure: '',
-      products: [],
-    }
-    if(this.state.newDoctorValue != '0' && this.state.newLocationValue != '0' && this.state.newProcedureValue != '0') {
-      userResponse={
-        number: caseNumber,
-        name: patientName,
-        doctor: doctor,
-        location: location,
-        procedure: procedure,
-        products: products,
+    //Save case as a working case space object in Realm
+    activeScanableCase.write(() => {
+      try{
+        activeScanableCase.create('Working_Case_Space', {
+          chead_pk_case_number: caseNumber,
+          chead_pk_site_id: locationId,
+          chead_patient_id: patientId,
+          cproc_pk_procedure_code: procedureId,
+          cproc_physician_id: doctorId,
+          cproc_billing_code: null,
+          cproc_sync_site_name: null,
+
+          chead_datetime_in: null,
+          chead_datetime_out: null,
+          chead_user_one: null,
+          chead_user_two: null,
+          chead_user_three: null,
+          chead_user_four: null,
+        })
       }
-      console.log("USERRESPONSE BEFORE NAVIGATION")
-      console.log(userResponse)
-      alert("This button creates a new record in the database for:" + patientName)
+      catch (e) {
+        console.log("Error on working space creation");
+        console.log(e);
+      }
+    })
 
-      this.props.navigation.navigate('CasesScan', {
-        caseInformation: userResponse
-      })
-    }
-    else {
-      alert("All fields are required to continue.")
-    }
+    //Redirect to scan page. That page will pick up the only item in the working space DB.
+    this.props.navigation.navigate('CasesScan')
 
   }
 
   render() {
     let isLoggedIn = activeUser.objects('Active_User')
     if(isLoggedIn.length === 0) {
+      //If not logged in redirect to login.
       return(this.props.navigation.navigate('Login'))
     }
     else {
@@ -518,7 +555,7 @@ export default class CasesSetup extends Component {
             <View style={styles.titleRow}>
               <Text style={styles.titleText}>Cases Setup</Text>
             </View>
-            <View style={styles.sectionContainer}>
+            {/*<View style={styles.sectionContainer}>
               <View style={styles.shadedBackgroundWrapper}>
                 <View style={styles.formTitleWrapper}>
                   <Text style={styles.bodyTextHeading}>Select an Active Case</Text>
@@ -556,12 +593,9 @@ export default class CasesSetup extends Component {
                   </View>
                 </View>
               </View>
-            </View>
-            <View style={this.state.showNewTray === true ? styles.sectionContainer : styles.inactiveListTray}>
+            </View>*/}
+            <View style={styles.sectionContainer}>
               <View style={styles.shadedBackgroundWrapper}>
-                <View style={styles.formTitleWrapper}>
-                  <Text style={styles.bodyTextHeading}>New Case Setup</Text>
-                </View>
                 <View style={styles.formItemWrapper}>
                   <Text style={styles.inputTextLabel}>Case Number</Text>
                   <TextInput
@@ -572,12 +606,12 @@ export default class CasesSetup extends Component {
                     />
                 </View>
                 <View style={styles.formItemWrapper}>
-                  <Text style={styles.inputTextLabel}>Patient Name</Text>
+                  <Text style={styles.inputTextLabel}>Patient Id</Text>
                   <TextInput
-                    style={this.state.patientNameHasFocus === true ? styles.formInputFocus : styles.formInput}
-                    onFocus={() => this.onPatientNameFocusChange()}
-                    onBlur={() => this.onPatientNameFocusChange()}
-                    onChangeText={value => this.setState({newPatientName: value})}
+                    style={this.state.patientIdHasFocus === true ? styles.formInputFocus : styles.formInput}
+                    onFocus={() => this.onPatientIdFocusChange()}
+                    onBlur={() => this.onPatientIdFocusChange()}
+                    onChangeText={value => this.setState({newPatientId: value})}
                     />
                 </View>
                 <View style={styles.formItemWrapper}>
@@ -619,7 +653,7 @@ export default class CasesSetup extends Component {
                 <View style={styles.buttonRow}>
                   <TouchableOpacity
                     style={styles.submitButton}
-                    onPress={() => this.createNewCase(this.state.newCaseNumber, this.state.newPatientName, this.state.newDoctorLabel, this.state.newLocationLabel, this.state.newProcedureLabel, this.state.newProductsValue)}>
+                    onPress={() => this.createNewCase(this.state.newCaseNumber, this.state.newPatientId, this.state.newDoctorId, this.state.newLocationId, this.state.newProcedureId)}>
                     <Text style={styles.submitButtonText}>Start Case</Text>
                   </TouchableOpacity>
                 </View>
