@@ -1,7 +1,7 @@
 import React, {Fragment, Component} from 'react';
 import { StyleSheet, Text, TextInput, View, Button, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
-import HeaderLogo from '../Images/insysivLogoHorizontal.png'
+import HeaderLogo from '../Images/insysivLogoHorizontal.jpg'
 import BackOrderItem from '../Components/BackOrderItem'
 
 import styles from '../Styles/ContainerStyles.js'

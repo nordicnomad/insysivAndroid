@@ -2,10 +2,10 @@ import React, {Fragment, Component} from 'react';
 import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert } from 'react-native'
 import ZebraScanner from 'react-native-zebra-scanner'
 import Icon from 'react-native-vector-icons/FontAwesome'
-import HeaderLogo from '../Images/insysivLogoHorizontal.png'
+import HeaderLogo from '../Images/insysivLogoHorizontal.jpg'
 import CaseProductItem from '../Components/CaseProductItem'
-import TestLabels from '../dummyData/rfidLabelsOffline'
-import { RFIDLabelLookup } from '../Utilities/RFIDLabelLookup'
+import TestLabels from '../dummyData/rfidLabelsOffline.json'
+import { RFIDlabelSearch } from '../Utilities/RFIDLabelLookup'
 
 var Realm = require('realm');
 let activeUser ;
@@ -25,6 +25,7 @@ export default class CasesScan extends Component {
       scannedBarcode: '',
       scannerConnected: false,
       testCount: 0,
+      errorLogMessage: '',
       caseInformation: {
         number: '',
         name: '',
@@ -94,6 +95,7 @@ export default class CasesScan extends Component {
         chead_pk_case_number: "int",
         chead_pk_site_id: "string",
         chead_patient_id: "string",
+
         cproc_pk_procedure_code: "string",
         cproc_physician_id: "string",
         cproc_billing_code: "string?",
@@ -189,8 +191,12 @@ export default class CasesScan extends Component {
     let caseInformation = activeScanableCase.objects("Active_Scanable_Case")
     let caseProducts = workingCaseSpace.objects("Working_Case_Space")
     let caseProductsOutput = []
+
     if(caseProducts != undefined && caseProducts != null) {
-      caseProducts.forEach(function(product, index){
+      let sortedCaseProducts = caseProducts.sorted("cprod_change_timestamp", true)
+      sortedCaseProducts.forEach(function(product, index){
+        console.log("PRODUCT BARCODE FROM RENDER")
+        console.log(product.barcode)
         caseProductsOutput.push(
           <CaseProductItem
             key={"CPI"+index}
@@ -236,7 +242,7 @@ export default class CasesScan extends Component {
 
       //Behaves differently than intake scan since like items aren't grouped.
       //Each unique RFID tag is a line item and all RFID tags are unique.
-      let barcodeLookup = RFIDLabelLookup(scannedBarcode)
+      let barcodeLookup = RFIDlabelSearch(scannedBarcode)
       workingCaseSpace.write(() => {
         try {
           workingCaseSpace.create('Working_Case_Space', {
@@ -245,7 +251,7 @@ export default class CasesScan extends Component {
             cprod_pk_product_sequence: null,
             cprod_line_number: null,
             cprod_billing_code: null,
-            cprod_change_timestamp: "NOW",
+            cprod_change_timestamp: Date().toLocaleString(),
             cprod_change_userid: "Scanner",
             cprod_expiration_date: barcodeLookup.expirationDate,
             cprod_license_number: barcodeLookup.licenseNumber,
@@ -276,39 +282,122 @@ export default class CasesScan extends Component {
     let scannedItems = workingCaseSpace.objects("Working_Case_Space")
     let matchScanRemove = scannedItems.filtered(buildRemoveString)
 
+    console.log("MATCH SCAN REMOVE CALLED")
+    console.log(matchScanRemove.barcode)
+
     workingCaseSpace.write(() => {
       workingCaseSpace.delete(matchScanRemove)
+    })
+    this.setState({
+      errorLogMessage: 'Product Number ' + matchScanRemove.productModelNumber + ' Removed.'
     })
   }
 
   generateScanTest = (count) => {
     let testStrings = TestLabels
-
+    console.log("TEST STRINGS")
+    console.log(testStrings)
+    console.log(testStrings[count])
     this.setState({
       testCount: (count + 1)
     })
 
-    return(this.ScanBarcode(testStrings[count].barcode.toString()))
+    return(this.ScanBarcode(testStrings[count].tagid))
   }
 
   synchronizeCaseData = () => {
     //Instantiate Scanned Products and Case Detail
+    let userObject = activeUser.objects("Active_User")
+    let scannableCases = activeScanableCase.objects("Active_Scanable_Case")
+    let scannableCase = scannableCases[0]
+    let scannedCaseProducts = workingCaseSpace.objects("Working_Case_Space")
+    let failedSyncs = []
 
     //Loop products and individually post to product and case data to sproc
+    scannedCaseProducts.forEach((caseProduct, i) => {
+      fetch('http://25.78.82.76:5100/api/AddCaseProductSproc', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          //add case product data format
+          chead_pk_site_id: scannableCase.chead_pk_site_id,
+          chead_pk_case_number: scannableCase.chead_pk_case_number,
+          chead_patient_id: scannableCase.chead_patient_id,
 
-    //Completeness check 
+          cproc_pk_procedure_code: scannableCase.cproc_pk_procedure_code,
+          cproc_physician_id: scannableCase.cproc_physician_id,
+          cproc_billing_code: scannableCase.cproc_billing_code,
+          cproc_sync_site_name: scannableCase.cproc_sync_site_name,
 
-    //If successfully synced all products delete working DB's and
-    //redirect to home page. ? setup page?
-    activeScanableCase.write(() => {
-      activeScanableCase.deleteAll()
-    })
-    workingCaseSpace.write(() => {
-      workingCaseSpace.deleteAll()
-    })
-    //Reset state as needed
+          chead_datetime_in: scannableCase.chead_datetime_in,
+          chead_datetime_out: scannableCase.chead_datetime_out,
+          chead_user_one: userObject[0].userId,
+          chead_user_two: scannableCase.chead_user_two,
+          chead_user_three: scannableCase.chead_user_three,
+          chead_user_four: scannableCase.chead_user_four,
 
-    this.props.navigation.navigate("Home")
+          cprod_pk_product_sequence: caseProduct.cprod_pk_product_sequence,
+          cprod_line_number: caseProduct.cprod_line_number,
+          cprod_billing_code: caseProduct.cprod_billing_code,
+          cprod_change_timestamp: caseProduct.cprod_change_timestamp,
+          cprod_change_userid: caseProduct.cprod_change_userid,
+          cprod_expiration_date: caseProduct.cprod_expiration_date,
+          cprod_license_number: caseProduct.cprod_license_number,
+          cprod_product_model_number: caseProduct.cprod_product_model_number,
+          cprod_lot_serial_number: caseProduct.cprod_lot_serial_number,
+          cprod_no_charge_reason: caseProduct.cprod_no_charge_reason,
+          cprod_no_charge_type: caseProduct.cprod_no_charge_type,
+          cprod_remote_id: caseProduct.cprod_remote_id,
+          cprod_requisition_number: caseProduct.cprod_requisition_number
+        })
+      })
+      .catch((error) => {
+        console.log(error);
+        failedSyncs.push(caseProduct.barcode)
+      });
+    });
+
+    //Completeness check
+    if(failedSyncs.length === 0) {
+      //If successfully synced all products delete working DB's and
+      //redirect to home page. ? setup page?
+      activeScanableCase.write(() => {
+        activeScanableCase.deleteAll()
+      })
+      workingCaseSpace.write(() => {
+        workingCaseSpace.deleteAll()
+      })
+      //Reset state as needed
+      this.setState({
+        pageErrorMessage: "Last Sync Successful"
+      })
+
+      this.props.navigation.navigate("Home")
+    }
+    else {
+      scannedCaseProducts.forEach((caseItem, index) => {
+        let matchFlag = false
+
+        failedSyncs.forEach((failedCaseBarcode, i) => {
+          if(caseItem.barcode === failedCaseBarcode) {
+            matchFlag = true
+          }
+        })
+        if(matchFlag === false) {
+          let buildDeleteCaseScan = 'barcode CONTAINS "' + caseItem.barcode + '"'
+          let filteredCaseItem = workingCaseSpace.filtered(buildDeleteCaseScan)
+          workingCaseSpace.write(() => {
+            workingCaseSpace.delete(filteredCaseItem)
+          })
+        }
+      })
+      this.setState({
+        pageErrorMessage: "Last Sync Complete with Errors"
+      })
+    }
   }
 
   render() {
@@ -318,62 +407,90 @@ export default class CasesScan extends Component {
     }
     else {
       let activeCaseDetail = activeScanableCase.objects("Active_Scanable_Case")
-      let displayCaseDetail = activeCaseDetail[0]
-      let buildPhysiciansString = 'physicianId CONTAINS "' + displayCaseDetail.cproc_physician_id + '"'
-      let physiciansObjects = physiciansList.objects("Physicians_List")
-      let physiciansDisplayObject = physiciansList.filtered(buildPhysiciansString)
-      let buildProcedureString = 'procedureCode CONTAINS "' + displayCaseDetail.cproc_pk_procedure_code + '"'
-      let proceduresObjects = proceduresList.objects("Procedures_List")
-      let proceduresDisplayObject = proceduresObjects.filtered(buildProcedureString)
-      let buildLocationString = 'siteId CONTAINS "' + displayCaseDetail.chead_pk_site_id + '"'
-      let sitesObjects = locationsList.objects("Locations_List")
-      let sitesDisplayObject = locationsList.filtered(buildLocationString)
+      if(activeCaseDetail != null && activeCaseDetail != undefined && activeCaseDetail.length > 0) {
+        let displayCaseDetail = activeCaseDetail[0]
 
-      return (
-        <View style={{flex: 1}}>
-          <ScrollView style={styles.scrollContainer}>
-            <View style={styles.container}>
-              <View style={styles.titleRow}>
-                <Text style={styles.titleText}>Case Information</Text>
-              </View>
-              <View style={styles.sectionContainer}>
-                <View style={styles.shadedBackgroundWrapper}>
-                  <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>{displayCaseDetail.chead_pk_case_number}</Text>
-                  <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Patient Id: </Text>{displayCaseDetail.chead_patient_id}</Text>
-                  <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Doctor: </Text>{physiciansDisplayObject.firstName + " " + physiciansDisplayObject.lastName}</Text>
-                  <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Location: </Text>{sitesDisplayObject.siteDescription}</Text>
-                  <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Procedure: </Text>{proceduresDisplayObject.procedureDescription}</Text>
+        let buildPhysiciansString = 'physicianId CONTAINS "' + displayCaseDetail.cproc_physician_id + '"'
+        let physiciansObjects = physiciansList.objects("Physicians_List")
+        let physiciansDisplayObject = physiciansObjects.filtered(buildPhysiciansString)
+
+        let buildProcedureString = 'procedureCode CONTAINS "' + displayCaseDetail.cproc_pk_procedure_code + '"'
+        let proceduresObjects = proceduresList.objects("Procedures_List")
+        let proceduresDisplayObject = proceduresObjects.filtered(buildProcedureString)
+
+        console.log("FUCKING SITE LOCATIONS")
+        console.log(locationsList.objects("Locations_List"))
+        console.log(displayCaseDetail.chead_pk_site_id)
+        let buildLocationString = 'siteId CONTAINS "' + displayCaseDetail.chead_pk_site_id + '"'
+        let sitesObjects = locationsList.objects("Locations_List")
+        //let sitesDisplayObject = sitesObjects.filtered(buildLocationString)
+
+        return (
+          <View style={{flex: 1}}>
+            <ScrollView style={styles.scrollContainer}>
+              <View style={styles.container}>
+                <View style={styles.titleRow}>
+                  <Text style={styles.titleText}>Case Information</Text>
+                </View>
+                <View style={styles.sectionContainer}>
+                  <View style={styles.shadedBackgroundWrapper}>
+                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>{displayCaseDetail.chead_pk_case_number}</Text>
+                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Patient Id: </Text>{displayCaseDetail.chead_patient_id}</Text>
+                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Doctor: </Text>{physiciansDisplayObject.firstName + " " + physiciansDisplayObject.lastName}</Text>
+                    {/*<Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Location: </Text>{sitesDisplayObject.siteDescription}</Text>*/}
+                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Procedure: </Text>{proceduresDisplayObject.procedureDescription}</Text>
+                  </View>
+                </View>
+                <View style={styles.sectionContainer}>
+                  <Text>Test Scan Function: </Text>
+                  <TouchableOpacity onPress={() => this.generateScanTest(this.state.testCount)} style={styles.miniSubmitButton}><Text style={styles.miniSubmitButtonText}>Scan Test</Text></TouchableOpacity>
+                </View>
+                <View style={styles.sectionContainer}>
+                  <View style={styles.menuRow}>
+                    <View style={styles.majorColumn}>
+                      {this.GetScannerStatus(this.state.scannerConnected)}
+                    </View>
+                    <View style={styles.majorColumn}>
+                    </View>
+                  </View>
+                  {this.renderCaseProducts()}
                 </View>
               </View>
-              <View style={styles.sectionContainer}>
-                <Text>Test Scan Function: </Text>
-                <TouchableOpacity onPress={() => this.generateScanTest(this.state.testCount)} style={styles.miniSubmitButton}><Text style={styles.miniSubmitButtonText}>Scan Test</Text></TouchableOpacity>
+            </ScrollView>
+            <View style={styles.footerContainer}>
+              <View style={styles.leftColumn}>
+                <Text style={styles.bodyTextLabel}>Complete</Text>
+                <Text style={styles.bodyTextLabel}>Case Scanning</Text>
               </View>
-              <View style={styles.sectionContainer}>
-                <View style={styles.menuRow}>
-                  <View style={styles.majorColumn}>
-                    {this.GetScannerStatus(this.state.scannerConnected)}
-                  </View>
-                  <View style={styles.majorColumn}>
-                  </View>
-                </View>
-                {this.renderCaseProducts()}
+              <View style={styles.rightColumn}>
+                <TouchableOpacity style={styles.submitButton} onPress={() => this.synchronizeCaseData()}>
+                  <Text style={styles.submitButtonText}>Synchronize</Text>
+                </TouchableOpacity>
               </View>
-            </View>
-          </ScrollView>
-          <View style={styles.footerContainer}>
-            <View style={styles.leftColumn}>
-              <Text style={styles.bodyTextLabel}>Complete</Text>
-              <Text style={styles.bodyTextLabel}>Case Scanning</Text>
-            </View>
-            <View style={styles.rightColumn}>
-              <TouchableOpacity style={styles.submitButton} onPress={() => this.synchronizeCaseData()}>
-                <Text style={styles.submitButtonText}>Synchronize</Text>
-              </TouchableOpacity>
             </View>
           </View>
-        </View>
-      );
+        );
+      }
+      else {
+        return(
+          <View style={{flex: 1}}>
+            <ScrollView style={styles.scrollContainer}>
+              <View style={styles.container}>
+                <View style={styles.titleRow}>
+                  <Text style={styles.titleText}>Case Information</Text>
+                </View>
+                <View style={styles.sectionContainer}>
+                  <View key={"noData"}>
+                    <Text style={styles.noDataText}>
+                      Stand By
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </ScrollView>
+          </View>
+        )
+      }
     }
   }
 }

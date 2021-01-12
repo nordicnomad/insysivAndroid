@@ -1,7 +1,7 @@
 import React, {Fragment, Component} from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native';
 import LoginLogo from '../Images/insysivLogo.jpg'
-import UserData from '../dummyData/login.json'
+import DummyUsers from '../dummyData/userTablesOffline.json'
 import OfflineBanner from '../Components/OfflineBanner'
 import { NavigationContext } from 'react-navigation';
 
@@ -55,8 +55,12 @@ export default class Login extends Component {
   componentDidMount() {
     let usersLoaded = usersList.objects('Users_List')
     let activeUsers = activeUser.objects('Active_User')
-    if(activeUsers.length === 0 || activeUsers === null || activeUsers === undefined) {
-      this.fetchUsersTable()
+    if(activeUsers === null || activeUsers === undefined || activeUsers.length === 0 ) {
+      if(usersLoaded === null || usersLoaded === undefined || usersLoaded.length === 0) {
+        this.fetchUsersTable()
+
+        //this.testLoadUsersTable()
+      }
     }
     else {
       this.props.navigation.navigate('Home')
@@ -72,6 +76,11 @@ export default class Login extends Component {
   }
   onPassFocusChange() {
     this.setState({passHasFocus: !this.state.passHasFocus})
+  }
+  testLoadUsersTable() {
+    let userResponse = DummyUsers
+
+    this.saveUserTable(userResponse)
   }
 
   fetchUsersTable = () => {
@@ -126,7 +135,6 @@ export default class Login extends Component {
           }
         })
       })
-      usersList.compact()
     }
     else {
       usersList.write(() => {
@@ -150,7 +158,6 @@ export default class Login extends Component {
           }
         })
       })
-      usersList.compact()
     }
   }
 
@@ -199,7 +206,8 @@ export default class Login extends Component {
         if(userToken.error != null && userToken.error != undefined && userToken.error != '') {
           console.log("Token Request Failed")
           this.setState({
-            loginError: "Faile Token Request"
+            password: '',
+            loginError: "Failed Token Request"
           })
         }
         else if(userToken.token != '' && userToken.token != null && userToken.token != undefined) {
@@ -215,11 +223,16 @@ export default class Login extends Component {
                 //Any other config variables for organization
               })
             })
+            this.setState({
+              password: '',
+              loginError: ''
+            })
             this.props.navigation.navigate('Home')
           }
           catch (e) {
             console.log("Error on active user creation");
             this.setState({
+              password: '',
               loginError: "Login Active User Error: " + e
             })
           }
@@ -227,6 +240,7 @@ export default class Login extends Component {
         else {
           //REMOVE AFTER TESTING OR CHANGE RESPONSE TO SHOW INVALID TOKEN REQUEST
           this.setState({
+            password: '',
             loginError: "Token Request Failed"
           })
           try {
@@ -245,6 +259,7 @@ export default class Login extends Component {
           catch (e) {
             console.log("Error on active user creation");
             this.setState({
+              password: '',
               loginError: "Login Active User Error: " + e
             })
           }
@@ -255,6 +270,7 @@ export default class Login extends Component {
     else {
       console.log("No LOGIN Match")
       this.setState({
+        password: '',
         loginError: "Credentials Invalid"
       })
     }

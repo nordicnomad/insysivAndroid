@@ -394,7 +394,7 @@ export default StyleSheet.create({
   },
   productListHeading: {
     textAlign: 'left',
-    fontSize: 20,
+    fontSize: 16,
     color: '#333',
     fontWeight: '700',
     borderBottomWidth: 1,
@@ -402,7 +402,7 @@ export default StyleSheet.create({
   },
   activeProductListHeading: {
     textAlign: 'left',
-    fontSize: 20,
+    fontSize: 16,
     color: '#ed9a1a',
     fontWeight: '700',
     borderBottomWidth: 1,
@@ -471,7 +471,6 @@ export default StyleSheet.create({
     backgroundColor: '#f7f7f7',
     padding: 10,
     marginTop: -5,
-    marginRight: 50,
   },
   inactiveListTray: {
     display: 'none'

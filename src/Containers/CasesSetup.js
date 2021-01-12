@@ -1,7 +1,7 @@
 import React, {Fragment, Component} from 'react';
 import { StyleSheet, Text, TextInput, View, Button, Picker, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
-import HeaderLogo from '../Images/insysivLogoHorizontal.png'
+import HeaderLogo from '../Images/insysivLogoHorizontal.jpg'
 import GateData from '../dummyData/gates.json'
 
 var Realm = require('realm');
@@ -299,7 +299,6 @@ export default class CasesSetup extends Component {
           }
         })
       })
-      physiciansList.compact()
     }
   }
   async FetchDoctorTable() {
@@ -349,7 +348,6 @@ export default class CasesSetup extends Component {
           }
         })
       })
-      proceduresList.compact()
     }
   }
   async FetchProcedureTable() {
@@ -399,7 +397,6 @@ export default class CasesSetup extends Component {
           }
         })
       })
-      locationsList.compact()
     }
     if(newLocations.length === 0 || savedLocations === undefined || savedLocations === null) {
       console.log("NEWLOCATIONS LENGTH ZERO, ADDING DEFAULT LOCATION")
@@ -514,7 +511,7 @@ export default class CasesSetup extends Component {
     //Save case as a working case space object in Realm
     activeScanableCase.write(() => {
       try{
-        activeScanableCase.create('Working_Case_Space', {
+        activeScanableCase.create('Active_Scanable_Case', {
           chead_pk_case_number: caseNumber,
           chead_pk_site_id: locationId,
           chead_patient_id: patientId,

@@ -1,7 +1,7 @@
 import React, {Fragment, Component} from 'react';
 import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
-import HeaderLogo from '../Images/insysivLogoHorizontal.png'
+import HeaderLogo from '../Images/insysivLogoHorizontal.jpg'
 import ButtonLoader from '../Images/buttonLoader.gif'
 //import SubscriptionData from '../dummyData/subscriptions.json'
 

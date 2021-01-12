@@ -268,33 +268,33 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
             barcode: passedBarcode,
             trayState: false,
             isUnknown: false,
-            licenseNumber: product.licenseNumber,
             productModelNumber: productModelNumber,
-            orderThruVendor: product.orderThruVendor,
             productDescription: product.productDescription,
             autoReplace: product.autoReplace,
             discontinued: product.discontinued,
-            productCategory: product.productCategory,
-            hospitalItemNumber: product.hospitalItemNumber,
-            unitOfMeasure: product.unitOfMeasure,
-            unitOfMeasureQuantity: product.unitOfMeasureQuantity,
-            reorderValue: product.reorderValue,
-            quantityOnHand: product.quantityOnHand,
-            quantityOrdered: product.quantityOrdered,
-            lastRequistionNumber: product.lastRequistionNumber,
             orderStatus: product.orderStatus,
             active: product.active,
             accepted: product.accepted,
             consignment: product.consignment,
-            minimumValue: product.minimumValue,
-            maximumValue: product.maximumValue,
-            nonOrdered: product.nonOrdered,
             productNote: product.productNote,
-            scannedTime: new Date("YYMMDD"),
+            scannedTime: new Date().toDateString(),
             count: 1,
             waste: false,
             scanned: true,
           }
+          if(product.licenseNumber != null) {matchedProduct.licenseNumber = product.licenseNumber.toString()} else {matchedProduct.licenseNumber = ''}
+          if(product.orderThruVendor != null) {matchedProduct.orderThruVendor = product.orderThruVendor.toString()} else {matchedProduct.orderThruVendor = ''}
+          if(product.productCategory != null) {matchedProduct.productCategory = product.productCategory.toString()} else {matchedProduct.productCategory = ''}
+          if(product.hospitalItemNumber != null) {matchedProduct.hospitalItemNumber = product.hospitalItemNumber.toString()} else {matchedProduct.hospitalItemNumber = ''}
+          if(product.unitOfMeasure != null) {matchedProduct.unitOfMeasure = product.unitOfMeasure.toString()} else {matchedProduct.unitOfMeasure = ''}
+          if(product.unitOfMeasureQuantity != null) {matchedProduct.unitOfMeasureQuantity = product.unitOfMeasureQuantity.toString()} else {matchedProduct.unitOfMeasureQuantity = ''}
+          if(product.reorderValue != null) {matchedProduct.reorderValue = product.reorderValue.toString()} else {matchedProduct.reorderValue = ''}
+          if(product.quantityOnHand != null) {matchedProduct.quantityOnHand = product.quantityOnHand.toString()} else {matchedProduct.quantityOnHand = ''}
+          if(product.quantityOrdered != null) {matchedProduct.quantityOrdered = product.quantityOrdered.toString()} else {matchedProduct.quantityOrdered = ''}
+          if(product.lastRequistionNumber != null) {matchedProduct.lastRequistionNumber = product.lastRequistionNumber.toString()} else {matchedProduct.lastRequistionNumber = ''}
+          if(product.minimumValue != null) {matchedProduct.minimumValue = product.minimumValue.toString()} else {matchedProduct.minimumValue = ''}
+          if(product.maximumValue != null) {matchedProduct.maximumValue = product.maximumValue.toString()} else {matchedProduct.maximumValue = ''}
+          if(product.nonOrdered != null) {matchedProduct.nonOrdered = product.nonOrdered.toString()} else {matchedProduct.nonOrdered = ''}
           noDBmatchFlag = false
         }
       });
@@ -311,9 +311,28 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
       isUnknown: true,
       productDescription: "Unknown Product",
       count: 1,
-      scannedTime: "Now",
+      scannedTime: new Date().toDateString(),
       waste: false,
       scanned: false,
+      autoReplace: '',
+      discontinued: '',
+      orderStatus: '',
+      active: '',
+      accepted: '',
+      consignment: '',
+      productNote: '',
+      orderThruVendor: '',
+      productCategory: '',
+      hospitalItemNumber: '',
+      unitOfMeasure: '',
+      unitOfMeasureQuantity: '',
+      reorderValue: '',
+      quantityOnHand: '',
+      quantityOrdered: '',
+      lastRequistionNumber: '',
+      minimumValue: '',
+      maximumValue: '',
+      nonOrdered: '',
     }
   }
 

@@ -84,7 +84,7 @@ export function RFIDlabelSearch(rfidLabel) {
   });
 
   //initialize database objects
-  let rfidTable = fridLabels.objects('RFID_Labels')
+  let rfidTable = rfidLabels.objects('RFID_Labels')
 
   //check for rfid label barcode match
   if(passedLabel != null && passedLabel != undefined) {
@@ -133,7 +133,8 @@ export function RFIDlabelSearch(rfidLabel) {
   }
   else {
     let buildProductFilterString = 'productModelNumber CONTAINS "' + matchedLabel.productModelNumber + '"'
-    let filteredProductMatches = productTable.filtered(buildProductFilterString)
+    let productObjects = products.objects("Products_Lookup")
+    let filteredProductMatches = productObjects.filtered(buildProductFilterString)
 
     filteredProductMatches.forEach((product, i) => {
       matchedRfidProduct = {

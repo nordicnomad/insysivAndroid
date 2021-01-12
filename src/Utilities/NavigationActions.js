@@ -12,6 +12,7 @@ export function Logout() {
         userToken: "string",
         tokenExpiration: "string?",
         syncAddress: "string?",
+        organizationName: "string?",
         //Additional Organization Level Configuration Options go Here.
     }}]
   });
@@ -19,11 +20,11 @@ export function Logout() {
   activeUser.write(() => {
     activeUser.deleteAll()
   })
-  navigation.navigate('Login')
+  this.props.navigation.navigate('Login')
 
 }
 
 
 export function Homeout() {
-  navigation.navigate('Home')
+  this.props.navigation.navigate('Home')
 }

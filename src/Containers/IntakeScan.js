@@ -2,7 +2,7 @@ import React, {Fragment, Component} from 'react';
 import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert, TextInput } from 'react-native'
 import ZebraScanner from 'react-native-zebra-scanner'
 import Icon from 'react-native-vector-icons/FontAwesome'
-import HeaderLogo from '../Images/insysivLogoHorizontal.png'
+import HeaderLogo from '../Images/insysivLogoHorizontal.jpg'
 import ProductListTrayItem from '../Components/ProductListTrayItem'
 import { BarcodeSearch } from '../Utilities/BarcodeLookup'
 import TestBarcodes from '../dummyData/testBarcodes.json'
@@ -28,7 +28,8 @@ export default class IntakeScan extends Component {
       scannedItems: [],
       scannerConnected: false,
       lastCompleteFlag: false,
-      lastScannedObject: {}
+      lastScannedObject: {},
+      pageErrorMessage: ''
     }
 
     activeUser = new Realm({
@@ -164,19 +165,22 @@ export default class IntakeScan extends Component {
       let barcodeLookup = {}
 
       //Check scanned items for existing barcode increase count of identical scans
-      scannedItemsList.forEach(function(item, i) {
-        totalCount = totalCount + parseFloat(item.count)
+      workingScanSpace.write(() => {
+        scannedItemsList.forEach(function(item, i) {
+          totalCount = totalCount + parseFloat(item.count)
 
-        if(item.barcode === scannedBarcode) {
-          scanMatched = true
-          scannedItemsList[i].count = scannedItemsList[i].count + 1
-        }
-      }.bind(this));
+          if(item.barcode === scannedBarcode) {
+            scanMatched = true
+            scannedItemsList[i].count = scannedItemsList[i].count + 1
+          }
+        }.bind(this));
+      })
 
       //If not a known product create an unknown product scanned item object
       if(scanMatched === false) {
         barcodeLookup = BarcodeSearch(scannedBarcode, this.state.lastScannedObject, this.state.lastCompleteFlag)
-
+        console.log("BARCODE SEARCH FUNCTION RETURN")
+        console.log(barcodeLookup)
         if(barcodeLookup != null) {
           if(barcodeLookup.passThroughCompletenessFlag === true) {
             this.setState({
@@ -190,8 +194,6 @@ export default class IntakeScan extends Component {
               lastScannedObject: barcodeLookup,
             })
           }
-          scannedItemsList.unshift(barcodeLookup)
-          console.log(scannedItemsList)
         }
         //Save new scanned product to working scan space
         workingScanSpace.write(() => {
@@ -293,18 +295,20 @@ export default class IntakeScan extends Component {
       scanCount: newTotalCount,
     })
   }
-  AdjustScannedQuantity = (itembarcode, newQuantity) => {
+  AdjustScannedQuantity = (itemBarcode, newQuantity) => {
     let productLocationString = 'barcode CONTAINS "' + itemBarcode + '"'
     let modalProducts = workingScanSpace.objects('Working_Scan_Space')
     let modalProductBuild = modalProducts.filtered(productLocationString)
 
-    let updateCount = newQuantity
+    let updateCount = parseFloat(newQuantity)
     if(updateCount >= 0 && updateCount != null && updateCount != undefined && updateCount != '') {
       let updatedScannedItem = modalProductBuild[0]
-      updatedScannedItems.count = updateCount
+      workingScanSpace.write(() => {
+        updatedScannedItem.count = updateCount
+      })
 
       this.setState({
-        scannedItems: updatedScannedItems,
+        scannedItems: updatedScannedItem,
       })
       this.CloseAdjustmentModal()
 
@@ -343,23 +347,92 @@ export default class IntakeScan extends Component {
   }
   SynchronizeIntakeToDesktop = () => {
     //Instantiate Scanned Products
+    let userObject = activeUser.objects("Active_User")
+    let scannedProducts = workingScanSpace.objects("Working_Scan_Space")
+    let failedSyncs = []
 
     //Loop products and individually post to server
+    scannedProducts.forEach((product, index) => {
+      let lotSerial = ''
+      if(product.lotNumber === null || product.lotNumber === '') {
+        lotSerial = product.serialNumber
+      }
+      else if(product.serialNumber === null || product.serialNumber === '') {
+        lotSerial = product.lotNumber
+      }
+      else {
+        lotSerial = product.lotNumber + '/' + product.serialNumber
+      }
+      fetch('http://25.78.82.76:5100/api/CheckinProducts', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          //api endpoint model
+          pkChkin: 0,
+          licenseNumber: product.vendorLicenseNumber,
+          productModelNumber: product.productModelNumber,
+          productBarCode: product.barcode,
+          encoding: 0,
+          transactionPrice: 0,
+          lotSerialNumber: lotSerial,
+          createTimestamp: "Now",
+          createUserid: userObject[0].userId,
+          qty: product.count,
+          expirationDate: product.expirationDate
+        })
+      })
+      .catch((error) => {
+        console.log(error);
+        failedSyncs.push(product.barcode)
+      });
+    });
 
     //Completeness check
-
-    //Reset State and DB if all transmit successfully
-    workingScanSpace.write(() => {
-      workingScanSpace.deleteAll()
-    })
-    this.setState({
-      scanCount: 0,
-      scannedItems: []
-    })
-
-    //Redirect to home page if necessary
-    //otherwise state should update in place
-    this.props.navigation.navigate("Home")
+    if(failedSyncs.length === 0) {
+      //Reset State and DB if all transmit successfully
+      workingScanSpace.write(() => {
+        workingScanSpace.deleteAll()
+      })
+      this.setState({
+        scanCount: 0,
+        scannedItems: [],
+        pageErrorMessage: "Last Sync Successful"
+      })
+      //Redirect to home page if necessary
+      //otherwise state should update in place
+      this.props.navigation.navigate("Home")
+    }
+    else {
+      let newCount = 0
+      scannedProducts.forEach((productItem, index) => {
+        let matchFlag = false
+        //Check if item barcode is in failed barcode list
+        failedSyncs.forEach((failedBarcode, i) => {
+          if(productItem.barcode === failedBarcode) {
+            matchedFlag = true
+          }
+        })
+        if(matchedFlag === false) {
+          //if not failed find in DB and delete entry
+          let buildDeleteScan = 'barcode CONTAINS "' + productItem.barcode + '"'
+          let filteredProductItems = workingScanSpace.filtered(buildDeleteScan)
+          workingScanSpace.write(() => {
+            workingScanSpace.delete(filteredProductItems)
+          })
+        }
+      });
+      //Reset Scanned Item Count and update state
+      workingScanSpace.forEach(function(remainingProduct, i) {
+        newCount = newCount + remainingProduct.count
+      })
+      this.setState({
+        scanCount: newCount,
+        pageErrorMessage: "Last Sync Complete with Errors"
+      })
+    }
   }
   GetScannerStatus(status) {
     let scannerStatus = status
@@ -391,7 +464,6 @@ export default class IntakeScan extends Component {
     let productLocationString = 'barcode CONTAINS "' + this.state.modalProduct + '"'
     let modalProducts = workingScanSpace.objects('Working_Scan_Space')
     let modalProductBuild = modalProducts.filtered(productLocationString)
-
     if(this.state.modalState === true) {
       return (
         <View style={styles.modalBackgroundContainer}>
@@ -417,7 +489,7 @@ export default class IntakeScan extends Component {
                 <View style={styles.modalButtonColumn}>
                   <TouchableOpacity
                     style={styles.modalButton}
-                    onPress={() => this.AdjustScannedQuantity(this.state.modalProduct, this.state.modalItemCount)}>
+                    onPress={() => this.AdjustScannedQuantity(modalProductBuild[0].barcode, this.state.modalItemCount)}>
                     <Text style={styles.modalButtonText}>Set Quantity</Text>
                   </TouchableOpacity>
                 </View>
@@ -494,7 +566,7 @@ export default class IntakeScan extends Component {
       return(this.props.navigation.navigate('Login'))
     }
     else {
-      let scannedItems = workingScanSpace.objects('Working_Scan_Space')
+      let scannedItems = workingScanSpace.objects('Working_Scan_Space').sorted("scannedTime", true)
       return (
         <View style={styles.containerContainsFooter}>
           <ScrollView style={styles.scrollContainer}>

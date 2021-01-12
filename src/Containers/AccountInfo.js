@@ -1,7 +1,7 @@
 import React, {Fragment, Component} from 'react';
 import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
-import HeaderLogo from '../Images/insysivLogoHorizontal.png'
+import HeaderLogo from '../Images/insysivLogoHorizontal.jpg'
 import UserData from '../dummyData/login.json'
 import DummyProducts from '../dummyData/productsOffline.json'
 import DummyBarcodes from '../dummyData/productBarcodesOffline.json'
@@ -9,8 +9,8 @@ import DummyLabels from '../dummyData/rfidLabelsOffline.json'
 import DummyCases from '../dummyData/casesOffline.json'
 import DummyDocs from '../dummyData/physiciansOffline.json'
 import DummySites from '../dummyData/sitesOffline.json'
+import DummyUsers from '../dummyData/userTablesOffline.json'
 import DummyProcedures from '../dummyData/proceduresOffline.json'
-import {Logout} from '../Utilities/NavigationActions'
 
 var Realm = require('realm');
 let activeUser ;
@@ -31,7 +31,14 @@ export default class AccountInfo extends Component {
     this.state = {
       selectedValue: 0,
       gates: [],
-      account: {},
+      account: {
+        organization: {
+          name: 'Replace with something in user object',
+          systemVersion: 'V0.1',
+          customerServicePhone: '888-888-8888',
+          customerServiceEmail: 'troy.norris@insysiv.com'
+        }
+      },
       user: {},
     }
 
@@ -364,7 +371,6 @@ export default class AccountInfo extends Component {
           }
         })
       })
-      products.compact()
     }
     else {
       products.write(() => {
@@ -403,7 +409,6 @@ export default class AccountInfo extends Component {
           }
         })
       })
-      products.compact()
     }
   }
 
@@ -433,7 +438,6 @@ export default class AccountInfo extends Component {
           }
         })
       })
-      productBarCodes.compact()
     }
     else {
       productBarCodes.write(() => {
@@ -454,7 +458,6 @@ export default class AccountInfo extends Component {
           }
         })
       })
-      productBarCodes.compact()
     }
   }
 
@@ -485,7 +488,6 @@ export default class AccountInfo extends Component {
           }
         })
       })
-      rfidLabels.compact()
     }
     else {
       rfidLabels.write(() => {
@@ -509,7 +511,6 @@ export default class AccountInfo extends Component {
           }
         })
       })
-      rfidLabels.compact()
     }
   }
 
@@ -519,7 +520,7 @@ export default class AccountInfo extends Component {
     //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/subscriptions')
     //test server call
     console.log("FETCHRFIDTABLE CALLED FROM ACCOUNT INFORMATION PAGE")
-    return fetch('http://25.78.82.76:5100/api/rfidLabels')
+    return fetch('http://25.78.82.76:5100/api/RfidLabels')
     .then((rfidresponse) => rfidresponse.json())
     .then((rfidresponseJson) => {
       console.log("RFID RESPONSE")
@@ -553,7 +554,7 @@ export default class AccountInfo extends Component {
     })
     this.FetchProductTable()
     //Save timestamp
-    this.saveCurrentDate()
+    //this.saveCurrentDate()
   }
 
   SynchronizeBarcodeTable = () => {
@@ -580,21 +581,21 @@ export default class AccountInfo extends Component {
     let productResponse = DummyProducts
 
     this.saveProductTable(productResponse)
-    this.saveCurrentDate()
+    //this.saveCurrentDate()
   }
 
   LoadDummyBarcodeTable = () => {
     let barcodeResponse = DummyBarcodes
 
     this.saveBarCodeTable(barcodeResponse)
-    this.saveCurrentDate()
+    //this.saveCurrentDate()
   }
 
   LoadDummyRFIDTable = () => {
     let labelResponse = DummyLabels
 
     this.saveRfidTable(labelResponse)
-    this.saveCurrentDate()
+    //this.saveCurrentDate()
   }
 
   LoadDummyDocTable = () => {
@@ -626,7 +627,6 @@ export default class AccountInfo extends Component {
           }
         })
       })
-      rfidLabels.compact()
     }
     else {
       physiciansList.write(() => {
@@ -646,7 +646,6 @@ export default class AccountInfo extends Component {
           }
         })
       })
-      physiciansList.compact()
     }
   }
 
@@ -683,7 +682,6 @@ export default class AccountInfo extends Component {
           }
         })
       })
-      activeCases.compact()
     }
     else {
       activeCases.write(() => {
@@ -707,7 +705,6 @@ export default class AccountInfo extends Component {
           }
         })
       })
-      activeCases.compact()
     }
   }
 
@@ -738,7 +735,6 @@ export default class AccountInfo extends Component {
           }
         })
       })
-      locationsList.compact()
     }
     else {
       locationsList.write(() => {
@@ -756,7 +752,6 @@ export default class AccountInfo extends Component {
           }
         })
       })
-      locationsList.compact()
     }
   }
 
@@ -787,7 +782,6 @@ export default class AccountInfo extends Component {
           }
         })
       })
-      proceduresList.compact()
     }
     else {
       proceduresList.write(() => {
@@ -805,7 +799,6 @@ export default class AccountInfo extends Component {
           }
         })
       })
-      proceduresList.compact()
     }
   }
 
@@ -842,7 +835,6 @@ export default class AccountInfo extends Component {
           }
         })
       })
-      usersList.compact()
     }
     else {
       usersList.write(() => {
@@ -866,7 +858,6 @@ export default class AccountInfo extends Component {
           }
         })
       })
-      usersList.compact()
     }
   }
 
@@ -895,24 +886,21 @@ export default class AccountInfo extends Component {
     }
   }
 
+  logoutUser = () => {
+    activeUser.write(() => {
+      activeUser.deleteAll()
+    })
+    this.props.navigation.navigate('Login')
+  }
+
   render() {
     let isLoggedIn = activeUser.objects('Active_User')
     if(isLoggedIn.length === 0) {
       return(this.props.navigation.navigate('Login'))
     }
     else {
-      if(this.state.account.organization === null || this.state.account.organization === undefined) {
-        return(
-          <ScrollView style={styles.scrollContainer}>
-            <View style={styles.container}>
-              <View style={styles.titleRow}>
-                <Text style={styles.titleText}>Account Information</Text>
-              </View>
-            </View>
-          </ScrollView>
-        )
-      }
-      else {
+
+
         let outputProducts = products.objects('Products_Lookup');
         let printProducts = outputProducts.length;
         let outputBarcodes = productBarCodes.objects('Product_Bar_Codes');
@@ -934,6 +922,11 @@ export default class AccountInfo extends Component {
             <View style={styles.container}>
               <View style={styles.titleRow}>
                 <Text style={styles.titleText}>Account Information</Text>
+              </View>
+              <View>
+                <Text style={styles.errorText}>
+                  {this.state.syncProgressMessage}
+                </Text>
               </View>
               <View style={styles.sectionContainer}>
                 <Text style={styles.bodyTextHeading}>Application Data</Text>
@@ -1069,7 +1062,7 @@ export default class AccountInfo extends Component {
                     <TouchableOpacity
                       style={styles.loginButton}
                       activeOpacity={0.6}
-                      onPress={() => Logout()
+                      onPress={() => this.logoutUser()
                     }>
                       <Text style={styles.loginButtonText}>Log Out</Text>
                     </TouchableOpacity>
@@ -1079,8 +1072,7 @@ export default class AccountInfo extends Component {
 
             </View>
           </ScrollView>
-        );
-      }
+      );
     }
   }
 }

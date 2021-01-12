@@ -1,7 +1,7 @@
 import React, {Fragment, Component} from 'react';
 import { StyleSheet, Text, TextInput, View, Button, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
-import HeaderLogo from '../Images/insysivLogoHorizontal.png'
+import HeaderLogo from '../Images/insysivLogoHorizontal.jpg'
 import AutoReceiptListItem from '../Components/AutoReceiptListItem'
 
 import styles from '../Styles/ContainerStyles.js'
@@ -107,7 +107,7 @@ export default class ReportAutoreceipt extends Component {
   }
   generateAutoReceiptReport = (startDate, endDate) => {
     if(startDate != '' && endDate != '') {
-      alert("This button will make a post call to the end point to retrieve receipts starting: " + startDate + " and Ending: " + endDate)  
+      alert("This button will make a post call to the end point to retrieve receipts starting: " + startDate + " and Ending: " + endDate)
     }
     else {
       alert("Please complete Start and End Date fields to generate a new report.")
