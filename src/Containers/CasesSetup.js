@@ -209,15 +209,21 @@ export default class CasesSetup extends Component {
     let procedureData = proceduresList.objects('Procedures_List')
     let locationData = locationsList.objects('Locations_List')
 
+    if(doctorData === null || doctorData === undefined || doctorData.length === 0) {
+      this.FetchDoctorTable()
+    }
+    if(procedureData === null || procedureData === undefined || procedureData.length === 0) {
+      this.FetchProcedureTable()
+    }
+    if(locationData === null || locationData === undefined || locationData.length === 0) {
+      this.FetchLocationTable()
+    }
+
     this.setState({
       doctors: doctorData,
       locations: locationData,
       procedures: procedureData,
     })
-
-    //this.FetchDoctorTable()
-    //this.FetchProcedureTable()
-    //this.FetchLocationTable()
   }
   onCaseNumberFocusChange() {
     this.setState({caseNumberHasFocus: !this.state.caseNumberHasFocus})

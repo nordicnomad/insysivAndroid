@@ -104,11 +104,21 @@ export default class IntakeScan extends Component {
   componentDidMount() {
     this.checkForScanner()
   }
+  componentWillUnmount() {
+    ZebraScanner.removeScanListener(this.ScanBarcode)
+  }
   async checkForScanner() {
     let scannerStatus = await ZebraScanner.isAvailable();
-
-    if(scannerStatus) {
+    try {
       ZebraScanner.addScanListener(this.ScanBarcode)
+    }
+    catch {
+      this.setState({
+        pageErrorMessage: "ADD SCAN LISTENER FAILED"
+      })
+    }
+    if(scannerStatus) {
+
       this.setState({
         scannerConnected: true
       })
@@ -574,6 +584,7 @@ export default class IntakeScan extends Component {
               <View style={styles.titleRow}>
                 <Text style={styles.titleText}>Intake Scan</Text>
               </View>
+              <View><Text>{this.state.pageErrorMessage}</Text></View>
               <View style={styles.sectionContainer}>
                 <Text>Test Scan Function: </Text>
                 <TouchableOpacity onPress={() => this.generateScanTest(this.state.testCount)} style={styles.miniSubmitButton}><Text style={styles.miniSubmitButtonText}>Scan Test</Text></TouchableOpacity>

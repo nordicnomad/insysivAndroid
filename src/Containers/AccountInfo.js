@@ -282,14 +282,14 @@ export default class AccountInfo extends Component {
       this.setState({
         barcodes: barcodeResponse,
         syncProgressMessage: 'Barcodes Synced',
-        isFetchingProducts: true,
+        isFetchingBarcodes: false,
         showSyncFooter: true,
       })
     })
     .catch((error) => {
       console.error(error);
       this.setState({
-        isFetchingProducts: false,
+        isFetchingBarcodes: false,
         showSyncFooter: true,
         syncProgressMessage: 'Syncing Failed'
       })
@@ -314,7 +314,7 @@ export default class AccountInfo extends Component {
         products: productResponse,
         lastFetchProductsObject: this.getCurrentDate(),
         syncProgressMessage: 'Products Synced',
-        isFetchingProducts: true,
+        isFetchingProducts: false,
         showSyncFooter: true,
       })
     })
@@ -331,15 +331,17 @@ export default class AccountInfo extends Component {
   saveProductTable = (responseproducts) => {
     let savedProducts = products.objects('Products_Lookup')
     let newProducts = responseproducts
-    let saveCount = 0
+
+    this.setState({
+      isFetchingProducts: true,
+      syncProgressMessage: "Saving Products",
+    })
 
     if(savedProducts != undefined && savedProducts != null && savedProducts.length > 0) {
       products.write(() => {
         products.deleteAll()
         newProducts.forEach(function(product, i) {
           try {
-            saveCount = saveCount + 1
-            console.log(saveCount)
             products.create('Products_Lookup', {
               licenseNumber: product.licenseNumber,
               productModelNumber: product.productModelNumber,
@@ -366,7 +368,9 @@ export default class AccountInfo extends Component {
             })
           }
           catch (e) {
-            console.log("Error on product table creation");
+            this.setState({
+              syncProgressMessage: "Error on product item creation " + i
+            })
             console.log(e);
           }
         })
@@ -376,8 +380,6 @@ export default class AccountInfo extends Component {
       products.write(() => {
         newProducts.forEach(function(product, i) {
           try {
-            saveCount = saveCount + 1
-            console.log(saveCount)
             products.create('Products_Lookup', {
               licenseNumber: product.licenseNumber,
               productModelNumber: product.productModelNumber,
@@ -404,7 +406,9 @@ export default class AccountInfo extends Component {
             })
           }
           catch (e) {
-            console.log("Error on product table creation");
+            this.setState({
+              syncProgressMessage: "Error on product item creation " + i
+            })
             console.log(e);
           }
         })
@@ -415,15 +419,17 @@ export default class AccountInfo extends Component {
   saveBarCodeTable = (responsebarcodes) => {
     let savedBarcodes = productBarCodes.objects('Product_Bar_Codes')
     let newBarcodes = responsebarcodes
-    let saveCount = 0
+
+    this.setState({
+      isFetchingBarcodes: true,
+      syncProgressMessage: "Saving Barcodes",
+    })
 
     if(savedBarcodes != undefined && savedBarcodes != null && savedBarcodes.length > 0) {
       productBarCodes.write(() => {
         productBarCodes.deleteAll()
         newBarcodes.forEach(function(barcode, i) {
           try {
-            saveCount = saveCount + 1
-            console.log(saveCount)
             productBarCodes.create('Product_Bar_Codes', {
               productBarCode1: barcode.productBarCode1,
               licenseNumber: barcode.licenseNumber,
@@ -433,7 +439,9 @@ export default class AccountInfo extends Component {
 
           }
           catch (e) {
-            console.log("Error on barcode table creation");
+            this.setState({
+              syncProgressMessage: "Error on barcode item creation " + i
+            })
             console.log(e);
           }
         })
@@ -443,8 +451,6 @@ export default class AccountInfo extends Component {
       productBarCodes.write(() => {
         newBarcodes.forEach(function(barcode, i) {
           try {
-            saveCount = saveCount + 1
-            console.log(saveCount)
             productBarCodes.create('Product_Bar_Codes', {
               productBarCode1: barcode.productBarCode1,
               licenseNumber: barcode.licenseNumber,
@@ -453,7 +459,9 @@ export default class AccountInfo extends Component {
             })
           }
           catch (e) {
-            console.log("Error on barcode table creation");
+            this.setState({
+              syncProgressMessage: "Error on barcode item creation " + i
+            })
             console.log(e);
           }
         })
@@ -464,6 +472,11 @@ export default class AccountInfo extends Component {
   saveRfidTable = (responserfids) => {
     let savedRfidLabels = rfidLabels.objects('RFID_Labels')
     let newRfidLabels = responserfids
+
+    this.setState({
+      isFetchingLabels: true,
+      syncProgressMessage: "Saving Labels",
+    })
 
     if(savedRfidLabels != undefined && savedRfidLabels != null && savedRfidLabels.length > 0) {
       rfidLabels.write(() => {
@@ -483,7 +496,9 @@ export default class AccountInfo extends Component {
             })
           }
           catch (e) {
-            console.log("Error on rfid label creation");
+            this.setState({
+              syncProgressMessage:"Error on rfid label creation " + i
+            })
             console.log(e);
           }
         })
@@ -531,14 +546,14 @@ export default class AccountInfo extends Component {
       this.setState({
         rfidLabels: rfidLabelResponse,
         syncProgressMessage: 'RFID Labels Synced',
-        isFetchingProducts: false,
+        isFetchingLabels: false,
         showSyncFooter: false,
       })
     })
     .catch((error) => {
       console.error(error);
       this.setState({
-        isFetchingProducts: false,
+        isFetchingLabels: false,
         showSyncFooter: true,
         syncProgressMessage: 'Syncing Failed'
       })
@@ -550,7 +565,7 @@ export default class AccountInfo extends Component {
     console.log("SYNCHRONIZE PRODUCT TABLE CALLED")
     this.setState({
       isFetchingProducts: true,
-      syncProgressMessage: 'Syncing BarCodes'
+      syncProgressMessage: 'Syncing Products'
     })
     this.FetchProductTable()
     //Save timestamp
@@ -561,7 +576,7 @@ export default class AccountInfo extends Component {
     let productResponse = []
     console.log("SYNCHRONIZE BARCODE TABLE CALLED")
     this.setState({
-      isFetchingProducts: true,
+      isFetchingBarcodes: true,
       syncProgressMessage: 'Syncing BarCodes'
     })
     this.FetchBarcodeTable()
@@ -571,7 +586,7 @@ export default class AccountInfo extends Component {
     let productResponse = []
     console.log("SYNCHRONIZE RFID TABLE CALLED")
     this.setState({
-      isFetchingProducts: true,
+      isFetchingLabels: true,
       syncProgressMessage: 'Syncing BarCodes'
     })
     this.FetchRFIDTable()
@@ -861,31 +876,6 @@ export default class AccountInfo extends Component {
     }
   }
 
-  renderSyncButton(fetchState) {
-    let syncFetchState = fetchState
-
-    if(syncFetchState === false) {
-      return(
-        <TouchableOpacity style={styles.submitButton} onPress={() => this.SynchoronizeAllTables()}>
-          <Text style={styles.submitButtonText}>Sync Products</Text>
-        </TouchableOpacity>
-      )
-    }
-    else {
-      return(
-        <View style={styles.submitLoading}>
-          <Text style={styles.submitButtonText}>
-            <Image
-              style={{width: 25,height: 25,}}
-              source={ButtonLoader}
-            />
-              Loading...
-          </Text>
-        </View>
-      )
-    }
-  }
-
   logoutUser = () => {
     activeUser.write(() => {
       activeUser.deleteAll()
@@ -936,7 +926,7 @@ export default class AccountInfo extends Component {
                     <Text>{printProducts}</Text>
                   </View>
                   <View style={styles.rightColumn}>
-                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.SynchronizeProductTable()}><Text style={styles.miniSubmitButtonText}>Sync</Text></TouchableOpacity>
+                    <TouchableOpacity style={this.state.isFetchingProducts ? styles.miniLoadingButton : styles.miniSubmitButton} onPress={() => this.SynchronizeProductTable()} disabled={this.state.isFetchingProducts}><Text style={styles.miniSubmitButtonText}>Sync</Text></TouchableOpacity>
                   </View>
                 </View>
                 <View style={styles.tabControlRow}>
@@ -945,7 +935,11 @@ export default class AccountInfo extends Component {
                     <Text>{printProducts}</Text>
                   </View>
                   <View style={styles.rightColumn}>
-                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyProductTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                    <TouchableOpacity style={this.state.isFetchingProducts ? styles.miniLoadingButton : styles.miniSubmitButton} onPress={() => this.LoadDummyProductTable()} disabled={this.state.isFetchingProducts}>
+                      <Text style={styles.miniSubmitButtonText}>
+                        Load
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
                 <View style={styles.tabControlRow}>
@@ -954,7 +948,7 @@ export default class AccountInfo extends Component {
                     <Text>{printBarcodes}</Text>
                   </View>
                   <View style={styles.rightColumn}>
-                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.SynchronizeBarcodeTable()}><Text style={styles.miniSubmitButtonText}>Sync</Text></TouchableOpacity>
+                    <TouchableOpacity style={this.state.isFetchingBarcodes ? styles.miniLoadingButton : styles.miniSubmitButton} onPress={() => this.SynchronizeBarcodeTable()} disabled={this.state.isFetchingBarcodes}><Text style={styles.miniSubmitButtonText}>Sync</Text></TouchableOpacity>
                   </View>
                 </View>
                 <View style={styles.tabControlRow}>
@@ -963,7 +957,7 @@ export default class AccountInfo extends Component {
                     <Text>{printBarcodes}</Text>
                   </View>
                   <View style={styles.rightColumn}>
-                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyBarcodeTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                    <TouchableOpacity style={this.state.isFetchingBarcodes ? styles.miniLoadingButton : styles.miniSubmitButton} onPress={() => this.LoadDummyBarcodeTable()} disabled={this.state.isFetchingBarcodes}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
                   </View>
                 </View>
                 <View style={styles.tabControlRow}>
@@ -972,7 +966,7 @@ export default class AccountInfo extends Component {
                     <Text>{printRFIDLabels}</Text>
                   </View>
                   <View style={styles.rightColumn}>
-                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.SynchronizeRFIDTable()}><Text style={styles.miniSubmitButtonText}>Sync</Text></TouchableOpacity>
+                    <TouchableOpacity style={this.state.isFetchingLabels ? styles.miniLoadingButton : styles.miniSubmitButton} onPress={() => this.SynchronizeRFIDTable()} disabled={this.state.isFetchingLabels}><Text style={styles.miniSubmitButtonText}>Sync</Text></TouchableOpacity>
                   </View>
                 </View>
                 <View style={styles.tabControlRow}>
@@ -981,7 +975,7 @@ export default class AccountInfo extends Component {
                     <Text>{printRFIDLabels}</Text>
                   </View>
                   <View style={styles.rightColumn}>
-                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyRFIDTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                    <TouchableOpacity style={this.state.isFetchingLabels ? styles.miniLoadingButton : styles.miniSubmitButton} onPress={() => this.LoadDummyRFIDTable()} disabled={this.state.isFetchingLabels}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
                   </View>
                 </View>
                 <View style={styles.tabControlRow}>

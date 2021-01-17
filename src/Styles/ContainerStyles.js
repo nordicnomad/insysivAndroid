@@ -166,7 +166,7 @@ export default StyleSheet.create({
     height: 50,
   },
   submitLoading: {
-    backgroundColor: '#ed9a1a',
+    backgroundColor: '#102541',
     paddingTop: 7,
     height: 50,
   },
@@ -204,6 +204,13 @@ export default StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     fontWeight: '800',
+  },
+  miniLoadingButton: {
+    backgroundColor: '#102541',
+    paddingTop: 4,
+    paddingBottom: 4,
+    paddingLeft: 4,
+    paddingRight: 4, 
   },
   miniDisabledButton: {
     backgroundColor: '#ccc',

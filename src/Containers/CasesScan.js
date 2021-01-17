@@ -423,7 +423,7 @@ export default class CasesScan extends Component {
         console.log(displayCaseDetail.chead_pk_site_id)
         let buildLocationString = 'siteId CONTAINS "' + displayCaseDetail.chead_pk_site_id + '"'
         let sitesObjects = locationsList.objects("Locations_List")
-        //let sitesDisplayObject = sitesObjects.filtered(buildLocationString)
+        let sitesDisplayObject = sitesObjects.filtered(buildLocationString)
 
         return (
           <View style={{flex: 1}}>
@@ -434,10 +434,10 @@ export default class CasesScan extends Component {
                 </View>
                 <View style={styles.sectionContainer}>
                   <View style={styles.shadedBackgroundWrapper}>
-                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>{displayCaseDetail.chead_pk_case_number}</Text>
+                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>{displayCaseDetail}</Text>
                     <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Patient Id: </Text>{displayCaseDetail.chead_patient_id}</Text>
-                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Doctor: </Text>{physiciansDisplayObject.firstName + " " + physiciansDisplayObject.lastName}</Text>
-                    {/*<Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Location: </Text>{sitesDisplayObject.siteDescription}</Text>*/}
+                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Doctor: </Text>{physiciansDisplayObject}</Text>
+                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Location: </Text>{sitesDisplayObject}</Text>
                     <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Procedure: </Text>{proceduresDisplayObject.procedureDescription}</Text>
                   </View>
                 </View>
