@@ -181,6 +181,27 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
       decodeReturnObject = DecodeHIBC(identifier, hibcAppStrings[i], decodeReturnObject)
     })
   }
+
+  else if(passedBarcode.substring(0,1) >= '0' && passedBarcode.substring(0,1) <= '9') {
+    passedBarcode = passedBarcode.replace(/[\\\n\r\t]/g, function(i) {
+        return 't'+map[i];
+    });
+    console.log(passedBarcode)
+    let uccNumAppIdentifiers = []
+    let uccNumAppStrings = []
+
+    //identify starting App identifier, start two build strings 1) of first 4 characters of for app identifier 2) all characters
+
+
+
+
+
+    //loop App identifier array and push identifier to decode UCC passedBarcode strings
+    uccNumAppIdentifiers.forEach((identifier, i) => {
+      decodeReturnObject = DecodeUCC(identifier, uccNumAppStrings[i], decodeReturnObject)
+    })
+  }
+
   else if(passedBarcode.substring(0,1) === '(') {
     let uccAIparenLocations = []
     let uccAppIdentifiers = []
@@ -277,7 +298,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
             accepted: product.accepted,
             consignment: product.consignment,
             productNote: product.productNote,
-            scannedTime: Date().toLocaleString(),
+            scannedTime: new Date().toISOString(),
             count: 1,
             waste: false,
             scanned: true,
@@ -311,7 +332,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
       isUnknown: true,
       productDescription: "Unknown Product",
       count: 1,
-      scannedTime: Date().toLocaleString(),
+      scannedTime: new Date().toISOString(),
       waste: false,
       scanned: false,
       autoReplace: '',

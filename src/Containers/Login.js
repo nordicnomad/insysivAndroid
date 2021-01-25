@@ -57,9 +57,8 @@ export default class Login extends Component {
     let activeUsers = activeUser.objects('Active_User')
     if(activeUsers === null || activeUsers === undefined || activeUsers.length === 0 ) {
       if(usersLoaded === null || usersLoaded === undefined || usersLoaded.length === 0) {
-        this.fetchUsersTable()
-
-        //this.testLoadUsersTable()
+        //this.fetchUsersTable()
+        this.testLoadUsersTable()
       }
     }
     else {
@@ -89,23 +88,33 @@ export default class Login extends Component {
     //Barcode Calls
     //test server call
     console.log("FETCHBARCODETABLE CALLED FROM ACCOUNT INFORMATION PAGE")
-    return fetch('http://25.78.82.76:5100/api/UserTables')
-    .then((userTableResponse) => userTableResponse.json())
-    .then((userTableResponseJson) => {
-      console.log("USERS RESPONSE")
-      console.log(userTableResponseJson)
-      usersResponse = userTableResponseJson;
-      this.saveUserTable(usersResponse)
-      this.setState({
-        loginError: 'Users Synced',
+    try{
+      return fetch('http://25.78.82.76:5100/api/UserTables')
+      .then((userTableResponse) => userTableResponse.json())
+      .then((userTableResponseJson) => {
+        console.log("USERS RESPONSE")
+        console.log(userTableResponseJson)
+        usersResponse = userTableResponseJson;
+        this.saveUserTable(usersResponse)
+        this.setState({
+          loginError: 'Users Synced',
+        })
       })
-    })
-    .catch((error) => {
-      console.error(error);
+      .catch((error) => {
+        console.error(error);
+        this.setState({
+          loginError: 'Users Load Failure'
+        })
+      });
+    }
+    catch (e) {
+      console.log("Fetch Users Table Error")
+      console.log(e)
       this.setState({
-        loginError: 'Users Load Failure'
+        loginError: "Users Load Failure"
       })
-    });
+      this.testLoadUsersTable()
+    }
   }
 
   saveUserTable = (userResponse) => {
@@ -278,7 +287,7 @@ export default class Login extends Component {
   render() {
     return (
       <ScrollView style={styles.scrollContainer}>
-        <OfflineBanner showBanner={this.state.networkConnected} />
+        {/*<OfflineBanner showBanner={this.state.networkConnected} />*/}
         <View style={styles.loginContainer}>
           <View style={styles.loginLogoRow}>
             <Image

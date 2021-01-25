@@ -103,9 +103,18 @@ export default class IntakeScan extends Component {
   }
   componentDidMount() {
     this.checkForScanner()
-  }
-  componentWillUnmount() {
-    ZebraScanner.removeScanListener(this.ScanBarcode)
+
+    let newTotalCount = 0;
+    let scannedItems = workingScanSpace.objects('Working_Scan_Space')
+
+    scannedItems.forEach(function(countScan, index) {
+      newTotalCount = newTotalCount + parseFloat(countScan.count)
+    })
+
+    this.setState({
+      scannedItems: scannedItems,
+      scanCount: newTotalCount,
+    })
   }
   async checkForScanner() {
     let scannerStatus = await ZebraScanner.isAvailable();
@@ -355,51 +364,9 @@ export default class IntakeScan extends Component {
       modalItemCount: 0,
     })
   }
-  SynchronizeIntakeToDesktop = () => {
-    //Instantiate Scanned Products
-    let userObject = activeUser.objects("Active_User")
+  recordCleanup(failedCalls) {
+    let failedSyncs = failedCalls
     let scannedProducts = workingScanSpace.objects("Working_Scan_Space")
-    let failedSyncs = []
-
-    //Loop products and individually post to server
-    scannedProducts.forEach((product, index) => {
-      let lotSerial = ''
-      if(product.lotNumber === null || product.lotNumber === '') {
-        lotSerial = product.serialNumber
-      }
-      else if(product.serialNumber === null || product.serialNumber === '') {
-        lotSerial = product.lotNumber
-      }
-      else {
-        lotSerial = product.lotNumber + '/' + product.serialNumber
-      }
-      fetch('http://25.78.82.76:5100/api/CheckinProducts', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          //api endpoint model
-          pkChkin: 0,
-          licenseNumber: product.vendorLicenseNumber,
-          productModelNumber: product.productModelNumber,
-          productBarCode: product.barcode,
-          encoding: 0,
-          transactionPrice: 0,
-          lotSerialNumber: lotSerial,
-          createTimestamp: "Now",
-          createUserid: userObject[0].userId,
-          qty: product.count,
-          expirationDate: product.expirationDate
-        })
-      })
-      .catch((error) => {
-        console.log(error);
-        failedSyncs.push(product.barcode)
-      });
-    });
-
     //Completeness check
     if(failedSyncs.length === 0) {
       //Reset State and DB if all transmit successfully
@@ -435,14 +402,106 @@ export default class IntakeScan extends Component {
         }
       });
       //Reset Scanned Item Count and update state
-      workingScanSpace.forEach(function(remainingProduct, i) {
+      let countableProducts = workingScanSpace.objects("Working_Scan_Space")
+      countableProducts.forEach(function(remainingProduct, i) {
         newCount = newCount + remainingProduct.count
       })
       this.setState({
         scanCount: newCount,
-        pageErrorMessage: "Last Sync Complete with Errors"
+        pageErrorMessage: "Some Items Could Not Sync to Server"
       })
     }
+  }
+  SynchronizeIntakeToDesktop = () => {
+    //Instantiate Scanned Products
+    let userObject = activeUser.objects("Active_User")
+    let scannedProducts = workingScanSpace.objects("Working_Scan_Space")
+    let failedSyncs = []
+    let expectedSyncs = scannedProducts.length
+    let completedSyncs = 0
+
+    //Loop products and individually post to server
+    scannedProducts.forEach((product, index) => {
+      let lotSerial = ''
+      if(product.lotNumber === null || product.lotNumber === '') {
+        lotSerial = product.serialNumber
+      }
+      else if(product.serialNumber === null || product.serialNumber === '') {
+        lotSerial = product.lotNumber
+      }
+      else {
+        lotSerial = product.lotNumber + '/' + product.serialNumber
+      }
+      console.log("SYNC PRODUCT: " + index)
+      console.log(product.productModelNumber)
+      try {
+        fetch('http://25.78.82.76:5100/api/CheckinProducts', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            //api endpoint model
+            pkChkin: 0,
+            licenseNumber: product.vendorLicenseNumber,
+            productModelNumber: product.productModelNumber,
+            productBarCode: product.barcode,
+            encoding: 0,
+            transactionPrice: 0,
+            lotSerialNumber: lotSerial,
+            createTimestamp: new Date().toISOString(),
+            createUserid: userObject[0].userId,
+            qty: product.count,
+            expirationDate: product.expirationDate
+          })
+        })
+        .then((syncresponse) => {
+          let syncresponseJson = syncresponse.json()
+          if(syncresponse.status >= 200 && syncresponse.status < 300) {
+            console.log("SYNC CASE RESPONSE OBJECT")
+            console.log(syncresponseJson)
+            this.setState({
+              pageErrorMessage: "SYNC Post Request Succeeded: " + index,
+            })
+          } else {
+            failedSyncs.push(product.barcode);
+            return syncresponseJson.then(error => {throw error;});
+            this.setState({
+              pageErrorMessage: "SYNC Post Request Failed: " + index,
+            })
+          }
+          completedSyncs = completedSyncs + 1
+          if(completedSyncs === expectedSyncs) {
+            this.recordCleanup(failedSyncs)
+          }
+        })
+        .catch((error) => {
+          console.log("SYNC POST REQUEST FAILED")
+          console.log(error);
+          this.setState({
+            pageErrorMessage: 'SYNC Post Request Failed: ' + index
+          })
+          failedSyncs.push(product.barcode)
+          completedSyncs = completedSyncs + 1
+          if(completedSyncs === expectedSyncs) {
+            this.recordCleanup(failedSyncs)
+          }
+        });
+      }
+      catch (e) {
+        console.log("SYNC POST REQUEST FAILED CATCH")
+        console.log(e)
+        this.setState({
+          pageErrorMessage: 'SYNC Post Request Failed'
+        })
+        failedSyncs.push(product.barcode)
+        completedSyncs = completedSyncs + 1
+        if(completedSyncs === expectedSyncs) {
+          this.recordCleanup(failedSyncs)
+        }
+      }
+    });
   }
   GetScannerStatus(status) {
     let scannerStatus = status
@@ -584,7 +643,7 @@ export default class IntakeScan extends Component {
               <View style={styles.titleRow}>
                 <Text style={styles.titleText}>Intake Scan</Text>
               </View>
-              <View><Text>{this.state.pageErrorMessage}</Text></View>
+              <View><Text style={styles.errorText}>{this.state.pageErrorMessage}</Text></View>
               <View style={styles.sectionContainer}>
                 <Text>Test Scan Function: </Text>
                 <TouchableOpacity onPress={() => this.generateScanTest(this.state.testCount)} style={styles.miniSubmitButton}><Text style={styles.miniSubmitButtonText}>Scan Test</Text></TouchableOpacity>

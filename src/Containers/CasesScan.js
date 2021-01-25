@@ -26,14 +26,11 @@ export default class CasesScan extends Component {
       scannerConnected: false,
       testCount: 0,
       errorLogMessage: '',
-      caseInformation: {
-        number: '',
-        name: '',
-        doctor: {},
-        location: {},
-        procedure: {},
-        products: []
-      }
+      caseNumber: '',
+      patientNumber: '',
+      doctorName: '',
+      procedureDescription: '',
+      siteName: '',
     }
 
     activeUser = new Realm({
@@ -76,7 +73,7 @@ export default class CasesScan extends Component {
     locationsList = new Realm({
       schema: [{name: 'Locations_List',
       properties: {
-        siteId: "int",
+        siteId: "string",
         siteDescription: "string",
         active: "string",
       }}]
@@ -92,7 +89,7 @@ export default class CasesScan extends Component {
     activeScanableCase = new Realm({
       schema: [{name: 'Active_Scanable_Case',
       properties: {
-        chead_pk_case_number: "int",
+        chead_pk_case_number: "string",
         chead_pk_site_id: "string",
         chead_patient_id: "string",
 
@@ -132,8 +129,64 @@ export default class CasesScan extends Component {
 
   }
   componentDidMount() {
-
     this.checkForScanner()
+    let activeCaseDetail = activeScanableCase.objects("Active_Scanable_Case")
+    let physiciansDisplayObject = {
+      firstName: "",
+      lastName: "",
+    }
+    let proceduresDisplayObject = {
+      procedureDescription: "",
+    }
+    let sitesDisplayObject = {
+      siteDescription: "",
+    }
+    let displayCaseDetail = activeCaseDetail[0]
+    console.log("DISPLAY CASE DETAIL")
+    console.log(displayCaseDetail.cproc_physician_id)
+    console.log(displayCaseDetail.cproc_pk_procedure_code)
+    console.log(displayCaseDetail.chead_pk_site_id)
+
+    if(displayCaseDetail.cproc_physician_id != null && displayCaseDetail.cproc_physician_id != undefined) {
+      let buildPhysiciansString = 'physicianId CONTAINS "' + displayCaseDetail.cproc_physician_id + '"'
+      let physiciansObjects = physiciansList.objects("Physicians_List")
+      physiciansDisplayObject = physiciansObjects.filtered(buildPhysiciansString)
+      console.log("PHYSICIANS")
+      console.log(physiciansObjects.length)
+      console.log(physiciansDisplayObject[0].length)
+    }
+
+    if(displayCaseDetail.cproc_pk_procedure_code != null && displayCaseDetail.cproc_pk_procedure_code != undefined) {
+      let buildProcedureString = 'procedureCode CONTAINS "' + displayCaseDetail.cproc_pk_procedure_code + '"'
+      let proceduresObjects = proceduresList.objects("Procedures_List")
+      proceduresDisplayObject = proceduresObjects.filtered(buildProcedureString)
+      console.log("PROCEDURES")
+      console.log(proceduresObjects.length)
+      console.log(proceduresDisplayObject[0].length)
+    }
+
+    if(displayCaseDetail.chead_pk_site_id != null && displayCaseDetail.chead_pk_site_id != undefined) {
+      let buildLocationString = 'siteId CONTAINS "' + displayCaseDetail.chead_pk_site_id + '"'
+      let sitesObjects = locationsList.objects("Locations_List")
+      sitesDisplayObject = sitesObjects.filtered(buildLocationString)
+      console.log("SITES")
+      console.log(sitesObjects.length)
+      console.log(sitesDisplayObject[0].length)
+    }
+    console.log("ACTIVE CASE DISPLAY INFO")
+    console.log(displayCaseDetail.chead_pk_case_number)
+    console.log(displayCaseDetail.chead_patient_id)
+    console.log(physiciansDisplayObject[0].firstName)
+    console.log(physiciansDisplayObject[0].lastName)
+    console.log(sitesDisplayObject[0].siteDescription)
+    console.log(proceduresDisplayObject[0].procedureDescription)
+    this.setState({
+      caseNumber: displayCaseDetail.chead_pk_case_number,
+      patientNumber: displayCaseDetail.chead_patient_id,
+      doctorName: physiciansDisplayObject[0].firstName + ' ' + physiciansDisplayObject[0].lastName,
+      procedureDescription: proceduresDisplayObject[0].procedureDescription,
+      siteName: sitesDisplayObject[0].siteDescription,
+    })
   }
   async checkForScanner () {
     let scannerStatus = await ZebraScanner.isAvailable();
@@ -195,8 +248,6 @@ export default class CasesScan extends Component {
     if(caseProducts != undefined && caseProducts != null) {
       let sortedCaseProducts = caseProducts.sorted("cprod_change_timestamp", true)
       sortedCaseProducts.forEach(function(product, index){
-        console.log("PRODUCT BARCODE FROM RENDER")
-        console.log(product.barcode)
         caseProductsOutput.push(
           <CaseProductItem
             key={"CPI"+index}
@@ -251,7 +302,7 @@ export default class CasesScan extends Component {
             cprod_pk_product_sequence: null,
             cprod_line_number: null,
             cprod_billing_code: null,
-            cprod_change_timestamp: Date().toLocaleString(),
+            cprod_change_timestamp: new Date().toISOString(),
             cprod_change_userid: "Scanner",
             cprod_expiration_date: barcodeLookup.expirationDate,
             cprod_license_number: barcodeLookup.licenseNumber,
@@ -295,9 +346,6 @@ export default class CasesScan extends Component {
 
   generateScanTest = (count) => {
     let testStrings = TestLabels
-    console.log("TEST STRINGS")
-    console.log(testStrings)
-    console.log(testStrings[count])
     this.setState({
       testCount: (count + 1)
     })
@@ -305,62 +353,12 @@ export default class CasesScan extends Component {
     return(this.ScanBarcode(testStrings[count].tagid))
   }
 
-  synchronizeCaseData = () => {
-    //Instantiate Scanned Products and Case Detail
-    let userObject = activeUser.objects("Active_User")
+  recordCleanup(failedCalls) {
+    let failedSyncs = failedCalls
     let scannableCases = activeScanableCase.objects("Active_Scanable_Case")
     let scannableCase = scannableCases[0]
     let scannedCaseProducts = workingCaseSpace.objects("Working_Case_Space")
-    let failedSyncs = []
 
-    //Loop products and individually post to product and case data to sproc
-    scannedCaseProducts.forEach((caseProduct, i) => {
-      fetch('http://25.78.82.76:5100/api/AddCaseProductSproc', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          //add case product data format
-          chead_pk_site_id: scannableCase.chead_pk_site_id,
-          chead_pk_case_number: scannableCase.chead_pk_case_number,
-          chead_patient_id: scannableCase.chead_patient_id,
-
-          cproc_pk_procedure_code: scannableCase.cproc_pk_procedure_code,
-          cproc_physician_id: scannableCase.cproc_physician_id,
-          cproc_billing_code: scannableCase.cproc_billing_code,
-          cproc_sync_site_name: scannableCase.cproc_sync_site_name,
-
-          chead_datetime_in: scannableCase.chead_datetime_in,
-          chead_datetime_out: scannableCase.chead_datetime_out,
-          chead_user_one: userObject[0].userId,
-          chead_user_two: scannableCase.chead_user_two,
-          chead_user_three: scannableCase.chead_user_three,
-          chead_user_four: scannableCase.chead_user_four,
-
-          cprod_pk_product_sequence: caseProduct.cprod_pk_product_sequence,
-          cprod_line_number: caseProduct.cprod_line_number,
-          cprod_billing_code: caseProduct.cprod_billing_code,
-          cprod_change_timestamp: caseProduct.cprod_change_timestamp,
-          cprod_change_userid: caseProduct.cprod_change_userid,
-          cprod_expiration_date: caseProduct.cprod_expiration_date,
-          cprod_license_number: caseProduct.cprod_license_number,
-          cprod_product_model_number: caseProduct.cprod_product_model_number,
-          cprod_lot_serial_number: caseProduct.cprod_lot_serial_number,
-          cprod_no_charge_reason: caseProduct.cprod_no_charge_reason,
-          cprod_no_charge_type: caseProduct.cprod_no_charge_type,
-          cprod_remote_id: caseProduct.cprod_remote_id,
-          cprod_requisition_number: caseProduct.cprod_requisition_number
-        })
-      })
-      .catch((error) => {
-        console.log(error);
-        failedSyncs.push(caseProduct.barcode)
-      });
-    });
-
-    //Completeness check
     if(failedSyncs.length === 0) {
       //If successfully synced all products delete working DB's and
       //redirect to home page. ? setup page?
@@ -372,10 +370,8 @@ export default class CasesScan extends Component {
       })
       //Reset state as needed
       this.setState({
-        pageErrorMessage: "Last Sync Successful"
+        pageErrorMessage: "Last Sync Completed Successfully"
       })
-
-      this.props.navigation.navigate("Home")
     }
     else {
       scannedCaseProducts.forEach((caseItem, index) => {
@@ -395,9 +391,114 @@ export default class CasesScan extends Component {
         }
       })
       this.setState({
-        pageErrorMessage: "Last Sync Complete with Errors"
+        pageErrorMessage: "Some Items Could Not Sync to Server"
       })
     }
+  }
+
+  synchronizeCaseData = () => {
+    //Instantiate Scanned Products and Case Detail
+    let userObject = activeUser.objects("Active_User")
+    let scannableCases = activeScanableCase.objects("Active_Scanable_Case")
+    let scannableCase = scannableCases[0]
+    let scannedCaseProducts = workingCaseSpace.objects("Working_Case_Space")
+    let failedSyncs = []
+    let expectedSyncs = scannedCaseProducts.length
+    let completedSyncs = 0
+
+    //Loop products and individually post to product and case data to sproc
+    scannedCaseProducts.forEach((caseProduct, i) => {
+      console.log("CASE PRODUCT " + i)
+      console.log(caseProduct.cprod_product_model_number)
+      try {
+        fetch('http://25.78.82.76:5100/api/AddCaseProductSproc', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            //add case product data format
+            chead_pk_site_id: scannableCase.chead_pk_site_id,
+            chead_pk_case_number: scannableCase.chead_pk_case_number,
+            chead_patient_id: scannableCase.chead_patient_id,
+
+            cproc_pk_procedure_code: scannableCase.cproc_pk_procedure_code,
+            cproc_physician_id: scannableCase.cproc_physician_id,
+            cproc_billing_code: scannableCase.cproc_billing_code,
+            cproc_sync_site_name: scannableCase.cproc_sync_site_name,
+
+            chead_datetime_in: scannableCase.chead_datetime_in,
+            chead_datetime_out: scannableCase.chead_datetime_out,
+            chead_user_one: userObject[0].userId,
+            chead_user_two: scannableCase.chead_user_two,
+            chead_user_three: scannableCase.chead_user_three,
+            chead_user_four: scannableCase.chead_user_four,
+
+            cprod_pk_product_sequence: caseProduct.cprod_pk_product_sequence,
+            cprod_line_number: caseProduct.cprod_line_number,
+            cprod_billing_code: caseProduct.cprod_billing_code,
+            cprod_change_timestamp: caseProduct.cprod_change_timestamp,
+            cprod_change_userid: caseProduct.cprod_change_userid,
+            cprod_expiration_date: caseProduct.cprod_expiration_date,
+            cprod_license_number: caseProduct.cprod_license_number,
+            cprod_product_model_number: caseProduct.cprod_product_model_number,
+            cprod_lot_serial_number: caseProduct.cprod_lot_serial_number,
+            cprod_no_charge_reason: caseProduct.cprod_no_charge_reason,
+            cprod_no_charge_type: caseProduct.cprod_no_charge_type,
+            cprod_remote_id: caseProduct.cprod_remote_id,
+            cprod_requisition_number: caseProduct.cprod_requisition_number
+          })
+        })
+        .then((syncresponse) =>  {
+            let syncresponseJson = syncresponse.json()
+            if (syncresponse.status >= 200 && syncresponse.status < 300) {
+              console.log("SYNC CASE RESPONSE OBJECT")
+              console.log(syncresponseJson)
+              this.setState({
+                errorLogMessage: 'SYNC Post Request Succeeded:' + i
+              })
+            } else {
+              failedSyncs.push(caseProduct.barcode)
+              return syncresponseJson.then(error => {throw error;});
+              this.setState({
+                errorLogMessage: 'SYNC Post Request Failed: ' + i
+              })
+            }
+            completedSyncs = completedSyncs + 1;
+            if(completedSyncs === expectedSyncs) {
+              this.recordCleanup(failedSyncs)
+            }
+        })
+        .catch((error) => {
+          console.log("SYNC POST REQUEST FAILED")
+          console.log(error);
+          this.setState({
+            errorLogMessage: 'SYNC Post Request Failed: ' + i
+          })
+          failedSyncs.push(caseProduct.barcode)
+          completedSyncs = completedSyncs + 1;
+          if(completedSyncs === expectedSyncs) {
+            this.recordCleanup(failedSyncs)
+          }
+        });
+      }
+      catch (e) {
+        console.log("SYNC POST REQUEST FAILED CATCH")
+        console.log(e)
+        this.setState({
+          errorLogMessage: 'SYNC Post Request Failed'
+        })
+        failedSyncs.push(caseProduct.barcode)
+        completedSyncs = completedSyncs + 1;
+        if(completedSyncs === expectedSyncs) {
+          this.recordCleanup(failedSyncs)
+        }
+      }
+    });
+    console.log("FAILED SYNCS")
+    console.log(failedSyncs)
+    //Completeness check
   }
 
   render() {
@@ -407,24 +508,18 @@ export default class CasesScan extends Component {
     }
     else {
       let activeCaseDetail = activeScanableCase.objects("Active_Scanable_Case")
+      let physiciansDisplayObject = {
+        firstName: "",
+        lastName: "",
+      }
+      let proceduresDisplayObject = {
+        procedureDescription: "",
+      }
+      let sitesDisplayObject = {
+        siteDescription: "",
+      }
+
       if(activeCaseDetail != null && activeCaseDetail != undefined && activeCaseDetail.length > 0) {
-        let displayCaseDetail = activeCaseDetail[0]
-
-        let buildPhysiciansString = 'physicianId CONTAINS "' + displayCaseDetail.cproc_physician_id + '"'
-        let physiciansObjects = physiciansList.objects("Physicians_List")
-        let physiciansDisplayObject = physiciansObjects.filtered(buildPhysiciansString)
-
-        let buildProcedureString = 'procedureCode CONTAINS "' + displayCaseDetail.cproc_pk_procedure_code + '"'
-        let proceduresObjects = proceduresList.objects("Procedures_List")
-        let proceduresDisplayObject = proceduresObjects.filtered(buildProcedureString)
-
-        console.log("FUCKING SITE LOCATIONS")
-        console.log(locationsList.objects("Locations_List"))
-        console.log(displayCaseDetail.chead_pk_site_id)
-        let buildLocationString = 'siteId CONTAINS "' + displayCaseDetail.chead_pk_site_id + '"'
-        let sitesObjects = locationsList.objects("Locations_List")
-        let sitesDisplayObject = sitesObjects.filtered(buildLocationString)
-
         return (
           <View style={{flex: 1}}>
             <ScrollView style={styles.scrollContainer}>
@@ -432,13 +527,14 @@ export default class CasesScan extends Component {
                 <View style={styles.titleRow}>
                   <Text style={styles.titleText}>Case Information</Text>
                 </View>
+                <View><Text style={styles.errorText}>{this.state.pageErrorMessage}</Text></View>
                 <View style={styles.sectionContainer}>
                   <View style={styles.shadedBackgroundWrapper}>
-                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>{displayCaseDetail}</Text>
-                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Patient Id: </Text>{displayCaseDetail.chead_patient_id}</Text>
-                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Doctor: </Text>{physiciansDisplayObject}</Text>
-                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Location: </Text>{sitesDisplayObject}</Text>
-                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Procedure: </Text>{proceduresDisplayObject.procedureDescription}</Text>
+                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>{this.state.caseNumber}</Text>
+                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Patient Id: </Text>{this.state.patientNumber}</Text>
+                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Doctor: </Text>{this.state.doctorName}</Text>
+                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Location: </Text>{this.state.siteName}</Text>
+                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Procedure: </Text>{this.state.procedureDescription}</Text>
                   </View>
                 </View>
                 <View style={styles.sectionContainer}>
@@ -479,11 +575,15 @@ export default class CasesScan extends Component {
                 <View style={styles.titleRow}>
                   <Text style={styles.titleText}>Case Information</Text>
                 </View>
+                <View><Text style={styles.errorText}>{this.state.pageErrorMessage}</Text></View>
                 <View style={styles.sectionContainer}>
                   <View key={"noData"}>
                     <Text style={styles.noDataText}>
-                      Stand By
+                      Synchronization Complete
                     </Text>
+                    <TouchableOpacity style={styles.submitButton} onPress={() => this.props.navigation.navigate('CasesSetup')}>
+                      <Text style={styles.submitButtonText}>Start New Case</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               </View>

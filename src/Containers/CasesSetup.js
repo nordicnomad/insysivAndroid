@@ -2,7 +2,9 @@ import React, {Fragment, Component} from 'react';
 import { StyleSheet, Text, TextInput, View, Button, Picker, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.jpg'
-import GateData from '../dummyData/gates.json'
+import DummyDocs from '../dummyData/physiciansOffline.json'
+import DummySites from '../dummyData/sitesOffline.json'
+import DummyProcedures from '../dummyData/proceduresOffline.json'
 
 var Realm = require('realm');
 let activeUser ;
@@ -10,8 +12,6 @@ let physiciansList ;
 let locationsList ;
 let proceduresList ;
 let activeScanableCase ;
-let workingCaseSpace ;
-let lastCaseDataFetch ;
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -64,7 +64,7 @@ export default class CasesSetup extends Component {
     locationsList = new Realm({
       schema: [{name: 'Locations_List',
       properties: {
-        siteId: "int",
+        siteId: "string",
         siteDescription: "string",
         active: "string",
       }}]
@@ -80,7 +80,7 @@ export default class CasesSetup extends Component {
     activeScanableCase = new Realm({
       schema: [{name: 'Active_Scanable_Case',
       properties: {
-        chead_pk_case_number: "int",
+        chead_pk_case_number: "string",
         chead_pk_site_id: "string",
         chead_patient_id: "string",
         cproc_pk_procedure_code: "string",
@@ -94,35 +94,6 @@ export default class CasesSetup extends Component {
         chead_user_two: "string?",
         chead_user_three: "string?",
         chead_user_four: "string?",
-      }}]
-    });
-    workingCaseSpace = new Realm({
-      schema: [{name: 'Working_Case_Space',
-      properties: {
-        barcode: "string",
-        description: "string",
-        cprod_pk_product_sequence: "int?",
-        cprod_line_number: "int?",
-        cprod_billing_code: "string?",
-        cprod_change_timestamp: "string?",
-        cprod_change_userid: "string?",
-        cprod_expiration_date: "string?",
-        cprod_license_number: "string?",
-        cprod_product_model_number: "string",
-        cprod_lot_serial_number: "string",
-        cprod_no_charge_reason: "string?",
-        cprod_no_charge_type: "string?",
-        cprod_remote_id: "string?",
-        cprod_requisition_number: "int?"
-      }}]
-    });
-    lastCaseDataFetch = new Realm({
-      schema: [{name: 'Case_Data_Last_Fetch',
-      properties:
-      {
-          year: "int",
-          month: "int",
-          day: "int"
       }}]
     });
   }
@@ -177,46 +148,30 @@ export default class CasesSetup extends Component {
     }
     return(dateobject)
   }
-  checkLastCaseFetch() {
-    let lastCaseDate = lastCaseDataFetch.objects('Case_Data_Last_Fetch')
-    let currentDate = this.getCurrentDate()
-
-    if(lastCaseDate != null && lastCaseDate != undefined && lastCaseDate.length > 0) {
-      if(currentDate.year === lastCaseDate[0].year) {
-        if(currentDate.month === lastCaseDate[0].month) {
-          if(currentDate.day > lastCaseDate[0].day) {
-            return true
-          }
-          else {
-            return false
-          }
-        }
-        else {
-          return false
-        }
-      }
-      else {
-        return false
-      }
-    }
-    else {
-      return false
-    }
-  }
 
   getCasesData() {
     let doctorData = physiciansList.objects('Physicians_List')
     let procedureData = proceduresList.objects('Procedures_List')
     let locationData = locationsList.objects('Locations_List')
 
+    console.log("GET CASE DATA DOCTOR LENGTH")
+    console.log(doctorData.length)
+    console.log("GET CASE DATA PROCEDURE LENGTH")
+    console.log(procedureData.length)
+    console.log("GET CASE DATA LOCATION LENGTH")
+    console.log(locationData.length)
+
     if(doctorData === null || doctorData === undefined || doctorData.length === 0) {
-      this.FetchDoctorTable()
+      //this.FetchDoctorTable()
+      this.LoadDummyDocTable()
     }
     if(procedureData === null || procedureData === undefined || procedureData.length === 0) {
-      this.FetchProcedureTable()
+      //this.FetchProcedureTable()
+      this.LoadDummyProcedureTable()
     }
     if(locationData === null || locationData === undefined || locationData.length === 0) {
-      this.FetchLocationTable()
+      //this.FetchLocationTable()
+      this.LoadDummySiteTable()
     }
 
     this.setState({
@@ -307,30 +262,45 @@ export default class CasesSetup extends Component {
       })
     }
   }
+  LoadDummyDocTable = () => {
+    let docResponse = DummyDocs
+
+    this.savePhysiciansTable(docResponse)
+  }
   async FetchDoctorTable() {
     let physiciansResponse = []
 
     //Doctor Calls
     //test server call
     console.log("FETCHDOCTORTABLE CALLED FROM CASESSETUP PAGE")
-    return fetch('http://25.78.82.76:5100/api/Physicians')
-    .then((docresponse) => docresponse.json())
-    .then((docresponseJson) => {
-      console.log("PHYSICIANS RESPONSE")
-      console.log(docresponseJson)
-      physiciansResponse = docresponseJson;
-      this.savePhysiciansTable(physiciansResponse)
-      this.setState({
-        doctors:physiciansResponse,
-        fetchProgressMessage: 'Physicians Synced',
+    try {
+      return fetch('http://25.78.82.76:5100/api/Physicians')
+      .then((docresponse) => docresponse.json())
+      .then((docresponseJson) => {
+        console.log("PHYSICIANS RESPONSE")
+        console.log(docresponseJson)
+        physiciansResponse = docresponseJson;
+        this.savePhysiciansTable(physiciansResponse)
+        this.setState({
+          doctors:physiciansResponse,
+          syncProgressMessage: 'Physicians Synced',
+        })
       })
-    })
-    .catch((error) => {
-      console.error(error);
+      .catch((error) => {
+        console.error(error);
+        this.setState({
+          syncProgressMessage: 'Physicians Fetch Failed'
+        })
+      });
+    }
+    catch (e) {
+      console.log("PHYSICIANS FETCH FAILED")
+      console.log(e)
       this.setState({
-        syncProgressMessage: 'Physicians Fetch Failed'
+          syncProgressMessage: 'Physicians Fetch Failed'
       })
-    });
+      this.LoadDummyDocTable()
+    }
   }
   saveProcedureTable = (responseprocedures) => {
     let savedProcedures = proceduresList.objects('Procedures_List')
@@ -356,30 +326,45 @@ export default class CasesSetup extends Component {
       })
     }
   }
+  LoadDummyProcedureTable = () => {
+    let procedureResponse = DummyProcedures
+
+    this.saveProcedureTable(procedureResponse)
+  }
   async FetchProcedureTable() {
     let barcodeResponse = []
 
     //Procedure Calls
     //test server call
     console.log("FETCHPROCEDURETABLE CALLED FROM CASESSETUP PAGE")
-    return fetch('http://25.78.82.76:5100/api/ProcedureTables')
-    .then((proresponse) => proresponse.json())
-    .then((proresponseJson) => {
-      console.log("PROCEDURE RESPONSE")
-      console.log(proresponseJson)
-      procedureResponse = proresponseJson;
-      this.saveProcedureTable(procedureResponse)
-      this.setState({
-        procedures:procedureResponse,
-        syncProgressMessage: 'Procedures Synced',
+    try {
+      return fetch('http://25.78.82.76:5100/api/ProcedureTables')
+      .then((proresponse) => proresponse.json())
+      .then((proresponseJson) => {
+        console.log("PROCEDURE RESPONSE")
+        console.log(proresponseJson)
+        procedureResponse = proresponseJson;
+        this.saveProcedureTable(procedureResponse)
+        this.setState({
+          procedures:procedureResponse,
+          syncProgressMessage: 'Procedures Synced',
+        })
       })
-    })
-    .catch((error) => {
-      console.error(error);
+      .catch((error) => {
+        console.error(error);
+        this.setState({
+          syncProgressMessage: 'Procedure Fetch Failed'
+        })
+      });
+    }
+    catch (e) {
+      console.log('PROCEDURES FETCH FAILED')
+      console.log(e)
       this.setState({
         syncProgressMessage: 'Procedure Fetch Failed'
       })
-    });
+      this.LoadDummyProcedureTable()
+    }
   }
   saveLocationsTable = (responselocations) => {
     let savedLocations = locationsList.objects('Locations_List')
@@ -404,22 +389,11 @@ export default class CasesSetup extends Component {
         })
       })
     }
-    if(newLocations.length === 0 || savedLocations === undefined || savedLocations === null) {
-      console.log("NEWLOCATIONS LENGTH ZERO, ADDING DEFAULT LOCATION")
-      locationsList.write(() => {
-        try {
-          locationsList.create('Locations_List', {
-            siteId: 10,
-            siteDescription: "Waiting Room",
-            active: "Y",
-          })
-        }
-        catch (e) {
-          console.log("Error on location table creation");
-          console.log(e);
-        }
-      })
-    }
+  }
+  LoadDummySiteTable = () => {
+    let siteResponse = DummySites
+
+    this.saveLocationsTable(siteResponse)
   }
   async FetchLocationTable() {
     let barcodeResponse = []
@@ -427,24 +401,34 @@ export default class CasesSetup extends Component {
     //Location Calls
     //test server call
     console.log("FETCHLOCATIONTABLE CALLED FROM CASESSETUP PAGE")
-    return fetch('http://25.78.82.76:5100/api/HospitalSites')
-    .then((siteresponse) => siteresponse.json())
-    .then((siteresponseJson) => {
-      console.log("HOSPITAL SITES RESPONSE")
-      console.log(siteresponseJson)
-      sitesResponse = siteresponseJson;
-      this.saveLocationsTable(sitesResponse)
-      this.setState({
-        locations:sitesResponse,
-        syncProgressMessage: 'Sites Synced',
+    try{
+      return fetch('http://25.78.82.76:5100/api/HospitalSites')
+      .then((siteresponse) => siteresponse.json())
+      .then((siteresponseJson) => {
+        console.log("HOSPITAL SITES RESPONSE")
+        console.log(siteresponseJson)
+        sitesResponse = siteresponseJson;
+        this.saveLocationsTable(sitesResponse)
+        this.setState({
+          locations:sitesResponse,
+          syncProgressMessage: 'Sites Synced',
+        })
       })
-    })
-    .catch((error) => {
-      console.error(error);
+      .catch((error) => {
+        console.error(error);
+        this.setState({
+          syncProgressMessage: 'Sites Fetch Failed'
+        })
+      });
+    }
+    catch (e) {
+      console.log("SITES FETCH FAILED")
+      console.log(e)
       this.setState({
         syncProgressMessage: 'Sites Fetch Failed'
       })
-    });
+      this.LoadDummySiteTable()
+    }
   }
   renderDoctorChoices() {
     let doctors = this.state.doctors
@@ -465,14 +449,17 @@ export default class CasesSetup extends Component {
   }
   renderLocationChoices() {
     let locations = this.state.locations
-    console.log("LOCATIONS STATE")
-    console.log(locations)
     let locationsOutput = []
     locationsOutput.push(
       <Picker.Item key={"Loc" + 0} label='Select a Location...' value='0' />
     )
     if(locations != null && locations != undefined) {
       locations.forEach(function(location, index) {
+        console.log("LOCATION IN RENDER CHOICES")
+        console.log(location.siteId)
+        console.log(location.siteDescription)
+        console.log(location.active)
+        console.log(index)
         if(location.active === "Y") {
           locationsOutput.push(
             <Picker.Item key={location.siteId} label={location.siteDescription} value={index+1} />

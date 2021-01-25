@@ -120,7 +120,7 @@ export default class AccountInfo extends Component {
     locationsList = new Realm({
       schema: [{name: 'Locations_List',
       properties: {
-        siteId: "int",
+        siteId: "string",
         siteDescription: "string",
         active: "string",
       }}]
@@ -739,7 +739,7 @@ export default class AccountInfo extends Component {
         newSites.forEach(function(site, i) {
           try {
             locationsList.create('Locations_List', {
-              siteId: site.siteId,
+              siteId: site.siteId.toString(),
               siteDescription: site.siteDescription,
               active: site.active,
             })
@@ -756,7 +756,7 @@ export default class AccountInfo extends Component {
         newSites.forEach(function(site, i) {
           try {
             locationsList.create('Locations_List', {
-              siteId: site.siteId,
+              siteId: site.siteId.toString(),
               siteDescription: site.siteDescription,
               active: site.active,
             })
