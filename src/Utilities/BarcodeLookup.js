@@ -1,5 +1,6 @@
 import { DecodeUCC } from '../Utilities/DecodeUCC'
 import { DecodeHIBC } from '../Utilities/DecodeHIBC'
+import { SiftWorkingAIString } from '../Utilities/AppIdentificationUCC'
 
 var Realm = require('realm');
 //instatiate database variables
@@ -183,17 +184,102 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
   }
 
   else if(passedBarcode.substring(0,1) >= '0' && passedBarcode.substring(0,1) <= '9') {
-    passedBarcode = passedBarcode.replace(/[\\\n\r\t]/g, function(i) {
-        return 't'+map[i];
-    });
+    console.log("UCC NUM BARCODE STRING IN LOOKUP")
     console.log(passedBarcode)
+    let uccNumAppIdentificationPrecursors = []
+    let uccNumAppIdentifierObjects = []
     let uccNumAppIdentifiers = []
     let uccNumAppStrings = []
 
-    //identify starting App identifier, start two build strings 1) of first 4 characters of for app identifier 2) all characters
+    let currentUCCNumEvalPosition = 1
+    let nextUCCNumEvalEndTarget = 4
+    let workingAIString = ''
+    let workingPayloadString = ''
+    let isEvaluatingForFNC = false
+    let isCountingDataPayload = false
+    let endOfString = passedBarcode.length
+    let foundAIString = {
+      identifier: '',
+      identifierLength: 0,
+      segmentMinLength: 0,
+      segmentMaxLength: 0,
+      totalMaxLength: 0,
+      totalMinLength: 0,
+      isVariableLength: false,
+    }
+    // First Identify all app identifier positions and build an array of app identifiers
+    while(currentUCCNumEvalPosition <= endOfString) {
+      if(isCountingDataPayload === false) {
+        //if it's in target range add to working string
+        if(passedBarcode.charAt(passedBarcode.charAt(currentUCCNumEvalPosition) <= nextUCCNumEvalEndTarget) {
+          workingAIString = workingAIString + passedBarcode.charAt(currentUCCNumEvalPosition)
+        }
 
+        //If AI precursor working string is full evaluate, search for AI match and determine position payload max length
+        if(workingAIString.length === 4) {
+          foundAIString = this.SiftWorkingAIString(workingAIString)
 
+          uccNumAppIdentifierObjects.push(foundAIString)
+          currentUCCNumEvalPosition = currentUCCNumEvalPosition - (4 - foundAIString.identifierLength)
 
+          if (foundAIString.isVariableLength === false) {
+            nextUCCNumEvalEndTarget = nextUCCNumEvalEndTarget + foundAIString.segmentMaxLength
+            isEvaluatingForFNC = false
+            isCountingDataPayload = true
+          }
+          else {
+            nextUCCNumEvalEndTarget = nextUCCNumEvalEndTarget + foundAIString.segmentMaxLength
+            isEvaluatingForFNC = true
+            isCountingDataPayload = true
+          }
+
+          workingAIString = ''
+        }
+      }
+      else {
+        //if FNC detected set new eval start and target
+        if(isEvaluatingForFNC === true) {
+          if(currentUCCNumEvalPosition >= nextUCCNumEvalEndTarget) {
+            workingPayloadString = workingPayloadString + passedBarcode.charAt(currentUCCNumEvalPosition)
+            //if segment max length reached, set new eval start and target
+            nextUCCNumEvalEndTarget = currentUCCNumEvalPosition + 4
+            isEvaluatingForFNC = false
+            isCountingDataPayload = false
+            uccNumAppStrings.push(workingPayloadString)
+            workingPayloadString = ''
+          }
+          else if(passedBarcode.charAt(currentUCCNumEvalPosition).match(/^[0-9a-z]+$/) != true) {
+            nextUCCNumEvalEndTarget = currentUCCNumEvalPosition + 4
+            isEvaluatingForFNC = false
+            isCountingDataPayload = false
+            uccNumAppStrings.push(workingPayloadString)
+            workingPayloadString = ''
+          }
+          else {
+            workingPayloadString = workingPayloadString + passedBarcode.charAt(currentUCCNumEvalPosition)
+          }
+        }
+        else {
+          workingPayloadString = workingPayloadString + passedBarcode.charAt(currentUCCNumEvalPosition)
+
+          if(currentUCCNumEvalPosition >= nextUCCNumEvalEndTarget) {
+            //if segment max length reached set new eval start and target
+            nextUCCNumEvalEndTarget = currentUCCNumEvalPosition + 4
+            isEvaluatingForFNC = false
+            isCountingDataPayload = false
+            uccNumAppStrings.push(workingPayloadString)
+            workingPayloadString = ''
+          }
+        }
+      }
+
+      currentUCCNumEvalPosition = currentUCCNumEvalPosition + 1
+    }
+
+    // Use app identifiers to build an array of ucc app strings
+    uccNumAppIdentifierObjects.forEach(idObject, i => {
+        uccNumAppIdentifiers.push('(' + idObject.identifier + ')')
+    })
 
 
     //loop App identifier array and push identifier to decode UCC passedBarcode strings

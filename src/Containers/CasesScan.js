@@ -25,6 +25,7 @@ export default class CasesScan extends Component {
       scannedBarcode: '',
       scannerConnected: false,
       testCount: 0,
+      scanCount: 0,
       errorLogMessage: '',
       caseNumber: '',
       patientNumber: '',
@@ -287,6 +288,9 @@ export default class CasesScan extends Component {
   }
   ScanBarcode = (newBarcode) => {
     let scannedBarcode = newBarcode
+    this.setState({
+      pageErrorMessage: "Barcode Scanned: " + scannedBarcode
+    })
     //Instantiate Variables
     if(scannedBarcode != undefined && scannedBarcode != null) {
       let scannedItemsList = workingCaseSpace.objects("Working_Case_Space")
@@ -294,6 +298,16 @@ export default class CasesScan extends Component {
       //Behaves differently than intake scan since like items aren't grouped.
       //Each unique RFID tag is a line item and all RFID tags are unique.
       let barcodeLookup = RFIDlabelSearch(scannedBarcode)
+      if(barcodeLookup === null || barcodeLookup === undefined) {
+        this.setState({
+          pageErrorMessage: "BAD LOOKUP"
+        })
+      }
+      else {
+        this.setState({
+          pageErrorMessage: barcodeLookup.productDesc
+        })
+      }
       workingCaseSpace.write(() => {
         try {
           workingCaseSpace.create('Working_Case_Space', {
@@ -315,9 +329,15 @@ export default class CasesScan extends Component {
           })
         }
         catch (e) {
+          this.setState({
+            pageErrorMessage: "Error on Working Case Space Create"
+          })
           console.log("Error on Working Case Space Create")
           console.log(e)
         }
+      })
+      this.setState({
+        scanCount: (this.state.scanCount + 1)
       })
     }
   }
