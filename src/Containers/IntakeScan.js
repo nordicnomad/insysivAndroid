@@ -412,6 +412,16 @@ export default class IntakeScan extends Component {
       })
     }
   }
+  resetScanList = () => {
+    workingScanSpace.write(() => {
+      workingScanSpace.deleteAll()
+    })
+    this.setState({
+      scanCount: 0,
+      scannedItems: [],
+      pageErrorMessage: "Scan List Cleared",
+    })
+  }
   SynchronizeIntakeToDesktop = () => {
     //Instantiate Scanned Products
     let userObject = activeUser.objects("Active_User")
@@ -646,7 +656,14 @@ export default class IntakeScan extends Component {
               <View><Text style={styles.errorText}>{this.state.pageErrorMessage}</Text></View>
               <View style={styles.sectionContainer}>
                 <Text>Test Scan Function: </Text>
-                <TouchableOpacity onPress={() => this.generateScanTest(this.state.testCount)} style={styles.miniSubmitButton}><Text style={styles.miniSubmitButtonText}>Scan Test</Text></TouchableOpacity>
+                <View style={styles.menuRow}>
+                  <View style={styles.majorColumn}>
+                    <TouchableOpacity onPress={() => this.generateScanTest(this.state.testCount)} style={styles.miniSubmitButton}><Text style={styles.miniSubmitButtonText}>Scan Test</Text></TouchableOpacity>
+                  </View>
+                  <View style={styles.majorColumn}>
+                    <TouchableOpacity onPress={() => this.resetScanList()} style={styles.miniSubmitButton}><Text style={styles.miniSubmitButtonText}>Clear List</Text></TouchableOpacity>
+                  </View>
+                </View>
               </View>
               <View style={styles.sectionContainer}>
                 <View style={styles.menuRow}>

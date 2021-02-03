@@ -1,6 +1,6 @@
 import { DecodeUCC } from '../Utilities/DecodeUCC'
 import { DecodeHIBC } from '../Utilities/DecodeHIBC'
-import { SiftWorkingAIString } from '../Utilities/AppIdentificationUCC'
+import { AppIdentificationUCC } from '../Utilities/AppIdentificationUCC'
 
 var Realm = require('realm');
 //instatiate database variables
@@ -191,13 +191,14 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     let uccNumAppIdentifiers = []
     let uccNumAppStrings = []
 
-    let currentUCCNumEvalPosition = 1
-    let nextUCCNumEvalEndTarget = 4
+    const alphaNumMatch = /^[0-9a-z]+$/;
+    let currentUCCNumEvalPosition = 0
+    let nextUCCNumEvalEndTarget = 3
     let workingAIString = ''
     let workingPayloadString = ''
     let isEvaluatingForFNC = false
     let isCountingDataPayload = false
-    let endOfString = passedBarcode.length
+    let endOfString = passedBarcode.length - 1
     let foundAIString = {
       identifier: '',
       identifierLength: 0,
@@ -211,24 +212,23 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     while(currentUCCNumEvalPosition <= endOfString) {
       if(isCountingDataPayload === false) {
         //if it's in target range add to working string
-        if(passedBarcode.charAt(passedBarcode.charAt(currentUCCNumEvalPosition) <= nextUCCNumEvalEndTarget) {
+        if(currentUCCNumEvalPosition <= nextUCCNumEvalEndTarget) {
           workingAIString = workingAIString + passedBarcode.charAt(currentUCCNumEvalPosition)
         }
 
         //If AI precursor working string is full evaluate, search for AI match and determine position payload max length
         if(workingAIString.length === 4) {
-          foundAIString = this.SiftWorkingAIString(workingAIString)
-
+          foundAIString = AppIdentificationUCC(workingAIString)
           uccNumAppIdentifierObjects.push(foundAIString)
           currentUCCNumEvalPosition = currentUCCNumEvalPosition - (4 - foundAIString.identifierLength)
 
           if (foundAIString.isVariableLength === false) {
-            nextUCCNumEvalEndTarget = nextUCCNumEvalEndTarget + foundAIString.segmentMaxLength
+            nextUCCNumEvalEndTarget = currentUCCNumEvalPosition + foundAIString.segmentMaxLength
             isEvaluatingForFNC = false
             isCountingDataPayload = true
           }
           else {
-            nextUCCNumEvalEndTarget = nextUCCNumEvalEndTarget + foundAIString.segmentMaxLength
+            nextUCCNumEvalEndTarget = currentUCCNumEvalPosition + foundAIString.segmentMaxLength
             isEvaluatingForFNC = true
             isCountingDataPayload = true
           }
@@ -248,7 +248,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
             uccNumAppStrings.push(workingPayloadString)
             workingPayloadString = ''
           }
-          else if(passedBarcode.charAt(currentUCCNumEvalPosition).match(/^[0-9a-z]+$/) != true) {
+          else if(alphaNumMatch.test(passedBarcode.charAt(currentUCCNumEvalPosition)) === false) {
             nextUCCNumEvalEndTarget = currentUCCNumEvalPosition + 4
             isEvaluatingForFNC = false
             isCountingDataPayload = false
@@ -257,7 +257,13 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
           }
           else {
             workingPayloadString = workingPayloadString + passedBarcode.charAt(currentUCCNumEvalPosition)
+
+            if((currentUCCNumEvalPosition) >= endOfString) {
+              uccNumAppStrings.push(workingPayloadString)
+            }
           }
+          console.log("FNC AREA WORKING STRING")
+          console.log(workingPayloadString)
         }
         else {
           workingPayloadString = workingPayloadString + passedBarcode.charAt(currentUCCNumEvalPosition)
@@ -277,10 +283,16 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     }
 
     // Use app identifiers to build an array of ucc app strings
-    uccNumAppIdentifierObjects.forEach(idObject, i => {
+    uccNumAppIdentifierObjects.forEach((idObject, i) => {
+        console.log('APP IDENTIFIER FROM ID OBJECTS')
+        console.log(idObject.identifier)
         uccNumAppIdentifiers.push('(' + idObject.identifier + ')')
     })
 
+    console.log("APP IDENTIFIERS ARRAY")
+    console.log(uccNumAppIdentifiers)
+    console.log("NUM STRINGS ARRAY")
+    console.log(uccNumAppStrings)
 
     //loop App identifier array and push identifier to decode UCC passedBarcode strings
     uccNumAppIdentifiers.forEach((identifier, i) => {

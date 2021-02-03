@@ -44,6 +44,11 @@ export function DecodeUCC(appIdentifier, passedBarcodeString, uccDecodeReturnObj
     //Product Number, 5 characters starting at position 8
     containerCodeModelNumber = passedBarcode.substring(8, 13)
 
+    console.log("01 passedbarcode")
+    console.log(passedBarcode)
+    console.log(containerCodeVendorLicense)
+    console.log(containerCodeModelNumber)
+
     returnObject.manufacturerModelNumber = containerCodeModelNumber
     returnObject.productVendorLicense = containerCodeVendorLicense
   }

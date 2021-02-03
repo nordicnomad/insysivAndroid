@@ -1,37 +1,40 @@
-import UccNumLengthReference from '../Utilities/UccNumLengthReference.json'
+import UccNumLengthReference from '../Utilities/UCCNumLengthReference.json'
 
-export function SiftWorkingAIString(aiString) {
+export function AppIdentificationUCC(aiString) {
   let matchedAppIdentifierObjects = []
   let aiStringFull = aiString
   let aiStringTwo = aiStringFull.substring(0,2)
   let aiStringThree = aiStringFull.substring(0,3)
+  let lengthReference = UccNumLengthReference
 
-  UccNumLengthReference.forEach((uccreference, i) => {
+  lengthReference.forEach((uccreference, i) => {
     if(aiStringTwo.includes(uccreference.identifier)) {
       matchedAppIdentifierObjects.push(uccreference)
     }
   });
-
-  if(matchedAppIdentifierStrings.length > 1) {
+  console.log("MATCHED AI OBJECTS AFTER FIRST SEARCH")
+  console.log(matchedAppIdentifierObjects)
+  if(matchedAppIdentifierObjects.length >= 2) {
     matchedAppIdentifierObjects = []
-    UccNumLengthReference.forEach((uccthreereference, i) => {
+    lengthReference.forEach((uccthreereference, i) => {
       if(aiStringThree.includes(uccthreereference.identifier)) {
         matchedAppIdentifierObjects.push(uccthreereference)
       }
     });
+    console.log("MATCHED AI OBJECTS AFTER SECOND SEARCH")
+    console.log(matchedAppIdentifierObjects)
   }
 
-  if(matchedAppIdentifierStrings.length > 1) {
+  if(matchedAppIdentifierObjects.length >= 2) {
     matchedAppIdentifierObjects = []
-    UccNumLengthReference.forEach((uccfullreference, i) => {
+    lengthReference.forEach((uccfullreference, i) => {
       if(aiStringFull.includes(uccfullreference.identifier)) {
         matchedAppIdentifierObjects.push(uccfullreference)
       }
     });
+    console.log("MATCHED AI OBJECTS AFTER THIRD SEARCH")
+    console.log(matchedAppIdentifierObjects)
   }
-
-  matchedAppIdentifierObjects[0]
-
 
   return(matchedAppIdentifierObjects[0])
 }
