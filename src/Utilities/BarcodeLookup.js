@@ -287,12 +287,17 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
         console.log('APP IDENTIFIER FROM ID OBJECTS')
         console.log(idObject.identifier)
         uccNumAppIdentifiers.push('(' + idObject.identifier + ')')
+        if(idObject.identifier === "01") {
+          primaryCode = uccNumAppStrings[i]
+        }
     })
 
     console.log("APP IDENTIFIERS ARRAY")
     console.log(uccNumAppIdentifiers)
     console.log("NUM STRINGS ARRAY")
     console.log(uccNumAppStrings)
+    console.log("DECODE RETURN OBJECT")
+    console.log(decodeReturnObject)
 
     //loop App identifier array and push identifier to decode UCC passedBarcode strings
     uccNumAppIdentifiers.forEach((identifier, i) => {
