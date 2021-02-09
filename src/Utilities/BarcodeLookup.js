@@ -191,7 +191,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     let uccNumAppIdentifiers = []
     let uccNumAppStrings = []
 
-    const alphaNumMatch = /^[0-9a-z]+$/;
+    const alphaNumMatch = /^[0-9a-zA-Z]+$/;
     let currentUCCNumEvalPosition = 0
     let nextUCCNumEvalEndTarget = 3
     let workingAIString = ''
@@ -220,17 +220,23 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
         if(workingAIString.length === 4) {
           foundAIString = AppIdentificationUCC(workingAIString)
           uccNumAppIdentifierObjects.push(foundAIString)
-          currentUCCNumEvalPosition = currentUCCNumEvalPosition - (4 - foundAIString.identifierLength)
+          if(foundAIString != null && foundAIString != undefined && foundAIString.identifier != '') {
+            currentUCCNumEvalPosition = currentUCCNumEvalPosition - (4 - foundAIString.identifierLength)
 
-          if (foundAIString.isVariableLength === false) {
-            nextUCCNumEvalEndTarget = currentUCCNumEvalPosition + foundAIString.segmentMaxLength
-            isEvaluatingForFNC = false
-            isCountingDataPayload = true
+            if (foundAIString.isVariableLength === false) {
+              nextUCCNumEvalEndTarget = currentUCCNumEvalPosition + foundAIString.segmentMaxLength
+              isEvaluatingForFNC = false
+              isCountingDataPayload = true
+            }
+            else {
+              nextUCCNumEvalEndTarget = currentUCCNumEvalPosition + foundAIString.segmentMaxLength
+              isEvaluatingForFNC = true
+              isCountingDataPayload = true
+            }
           }
           else {
-            nextUCCNumEvalEndTarget = currentUCCNumEvalPosition + foundAIString.segmentMaxLength
-            isEvaluatingForFNC = true
-            isCountingDataPayload = true
+            //Error in AI lookup, abort lookup at instance of error but keep all good data before
+            currentUCCNumEvalPosition = endOfString
           }
 
           workingAIString = ''
@@ -284,9 +290,16 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
 
     // Use app identifiers to build an array of ucc app strings
     uccNumAppIdentifierObjects.forEach((idObject, i) => {
-        console.log('APP IDENTIFIER FROM ID OBJECTS')
-        console.log(idObject.identifier)
-        uccNumAppIdentifiers.push('(' + idObject.identifier + ')')
+        console.log(idObject)
+        if(idObject.identifier != null && idObject.identifier != undefined && idObject.identifier != '') {
+          console.log('APP IDENTIFIER FROM ID OBJECTS')
+          console.log(idObject.identifier)
+          uccNumAppIdentifiers.push('(' + idObject.identifier + ')')
+        }
+        else {
+          console.log('APP IDENTIFIER ERROR')
+          console.log(idObject)
+        }
         if(idObject.identifier === "01") {
           primaryCode = uccNumAppStrings[i]
         }

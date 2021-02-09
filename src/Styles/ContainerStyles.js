@@ -118,7 +118,7 @@ export default StyleSheet.create({
   },
   menuRow: {
     display: 'flex',
-    width: (width - 48),
+    width: (width - 30),
     flexDirection: 'row',
     marginTop: 25,
     marginBottom: 25,
@@ -126,7 +126,7 @@ export default StyleSheet.create({
     alignItems: 'flex-start'
   },
   menuItem: {
-    width: (width / 3),
+    width: ((width - 33) / 3),
     marginBottom: 35,
     alignItems: 'center',
   },
@@ -210,7 +210,7 @@ export default StyleSheet.create({
     paddingTop: 4,
     paddingBottom: 4,
     paddingLeft: 4,
-    paddingRight: 4, 
+    paddingRight: 4,
   },
   miniDisabledButton: {
     backgroundColor: '#ccc',

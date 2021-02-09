@@ -129,6 +129,18 @@ export default class CasesScan extends Component {
     });
 
   }
+  componentWillUnmount() {
+    const scanListener = (scannedCode) => {
+      this.ScanBarcode(scannedCode)
+    }
+    try {
+      ZebraScanner.removeScanListener(scanListener)
+    }
+    catch {
+      console.log("REMOVE SCAN LISTENER FAILED")
+    }
+
+  }
   componentDidMount() {
     this.checkForScanner()
     let activeCaseDetail = activeScanableCase.objects("Active_Scanable_Case")
@@ -191,11 +203,21 @@ export default class CasesScan extends Component {
   }
   async checkForScanner () {
     let scannerStatus = await ZebraScanner.isAvailable();
+    const scanListener = (scannedCode) => {
+      this.ScanBarcode(scannedCode)
+    }
 
     console.log("SCANNER IS AVAILABLE")
     console.log(scannerStatus)
     if(scannerStatus) {
-      ZebraScanner.addScanListener(this.ScanBarcode)
+      try {
+        ZebraScanner.addScanListener(scanListener)
+      }
+      catch {
+        this.setState({
+          errorLogMessage: "ADD SCAN LISTENER FAILED"
+        })
+      }
       this.setState({
         scannerConnected: true
       })

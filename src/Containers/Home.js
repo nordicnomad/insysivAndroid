@@ -18,6 +18,13 @@ export default class Home extends Component {
     this.state = {
       subscriptions: [
         {
+          id: 1,
+          label: "Inventory",
+          icon: "tag",
+          isActive: false,
+          route: "Inventory",
+        },
+        {
           id: 2,
           label: "Cases",
           icon: "user-md",
@@ -219,7 +226,7 @@ export default class Home extends Component {
             <View key={"cs"+subscription.id} style={styles.menuItem}>
               <TouchableOpacity
                 style={styles.menuButtonDisabled}
-                onPress={() => alert('Subscription not currently activated. If you believe this to be in error, please contact support.')}>
+                onPress={() => alert('Subscription not currently activated, on this application version or subscription level.')}>
                 <View style={styles.menuButtonContents}>
                   <Icon style={styles.menuButtonIconDisabled} name={subscription.icon} size={45} color="#aaa" />
                   <Text style={styles.menuButtonTextDisabled}>{subscription.label}</Text>

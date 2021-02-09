@@ -1,5 +1,5 @@
 import React, {Fragment, Component} from 'react';
-import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert, TextInput } from 'react-native'
+import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert, TextInput, DeviceEventEmitter } from 'react-native'
 import ZebraScanner from 'react-native-zebra-scanner'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.jpg'
@@ -10,6 +10,7 @@ import TestBarcodes from '../dummyData/testBarcodes.json'
 var Realm = require('realm');
 let activeUser ;
 let workingScanSpace ;
+let scanListener = {}
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -101,6 +102,13 @@ export default class IntakeScan extends Component {
       }}]
     })
   }
+  componentWillUnmount() {
+    DeviceEventEmitter.removeListener('barcodeScanned')
+    scanListener = (scannedCode) => {
+      this.ScanBarcode(scannedCode)
+    }
+    ZebraScanner.removeScanListener()
+  }
   componentDidMount() {
     this.checkForScanner()
 
@@ -118,8 +126,11 @@ export default class IntakeScan extends Component {
   }
   async checkForScanner() {
     let scannerStatus = await ZebraScanner.isAvailable();
+    scanListener = (scannedCode) => {
+      this.ScanBarcode(scannedCode)
+    }
     try {
-      ZebraScanner.addScanListener(this.ScanBarcode)
+      ZebraScanner.addScanListener(scanListener)
     }
     catch {
       this.setState({
@@ -127,7 +138,6 @@ export default class IntakeScan extends Component {
       })
     }
     if(scannerStatus) {
-
       this.setState({
         scannerConnected: true
       })
