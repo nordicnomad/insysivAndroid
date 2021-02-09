@@ -7,6 +7,7 @@
  */
 
 import React, {Fragment, Component} from 'react';
+import SplashScreen from 'react-native-splash-screen';
 import {
   AppRegistry,
   View,
@@ -16,6 +17,9 @@ import {
 import AppNavigator from './AppNavigator';
 
 export default class App extends React.Component {
+  componentDidMount() {
+    SplashScreen.hide()
+  }
   render() {
     return (
       <AppNavigator/>
