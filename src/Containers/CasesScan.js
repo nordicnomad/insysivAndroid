@@ -15,6 +15,7 @@ let proceduresList ;
 let rfidLabels ;
 let activeScanableCase ;
 let workingCaseSpace ;
+let scanListener = {}
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -127,12 +128,12 @@ export default class CasesScan extends Component {
         cprod_requisition_number: "int?"
       }}]
     });
-
-  }
-  componentWillUnmount() {
-    const scanListener = (scannedCode) => {
+    this.ScanBarcode = this.ScanBarcode.bind(this)
+    scanListener = (scannedCode) => {
       this.ScanBarcode(scannedCode)
     }
+  }
+  componentWillUnmount() {
     try {
       ZebraScanner.removeScanListener(scanListener)
     }
@@ -203,12 +204,6 @@ export default class CasesScan extends Component {
   }
   async checkForScanner () {
     let scannerStatus = await ZebraScanner.isAvailable();
-    const scanListener = (scannedCode) => {
-      this.ScanBarcode(scannedCode)
-    }
-
-    console.log("SCANNER IS AVAILABLE")
-    console.log(scannerStatus)
     if(scannerStatus) {
       try {
         ZebraScanner.addScanListener(scanListener)

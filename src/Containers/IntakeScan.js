@@ -101,13 +101,13 @@ export default class IntakeScan extends Component {
 
       }}]
     })
-  }
-  componentWillUnmount() {
-    DeviceEventEmitter.removeListener('barcodeScanned')
+    this.ScanBarcode = this.ScanBarcode.bind(this)
     scanListener = (scannedCode) => {
       this.ScanBarcode(scannedCode)
     }
-    ZebraScanner.removeScanListener()
+  }
+  componentWillUnmount() {
+    ZebraScanner.removeScanListener(scanListener)
   }
   componentDidMount() {
     this.checkForScanner()
@@ -126,9 +126,7 @@ export default class IntakeScan extends Component {
   }
   async checkForScanner() {
     let scannerStatus = await ZebraScanner.isAvailable();
-    scanListener = (scannedCode) => {
-      this.ScanBarcode(scannedCode)
-    }
+
     try {
       ZebraScanner.addScanListener(scanListener)
     }
