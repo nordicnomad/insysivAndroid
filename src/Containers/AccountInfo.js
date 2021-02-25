@@ -22,6 +22,9 @@ let physiciansList ;
 let locationsList ;
 let proceduresList ;
 let usersList ;
+let activeScanableCase ;
+let workingCaseSpace ;
+let workingScanSpace ;
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -159,6 +162,101 @@ export default class AccountInfo extends Component {
         patientId: "string",
         syncSiteName: "string?",
         billingVerified: "int?"
+      }}]
+    });
+    activeScanableCase = new Realm({
+      schema: [{name: 'Active_Scanable_Case',
+      properties: {
+        chead_pk_case_number: "string",
+        chead_pk_site_id: "string",
+        chead_patient_id: "string",
+
+        cproc_pk_procedure_code: "string",
+        cproc_physician_id: "string",
+        cproc_billing_code: "string?",
+        cproc_sync_site_name: "string?",
+
+        chead_datetime_in: "string?",
+        chead_datetime_out: "string?",
+        chead_user_one: "string?",
+        chead_user_two: "string?",
+        chead_user_three: "string?",
+        chead_user_four: "string?",
+      }}]
+    });
+    workingCaseSpace = new Realm({
+      schema: [{name: 'Working_Case_Space',
+      properties: {
+        barcode: "string",
+        description: "string",
+        cprod_pk_product_sequence: "int?",
+        cprod_line_number: "int?",
+        cprod_billing_code: "string?",
+        cprod_change_timestamp: "string?",
+        cprod_change_userid: "string?",
+        cprod_expiration_date: "string?",
+        cprod_license_number: "string?",
+        cprod_product_model_number: "string",
+        cprod_lot_serial_number: "string",
+        cprod_no_charge_reason: "string?",
+        cprod_no_charge_type: "string?",
+        cprod_remote_id: "string?",
+        cprod_requisition_number: "int?"
+      }}]
+    });
+    workingScanSpace = new Realm({
+      schema: [{name: 'Working_Scan_Space',
+        properties:
+        {
+          barcode: 'string',
+          serialContainerCode: 'string?',
+          manufacturerModelNumber: 'string?',
+          vendorLicenseNumber: 'string?',
+          numberOfContainers: 'string?',
+          batchOrLotNumber: 'string?',
+          expirationDate: 'string?',
+          productVariant: 'string?',
+          serialNumber: 'string?',
+          hibcc: 'string?',
+          lotNumber: 'string?',
+          quantityEach: 'string?',
+          secondaryProductAttributes: 'string?',
+          hibcSecondaryExpiration: 'string?',
+          hibcSecondaryManufacture: 'string?',
+          secondarySerialNumber: 'string?',
+          hibcSecondarySerial: 'string?',
+          quantityOfUnitsContained: 'string?',
+          hibcManufactureDate: 'string?',
+          passThroughCompletenessFlag: 'bool?',
+          trayState: 'bool?',
+          isUnknown: 'bool?',
+          licenseNumber: 'string?',
+          productModelNumber: 'string?',
+          orderThruVendor: 'string?',
+          productDescription: 'string?',
+          autoReplace: 'string?',
+          discontinued: 'string?',
+          productCategory: 'string?',
+          hospitalItemNumber: 'string?',
+          unitOfMeasure: 'string?',
+          unitOfMeasureQuantity: 'string?',
+          reorderValue: 'string?',
+          quantityOnHand: 'string?',
+          quantityOrdered: 'string?',
+          lastRequistionNumber: 'string?',
+          orderStatus: 'string?',
+          active: 'string?',
+          accepted: 'string?',
+          consignment: 'string?',
+          minimumValue: 'string?',
+          maximumValue: 'string?',
+          nonOrdered: 'string?',
+          productNote: 'string?',
+          scannedTime: 'string?',
+          count: 'int?',
+          waste: 'bool?',
+          scanned: 'bool?',
+
       }}]
     });
   }
@@ -880,6 +978,16 @@ export default class AccountInfo extends Component {
     activeUser.write(() => {
       activeUser.deleteAll()
     })
+    activeScanableCase.write(() => {
+      activeScanableCase.deleteAll()
+    })
+    workingCaseSpace.write(() => {
+      workingCaseSpace.deleteAll()
+    })
+    workingScanSpace.write(() => {
+      workingScanSpace.deleteAll()
+    })
+
     this.props.navigation.navigate('Login')
   }
 

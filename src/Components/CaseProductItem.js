@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import { StyleSheet, Text, View, Button, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
+import moment from "moment"
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -73,8 +74,12 @@ export default class CaseProductItem extends Component {
               {this.props.model}
             </Text>
             <Text style={styles.trayText}>
+              <Text style={styles.trayLabel}>Expiration Date: </Text>
+              {this.props.expired}
+            </Text>
+            <Text style={styles.trayText}>
               <Text style={styles.trayLabel}>Time Scanned: </Text>
-              {this.props.scannedTime}
+              {moment(this.props.scannedTime).format("MMMM Do YYYY, h:mm:ss a")}
             </Text>
           </View>
           <View style={styles.straightRow}>

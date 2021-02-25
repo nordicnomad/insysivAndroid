@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import { StyleSheet, Text, View, Button, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
+import moment from "moment"
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -81,7 +82,7 @@ export default class ProductListTrayItem extends Component {
               <Text style={styles.trayLabel}>Expiration Date</Text>
             </View>
             <View style={styles.equalColumn}>
-              <Text style={styles.trayText}>{this.props.itemExpiration}</Text>
+              <Text style={styles.trayText}>{moment(this.props.itemExpiration, "YYMMDD").format("MMMM Do YYYY")}</Text>
             </View>
           </View>
           <View style={styles.straightRow}>
@@ -94,7 +95,7 @@ export default class ProductListTrayItem extends Component {
           </View>
           <View style={styles.straightRow}>
             <View style={styles.equalColumn}>
-              <Text style={styles.trayLabel}>Vendor</Text>
+              <Text style={styles.trayLabel}>Vendor Number</Text>
             </View>
             <View style={styles.equalColumn}>
               <Text style={styles.trayText}>{this.props.itemOrderVendor}</Text>
@@ -182,26 +183,10 @@ export default class ProductListTrayItem extends Component {
           </View>
           <View style={styles.straightRow}>
             <View style={styles.equalColumn}>
-              <Text style={styles.trayLabel}>Order Status</Text>
-            </View>
-            <View style={styles.equalColumn}>
-              <Text style={styles.trayText}>{this.props.itemOrderStatus}</Text>
-            </View>
-          </View>
-          <View style={styles.straightRow}>
-            <View style={styles.equalColumn}>
               <Text style={styles.trayLabel}>Active</Text>
             </View>
             <View style={styles.equalColumn}>
               <Text style={styles.trayText}>{this.props.itemActive}</Text>
-            </View>
-          </View>
-          <View style={styles.straightRow}>
-            <View style={styles.equalColumn}>
-              <Text style={styles.trayLabel}>Accepted</Text>
-            </View>
-            <View style={styles.equalColumn}>
-              <Text style={styles.trayText}>{this.props.itemAccepted}</Text>
             </View>
           </View>
           <View style={styles.straightRow}>
@@ -226,14 +211,6 @@ export default class ProductListTrayItem extends Component {
             </View>
             <View style={styles.equalColumn}>
               <Text style={styles.trayText}>{this.props.itemMaximumValue}</Text>
-            </View>
-          </View>
-          <View style={styles.straightRow}>
-            <View style={styles.equalColumn}>
-              <Text style={styles.trayLabel}>Non Ordered</Text>
-            </View>
-            <View style={styles.equalColumn}>
-              <Text style={styles.trayText}>{this.props.itemNonOrdered}</Text>
             </View>
           </View>
           <View style={styles.straightRow}>

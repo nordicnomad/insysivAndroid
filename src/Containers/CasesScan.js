@@ -4,7 +4,7 @@ import ZebraScanner from 'react-native-zebra-scanner'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.jpg'
 import CaseProductItem from '../Components/CaseProductItem'
-import TestLabels from '../dummyData/rfidLabelsOffline.json'
+import TestLabelBarcodes from '../dummyData/rfidBarcodesOffline.json'
 import { RFIDlabelSearch } from '../Utilities/RFIDLabelLookup'
 
 var Realm = require('realm');
@@ -156,44 +156,25 @@ export default class CasesScan extends Component {
       siteDescription: "",
     }
     let displayCaseDetail = activeCaseDetail[0]
-    console.log("DISPLAY CASE DETAIL")
-    console.log(displayCaseDetail.cproc_physician_id)
-    console.log(displayCaseDetail.cproc_pk_procedure_code)
-    console.log(displayCaseDetail.chead_pk_site_id)
 
     if(displayCaseDetail.cproc_physician_id != null && displayCaseDetail.cproc_physician_id != undefined) {
       let buildPhysiciansString = 'physicianId CONTAINS "' + displayCaseDetail.cproc_physician_id + '"'
       let physiciansObjects = physiciansList.objects("Physicians_List")
       physiciansDisplayObject = physiciansObjects.filtered(buildPhysiciansString)
-      console.log("PHYSICIANS")
-      console.log(physiciansObjects.length)
-      console.log(physiciansDisplayObject[0].length)
     }
 
     if(displayCaseDetail.cproc_pk_procedure_code != null && displayCaseDetail.cproc_pk_procedure_code != undefined) {
       let buildProcedureString = 'procedureCode CONTAINS "' + displayCaseDetail.cproc_pk_procedure_code + '"'
       let proceduresObjects = proceduresList.objects("Procedures_List")
       proceduresDisplayObject = proceduresObjects.filtered(buildProcedureString)
-      console.log("PROCEDURES")
-      console.log(proceduresObjects.length)
-      console.log(proceduresDisplayObject[0].length)
     }
 
     if(displayCaseDetail.chead_pk_site_id != null && displayCaseDetail.chead_pk_site_id != undefined) {
       let buildLocationString = 'siteId CONTAINS "' + displayCaseDetail.chead_pk_site_id + '"'
       let sitesObjects = locationsList.objects("Locations_List")
       sitesDisplayObject = sitesObjects.filtered(buildLocationString)
-      console.log("SITES")
-      console.log(sitesObjects.length)
-      console.log(sitesDisplayObject[0].length)
     }
-    console.log("ACTIVE CASE DISPLAY INFO")
-    console.log(displayCaseDetail.chead_pk_case_number)
-    console.log(displayCaseDetail.chead_patient_id)
-    console.log(physiciansDisplayObject[0].firstName)
-    console.log(physiciansDisplayObject[0].lastName)
-    console.log(sitesDisplayObject[0].siteDescription)
-    console.log(proceduresDisplayObject[0].procedureDescription)
+
     this.setState({
       caseNumber: displayCaseDetail.chead_pk_case_number,
       patientNumber: displayCaseDetail.chead_patient_id,
@@ -274,6 +255,7 @@ export default class CasesScan extends Component {
             lotSerial={product.cprod_lot_serial_number}
             model={product.cprod_product_model_number}
             scannedTime={product.cprod_change_timestamp}
+            expired={product.cprod_expiration_date}
             manufacturer={product.manufacturer}
             waste={false}
             scanned={true}
@@ -370,9 +352,6 @@ export default class CasesScan extends Component {
     let scannedItems = workingCaseSpace.objects("Working_Case_Space")
     let matchScanRemove = scannedItems.filtered(buildRemoveString)
 
-    console.log("MATCH SCAN REMOVE CALLED")
-    console.log(matchScanRemove.barcode)
-
     workingCaseSpace.write(() => {
       workingCaseSpace.delete(matchScanRemove)
     })
@@ -382,12 +361,28 @@ export default class CasesScan extends Component {
   }
 
   generateScanTest = (count) => {
-    let testStrings = TestLabels
+    let testStrings = TestLabelBarcodes
     this.setState({
       testCount: (count + 1)
     })
 
-    return(this.ScanBarcode(testStrings[count].tagid))
+    return(this.ScanBarcode(testStrings[count].barcode))
+  }
+
+  clearCaseData() {
+    let scannableCases = activeScanableCase.objects("Active_Scanable_Case")
+    let scannedCaseProducts = workingCaseSpace.objects("Working_Case_Space")
+
+    activeScanableCase.write(() => {
+      activeScanableCase.deleteAll()
+    })
+    workingCaseSpace.write(() => {
+      workingCaseSpace.deleteAll()
+    })
+    this.setState({
+      pageErrorMessage: "Case Cleared"
+    })
+    this.props.navigation.navigate('Home')
   }
 
   recordCleanup(failedCalls) {
@@ -445,8 +440,6 @@ export default class CasesScan extends Component {
 
     //Loop products and individually post to product and case data to sproc
     scannedCaseProducts.forEach((caseProduct, i) => {
-      console.log("CASE PRODUCT " + i)
-      console.log(caseProduct.cprod_product_model_number)
       try {
         fetch('http://25.78.82.76:5100/api/AddCaseProductSproc', {
           method: 'POST',
@@ -533,9 +526,6 @@ export default class CasesScan extends Component {
         }
       }
     });
-    console.log("FAILED SYNCS")
-    console.log(failedSyncs)
-    //Completeness check
   }
 
   render() {
@@ -562,12 +552,19 @@ export default class CasesScan extends Component {
             <ScrollView style={styles.scrollContainer}>
               <View style={styles.container}>
                 <View style={styles.titleRow}>
-                  <Text style={styles.titleText}>Case Information</Text>
+                  <View style={styles.majorColumn}>
+                    <Text style={styles.titleText}>Case Information</Text>
+                  </View>
+                  <View style={styles.majorColumn}>
+                    <TouchableOpacity onPress={() => this.clearCaseData()} style={styles.miniSubmitButton}>
+                      <Text style={styles.miniSubmitButtonText}>Clear Case</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
                 <View><Text style={styles.errorText}>{this.state.pageErrorMessage}</Text></View>
                 <View style={styles.sectionContainer}>
                   <View style={styles.shadedBackgroundWrapper}>
-                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>{this.state.caseNumber}</Text>
+                    {/*<Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>{this.state.caseNumber}</Text>*/}
                     <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Patient Id: </Text>{this.state.patientNumber}</Text>
                     <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Doctor: </Text>{this.state.doctorName}</Text>
                     <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Location: </Text>{this.state.siteName}</Text>
