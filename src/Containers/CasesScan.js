@@ -7,6 +7,8 @@ import CaseProductItem from '../Components/CaseProductItem'
 import TestLabelBarcodes from '../dummyData/rfidBarcodesOffline.json'
 import { RFIDlabelSearch } from '../Utilities/RFIDLabelLookup'
 
+import moment from "moment"
+
 var Realm = require('realm');
 let activeUser ;
 let physiciansList ;
@@ -113,6 +115,7 @@ export default class CasesScan extends Component {
       properties: {
         barcode: "string",
         description: "string",
+        scannedRfid: "bool?",
         cprod_pk_product_sequence: "int?",
         cprod_line_number: "int?",
         cprod_billing_code: "string?",
@@ -125,7 +128,7 @@ export default class CasesScan extends Component {
         cprod_no_charge_reason: "string?",
         cprod_no_charge_type: "string?",
         cprod_remote_id: "string?",
-        cprod_requisition_number: "int?"
+        cprod_requisition_number: "int?",
       }}]
     });
     this.ScanBarcode = this.ScanBarcode.bind(this)
@@ -258,7 +261,7 @@ export default class CasesScan extends Component {
             expired={product.cprod_expiration_date}
             manufacturer={product.manufacturer}
             waste={false}
-            scanned={true}
+            scanned={product.scannedRfid}
             wasteFunction={() => this.wasteScannedItem(product.description)}
             removeFunction={() => this.removeScannedItem(product.barcode)} />
         )
@@ -307,37 +310,50 @@ export default class CasesScan extends Component {
           pageErrorMessage: barcodeLookup.productDesc
         })
       }
-      workingCaseSpace.write(() => {
-        try {
-          workingCaseSpace.create('Working_Case_Space', {
-            barcode: scannedBarcode,
-            description: barcodeLookup.productDescription,
-            cprod_pk_product_sequence: null,
-            cprod_line_number: null,
-            cprod_billing_code: null,
-            cprod_change_timestamp: new Date().toISOString(),
-            cprod_change_userid: "Scanner",
-            cprod_expiration_date: barcodeLookup.expirationDate,
-            cprod_license_number: barcodeLookup.licenseNumber,
-            cprod_product_model_number: barcodeLookup.productModelNumber,
-            cprod_lot_serial_number: barcodeLookup.lotSerialNumber,
-            cprod_no_charge_reason: null,
-            cprod_no_charge_type: null,
-            cprod_remote_id: null,
-            cprod_requisition_number: null
-          })
-        }
-        catch (e) {
-          this.setState({
-            pageErrorMessage: "Error on Working Case Space Create"
-          })
-          console.log("Error on Working Case Space Create")
-          console.log(e)
-        }
-      })
-      this.setState({
-        scanCount: (this.state.scanCount + 1)
-      })
+      //If item is not expired, save to working DB.
+      let currentTimeStamp = new Date().toISOString()
+      let currentDate = moment(currentTimeStamp).format("YYMMDD")
+      if(parseFloat(barcodeLookup.expirationDate) > parseFloat(currentDate)) {
+        workingCaseSpace.write(() => {
+          try {
+            workingCaseSpace.create('Working_Case_Space', {
+              barcode: scannedBarcode,
+              description: barcodeLookup.productDescription,
+              scannedRfid: barcodeLookup.scannedRfid,
+              cprod_pk_product_sequence: null,
+              cprod_line_number: null,
+              cprod_billing_code: null,
+              cprod_change_timestamp: new Date().toISOString(),
+              cprod_change_userid: "Scanner",
+              cprod_expiration_date: barcodeLookup.expirationDate,
+              cprod_license_number: barcodeLookup.licenseNumber,
+              cprod_product_model_number: barcodeLookup.productModelNumber,
+              cprod_lot_serial_number: barcodeLookup.lotSerialNumber,
+              cprod_no_charge_reason: null,
+              cprod_no_charge_type: null,
+              cprod_remote_id: null,
+              cprod_requisition_number: null
+            })
+          }
+          catch (e) {
+            this.setState({
+              pageErrorMessage: "Error on Working Case Space Create"
+            })
+            console.log("Error on Working Case Space Create")
+            console.log(e)
+          }
+        })
+        this.setState({
+          scanCount: (this.state.scanCount + 1)
+        })
+      }
+      //If is expired do not save, display message, and make horrible noise through tone generator.
+      else {
+        this.setState({
+          pageErrorMessage: "This product is past Expiration Date"
+        })
+      }
+
     }
   }
 

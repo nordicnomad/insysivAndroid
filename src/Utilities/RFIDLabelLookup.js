@@ -1,3 +1,4 @@
+import { BarcodeSearch } from '../Utilities/BarcodeLookup'
 
 var Realm = require('realm');
 //instatiate database variables
@@ -103,32 +104,77 @@ export function RFIDlabelSearch(rfidLabel) {
   }
 
   if(matchedLabel.productModelNumber === '' || matchedLabel.productModelNumber === null || matchedLabel.productModelNumber === undefined) {
-    matchedRfidProduct = {
-      licenseNumber: "Error / No Match",
-      productModelNumber: "0000",
-      lotSerialNumber: "0000",
-      expirationDate: "NA",
-      tagid: "0000",
-      orderThruVendor: '',
-      productDescription: 'Unknown Product',
-      autoReplace: '',
-      discontinued: '',
-      productCategory: '',
-      hospitalItemNumber: '',
-      unitOfMeasure: '',
-      unitOfMeasureQuantity: '',
-      reorderValue: '',
-      quantityOnHand: '',
-      quantityOrdered: '',
-      lastRequistionNumber: '',
-      orderStatus: '',
-      active: '',
-      accepted: '',
-      consignment: '',
-      minimumValue: '',
-      maximumValue: '',
-      nonOrdered: '',
-      productNote: '',
+    let barcodeSecondaryLookup = BarcodeSearch(rfidLabel, null, true)
+
+    if(barcodeSecondaryLookup != null && barcodeSecondaryLookup != undefined) {
+      let lotSerial = ''
+      if(barcodeSecondaryLookup.lotNumber === null) {
+        lotSerial = barcodeSecondaryLookup.serialNumber
+      }
+      else if(barcodeSecondaryLookup.serialNumber === null) {
+        lotSerial = barcodeSecondaryLookup.lotNumber
+      }
+      else {
+        lotSerial = barcodeSecondaryLookup.lotNumber + "/" + barcodeSecondaryLookup.serialNumber
+      }
+      matchedRfidProduct = {
+        licenseNumber: barcodeSecondaryLookup.licenseNumber,
+        productModelNumber: barcodeSecondaryLookup.productModelNumber,
+        lotSerialNumber: lotSerial,
+        expirationDate: barcodeSecondaryLookup.expirationDate,
+        tagid: barcodeSecondaryLookup.barcode,
+        orderThruVendor: barcodeSecondaryLookup.orderThruVendor,
+        productDescription: barcodeSecondaryLookup.productDescription,
+        scannedRfid: false,
+        autoReplace: barcodeSecondaryLookup.autoReplace,
+        discontinued: barcodeSecondaryLookup.discontinued,
+        productCategory: barcodeSecondaryLookup.productCategory,
+        hospitalItemNumber: barcodeSecondaryLookup.hospitalItemNumber,
+        unitOfMeasure: barcodeSecondaryLookup.unitOfMeasure,
+        unitOfMeasureQuantity: barcodeSecondaryLookup.unitOfMeasureQuantity,
+        reorderValue: barcodeSecondaryLookup.reorderValue,
+        quantityOnHand: barcodeSecondaryLookup.quantityOnHand,
+        quantityOrdered: barcodeSecondaryLookup.quantityOrdered,
+        lastRequistionNumber: barcodeSecondaryLookup.lastRequistionNumber,
+        orderStatus: barcodeSecondaryLookup.orderStatus,
+        active: barcodeSecondaryLookup.active,
+        accepted: barcodeSecondaryLookup.accepted,
+        consignment: barcodeSecondaryLookup.consignment,
+        minimumValue: barcodeSecondaryLookup.minimumValue,
+        maximumValue: barcodeSecondaryLookup.maximumValue,
+        nonOrdered: barcodeSecondaryLookup.nonOrdered,
+        productNote: barcodeSecondaryLookup.productNote,
+      }
+    }
+    else {
+      matchedRfidProduct = {
+        licenseNumber: "Error / No Match",
+        productModelNumber: "0000",
+        lotSerialNumber: "0000",
+        expirationDate: "NA",
+        tagid: "0000",
+        orderThruVendor: '',
+        productDescription: 'Unknown Product',
+        scannedRfid: false,
+        autoReplace: '',
+        discontinued: '',
+        productCategory: '',
+        hospitalItemNumber: '',
+        unitOfMeasure: '',
+        unitOfMeasureQuantity: '',
+        reorderValue: '',
+        quantityOnHand: '',
+        quantityOrdered: '',
+        lastRequistionNumber: '',
+        orderStatus: '',
+        active: '',
+        accepted: '',
+        consignment: '',
+        minimumValue: '',
+        maximumValue: '',
+        nonOrdered: '',
+        productNote: '',
+      }
     }
   }
   else {
@@ -145,6 +191,7 @@ export function RFIDlabelSearch(rfidLabel) {
         productModelNumber: product.productModelNumber,
         orderThruVendor: product.orderThruVendor,
         productDescription: product.productDescription,
+        scannedRfid: true,
         autoReplace: product.autoReplace,
         discontinued: product.discontinued,
         productCategory: product.productCategory,

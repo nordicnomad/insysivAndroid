@@ -189,6 +189,7 @@ export default class AccountInfo extends Component {
       properties: {
         barcode: "string",
         description: "string",
+        scannedRfid: "bool?",
         cprod_pk_product_sequence: "int?",
         cprod_line_number: "int?",
         cprod_billing_code: "string?",
