@@ -440,6 +440,7 @@ export default class AccountInfo extends Component {
       products.write(() => {
         products.deleteAll()
         newProducts.forEach(function(product, i) {
+          console.log(product.productModelNumber)
           try {
             products.create('Products_Lookup', {
               licenseNumber: product.licenseNumber,
@@ -478,6 +479,7 @@ export default class AccountInfo extends Component {
     else {
       products.write(() => {
         newProducts.forEach(function(product, i) {
+          console.log(product.productModelNumber)
           try {
             products.create('Products_Lookup', {
               licenseNumber: product.licenseNumber,

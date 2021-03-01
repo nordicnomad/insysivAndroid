@@ -28,7 +28,7 @@ export default class IntakeScan extends Component {
       modalErrorMessage: '',
       scannedItems: [],
       scannerConnected: false,
-      lastCompleteFlag: false,
+      lastCompleteFlag: true,
       lastScannedObject: {},
       pageErrorMessage: ''
     }
@@ -223,64 +223,66 @@ export default class IntakeScan extends Component {
           }
         }
         //Save new scanned product to working scan space
-        workingScanSpace.write(() => {
-          try {
-            workingScanSpace.create('Working_Scan_Space', {
-              barcode: barcodeLookup.barcode,
-              serialContainerCode: barcodeLookup.serialContainerCode,
-              manufacturerModelNumber: barcodeLookup.manufacturerModelNumber,
-              vendorLicenseNumber: barcodeLookup.vendorLicenseNumber,
-              numberOfContainers: barcodeLookup.numberOfContainers,
-              batchOrLotNumber: barcodeLookup.batchOrLotNumber,
-              expirationDate: barcodeLookup.expirationDate,
-              productVariant: barcodeLookup.productVariant,
-              serialNumber: barcodeLookup.serialNumber,
-              hibcc: barcodeLookup.hibcc,
-              lotNumber: barcodeLookup.lotNumber,
-              quantityEach: barcodeLookup.quantityEach,
-              secondaryProductAttributes: barcodeLookup.secondaryProductAttributes,
-              hibcSecondaryExpiration: barcodeLookup.hibcSecondaryExpiration,
-              hibcSecondaryManufacture: barcodeLookup.hibcSecondaryManufacture,
-              secondarySerialNumber: barcodeLookup.secondarySerialNumber,
-              hibcSecondarySerial: barcodeLookup.hibcSecondarySerial,
-              quantityOfUnitsContained: barcodeLookup.quantityOfUnitsContained,
-              hibcManufactureDate: barcodeLookup.hibcManufactureDate,
-              passThroughCompletenessFlag: barcodeLookup.passThroughCompletenessFlag,
-              trayState: barcodeLookup.trayState,
-              isUnknown: barcodeLookup.isUnknown,
-              licenseNumber: barcodeLookup.licenseNumber,
-              productModelNumber: barcodeLookup.productModelNumber,
-              orderThruVendor: barcodeLookup.orderThruVendor,
-              productDescription: barcodeLookup.productDescription,
-              autoReplace: barcodeLookup.autoReplace,
-              discontinued: barcodeLookup.discontinued,
-              productCategory: barcodeLookup.productCategory,
-              hospitalItemNumber: barcodeLookup.hospitalItemNumber,
-              unitOfMeasure: barcodeLookup.unitOfMeasure,
-              unitOfMeasureQuantity: barcodeLookup.unitOfMeasureQuantity,
-              reorderValue: barcodeLookup.reorderValue,
-              quantityOnHand: barcodeLookup.quantityOnHand,
-              quantityOrdered: barcodeLookup.quantityOrdered,
-              lastRequistionNumber: barcodeLookup.lastRequistionNumber,
-              orderStatus: barcodeLookup.orderStatus,
-              active: barcodeLookup.active,
-              accepted: barcodeLookup.accepted,
-              consignment: barcodeLookup.consignment,
-              minimumValue: barcodeLookup.minimumValue,
-              maximumValue: barcodeLookup.maximumValue,
-              nonOrdered: barcodeLookup.nonOrdered,
-              productNote: barcodeLookup.productNote,
-              scannedTime: barcodeLookup.scannedTime,
-              count: barcodeLookup.count,
-              waste: barcodeLookup.waste,
-              scanned: barcodeLookup.scanned,
-            })
-          }
-          catch (e) {
-            console.log("Error on working scan space creation");
-            console.log(e);
-          }
-        })
+        if(barcodeLookup.passThroughCompletenessFlag === true) {
+          workingScanSpace.write(() => {
+            try {
+              workingScanSpace.create('Working_Scan_Space', {
+                barcode: barcodeLookup.barcode,
+                serialContainerCode: barcodeLookup.serialContainerCode,
+                manufacturerModelNumber: barcodeLookup.manufacturerModelNumber,
+                vendorLicenseNumber: barcodeLookup.vendorLicenseNumber,
+                numberOfContainers: barcodeLookup.numberOfContainers,
+                batchOrLotNumber: barcodeLookup.batchOrLotNumber,
+                expirationDate: barcodeLookup.expirationDate,
+                productVariant: barcodeLookup.productVariant,
+                serialNumber: barcodeLookup.serialNumber,
+                hibcc: barcodeLookup.hibcc,
+                lotNumber: barcodeLookup.lotNumber,
+                quantityEach: barcodeLookup.quantityEach,
+                secondaryProductAttributes: barcodeLookup.secondaryProductAttributes,
+                hibcSecondaryExpiration: barcodeLookup.hibcSecondaryExpiration,
+                hibcSecondaryManufacture: barcodeLookup.hibcSecondaryManufacture,
+                secondarySerialNumber: barcodeLookup.secondarySerialNumber,
+                hibcSecondarySerial: barcodeLookup.hibcSecondarySerial,
+                quantityOfUnitsContained: barcodeLookup.quantityOfUnitsContained,
+                hibcManufactureDate: barcodeLookup.hibcManufactureDate,
+                passThroughCompletenessFlag: barcodeLookup.passThroughCompletenessFlag,
+                trayState: barcodeLookup.trayState,
+                isUnknown: barcodeLookup.isUnknown,
+                licenseNumber: barcodeLookup.licenseNumber,
+                productModelNumber: barcodeLookup.productModelNumber,
+                orderThruVendor: barcodeLookup.orderThruVendor,
+                productDescription: barcodeLookup.productDescription,
+                autoReplace: barcodeLookup.autoReplace,
+                discontinued: barcodeLookup.discontinued,
+                productCategory: barcodeLookup.productCategory,
+                hospitalItemNumber: barcodeLookup.hospitalItemNumber,
+                unitOfMeasure: barcodeLookup.unitOfMeasure,
+                unitOfMeasureQuantity: barcodeLookup.unitOfMeasureQuantity,
+                reorderValue: barcodeLookup.reorderValue,
+                quantityOnHand: barcodeLookup.quantityOnHand,
+                quantityOrdered: barcodeLookup.quantityOrdered,
+                lastRequistionNumber: barcodeLookup.lastRequistionNumber,
+                orderStatus: barcodeLookup.orderStatus,
+                active: barcodeLookup.active,
+                accepted: barcodeLookup.accepted,
+                consignment: barcodeLookup.consignment,
+                minimumValue: barcodeLookup.minimumValue,
+                maximumValue: barcodeLookup.maximumValue,
+                nonOrdered: barcodeLookup.nonOrdered,
+                productNote: barcodeLookup.productNote,
+                scannedTime: barcodeLookup.scannedTime,
+                count: barcodeLookup.count,
+                waste: barcodeLookup.waste,
+                scanned: barcodeLookup.scanned,
+              })
+            }
+            catch (e) {
+              console.log("Error on working scan space creation");
+              console.log(e);
+            }
+          })
+        }
       }
       //Update LocalState with new information
       this.setState({

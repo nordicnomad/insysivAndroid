@@ -6,6 +6,7 @@ import HeaderLogo from '../Images/insysivLogoHorizontal.jpg'
 import CaseProductItem from '../Components/CaseProductItem'
 import TestLabelBarcodes from '../dummyData/rfidBarcodesOffline.json'
 import { RFIDlabelSearch } from '../Utilities/RFIDLabelLookup'
+import Tone from "react-native-tone-android";
 
 import moment from "moment"
 

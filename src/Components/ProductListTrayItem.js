@@ -30,6 +30,13 @@ export default class ProductListTrayItem extends Component {
   }
 
   render() {
+    let formatDate = this.props.itemExpiration
+    if(formatDate != '' && formatDate != undefined && formatDate != null) {
+      moment(formatDate, "YYMMDD").format("MMMM Do YYYY")
+    }
+    else {
+      formatDate = ''
+    }
     return (
       <View style={styles.productListItem}>
         <View style={styles.majorMinorRow}>
@@ -82,7 +89,7 @@ export default class ProductListTrayItem extends Component {
               <Text style={styles.trayLabel}>Expiration Date</Text>
             </View>
             <View style={styles.equalColumn}>
-              <Text style={styles.trayText}>{moment(this.props.itemExpiration, "YYMMDD").format("MMMM Do YYYY")}</Text>
+              <Text style={styles.trayText}>{formatDate}</Text>
             </View>
           </View>
           <View style={styles.straightRow}>
