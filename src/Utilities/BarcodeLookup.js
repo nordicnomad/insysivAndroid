@@ -50,10 +50,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     hibcManufactureDate: '',
     //Check and return in next call if complete barcode flag
     passThroughCompletenessFlag: false,
-  }
-
-  if(lastReturnObject != null && lastCompleteFlag === false) {
-    decodeReturnObject = lastReturnObject
+    invalidScanSegment: false,
   }
 
   //Database schemas
@@ -176,6 +173,13 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
         primaryCode = hibcAppStrings[i]
       }
     });
+    if(primaryCode === '') {
+      //set decode return object to last scan if current segment isn't a primary segment
+      //and last segment was an incomplete segment
+      if(lastReturnObject != null && lastCompleteFlag === false) {
+        decodeReturnObject = lastReturnObject
+      }
+    }
 
     //Decode HIBC string elements and populate return object
     hibcAppIdentifiers.forEach((identifier, i) => {
@@ -305,12 +309,13 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
         }
     })
 
-    console.log("APP IDENTIFIERS ARRAY")
-    console.log(uccNumAppIdentifiers)
-    console.log("NUM STRINGS ARRAY")
-    console.log(uccNumAppStrings)
-    console.log("DECODE RETURN OBJECT")
-    console.log(decodeReturnObject)
+    if(primaryCode === '') {
+      //set decode return object to last scan if current segment isn't a primary segment
+      //and last segment was an incomplete segment
+      if(lastReturnObject != null && lastCompleteFlag === false) {
+        decodeReturnObject = lastReturnObject
+      }
+    }
 
     //loop App identifier array and push identifier to decode UCC passedBarcode strings
     uccNumAppIdentifiers.forEach((identifier, i) => {
@@ -378,6 +383,13 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
         primaryCode = uccAppStrings[i]
       }
     });
+    if(primaryCode === '') {
+      //set decode return object to last scan if current segment isn't a primary segment
+      //and last segment was an incomplete segment
+      if(lastReturnObject != null && lastCompleteFlag === false) {
+        decodeReturnObject = lastReturnObject
+      }
+    }
 
     //Decode UCC passedBarcode string
     uccAppIdentifiers.forEach((identifier, i) => {
@@ -419,6 +431,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
             waste: false,
             scanned: true,
           }
+          //numbers need to be strings for realm db 
           if(product.licenseNumber != null) {matchedProduct.licenseNumber = product.licenseNumber.toString()} else {matchedProduct.licenseNumber = ''}
           if(product.orderThruVendor != null) {matchedProduct.orderThruVendor = product.orderThruVendor.toString()} else {matchedProduct.orderThruVendor = ''}
           if(product.productCategory != null) {matchedProduct.productCategory = product.productCategory.toString()} else {matchedProduct.productCategory = ''}
@@ -477,18 +490,51 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
   //Consolidate information from decoded barcode with matched DB values.
 
   let combinedProductReturn = {...matchedProduct, ...decodeReturnObject}
-
-  if(combinedProductReturn.manufacturerModelNumber != '') {
-    if(combinedProductReturn.expirationDate != '' || combinedProductReturn.batchOrLotNumber != '' || combinedProductReturn.serialNumber != '') {
-      combinedProductReturn.passThroughCompletenessFlag = true
+  console.log("LASTCOMPELTE FLAG")
+  console.log(lastCompleteFlag)
+  if(lastCompleteFlag === true) {
+    if(primaryCode != '') {
+      if(combinedProductReturn.expirationDate != '' || combinedProductReturn.batchOrLotNumber != '' || combinedProductReturn.serialNumber != '') {
+        //normal full barcode scan
+        combinedProductReturn.passThroughCompletenessFlag = true
+      }
+      else {
+        //valid first segment scan
+        combinedProductReturn.passThroughCompletenessFlag = false
+      }
     }
     else {
+      //scanned secondary barcode first, and is not valid
+      combinedProductReturn.invalidScanSegment = true
       combinedProductReturn.passThroughCompletenessFlag = false
     }
   }
   else {
-    //scanned secondary barcode first, and is not valid
-    return(null)
+    //last scan was incomplete
+    if(primaryCode != '') {
+      //scanned a new first segment on an incomplete first segment
+      if(combinedProductReturn.expirationDate != '' || combinedProductReturn.batchOrLotNumber != '' || combinedProductReturn.serialNumber != '') {
+        //new normal full barcode scan
+        combinedProductReturn.passThroughCompletenessFlag = true
+      }
+      else {
+        //can't pass multiple incomplete non-primary segments
+        combinedProductReturn.invalidScanSegment = true
+        combinedProductReturn.passThroughCompletenessFlag = false
+      }
+    }
+    else {
+      if(combinedProductReturn.expirationDate != '' || combinedProductReturn.batchOrLotNumber != '' || combinedProductReturn.serialNumber != '') {
+        //normal second segment barcode scan
+        combinedProductReturn.barcode = combinedProductReturn.barcode + passedBarcode
+        combinedProductReturn.passThroughCompletenessFlag = true
+      }
+      else {
+        //can't pass multiple incomplete non-primary segments
+        combinedProductReturn.invalidScanSegment = true
+        combinedProductReturn.passThroughCompletenessFlag = false
+      }
+    }
   }
 
   return (combinedProductReturn)

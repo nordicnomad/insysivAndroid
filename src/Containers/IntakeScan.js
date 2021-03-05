@@ -7,6 +7,8 @@ import ProductListTrayItem from '../Components/ProductListTrayItem'
 import { BarcodeSearch } from '../Utilities/BarcodeLookup'
 import TestBarcodes from '../dummyData/testBarcodes.json'
 
+import SoundPlayer from 'react-native-sound-player'
+
 var Realm = require('realm');
 let activeUser ;
 let workingScanSpace ;
@@ -282,13 +284,37 @@ export default class IntakeScan extends Component {
               console.log(e);
             }
           })
+          this.setState({
+            pageErrorMessage: ""
+          })
+        }
+        else {
+          if(barcodeLookup.invalidScanSegment) {
+            //set completeness flag here to drop return object and skip working space save
+            this.setState({
+              pageErrorMessage: "Invalid Scan Segment Order",
+              lastCompleteFlag: true,
+            })
+          }
+          else {
+            this.setState({
+              pageErrorMessage: "Scan Next Barcode Segment"
+            })
+          }
         }
       }
+
+      //update count with what's actually stored in db after lookup operations
+      let newTotalCount = 0
+      scannedItemsList.forEach(function(countScan, index) {
+        newTotalCount = newTotalCount + parseFloat(countScan.count)
+      })
+
       //Update LocalState with new information
       this.setState({
         scannedItems: scannedItemsList,
         scannedBarcode: scannedBarcode,
-        scanCount: totalCount,
+        scanCount: newTotalCount,
       })
     }
   }
