@@ -284,6 +284,20 @@ export default class IntakeScan extends Component {
               console.log(e);
             }
           })
+          if(barcodeLookup.productModelNumber === '') {
+            try {
+                SoundPlayer.playSoundFile('UnknownProduct', 'wav')
+            } catch (e) {
+                console.log(`cannot play the sound file`, e)
+            }
+          }
+          else {
+            try {
+                SoundPlayer.playSoundFile('ScanSuccess', 'wav')
+            } catch (e) {
+                console.log(`cannot play the sound file`, e)
+            }
+          }
           this.setState({
             pageErrorMessage: ""
           })
@@ -291,6 +305,11 @@ export default class IntakeScan extends Component {
         else {
           if(barcodeLookup.invalidScanSegment) {
             //set completeness flag here to drop return object and skip working space save
+            try {
+                SoundPlayer.playSoundFile('InvalidScan', 'wav')
+            } catch (e) {
+                console.log(`cannot play the sound file`, e)
+            }
             this.setState({
               pageErrorMessage: "Invalid Scan Segment Order",
               lastCompleteFlag: true,

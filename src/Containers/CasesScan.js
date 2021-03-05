@@ -291,9 +291,7 @@ export default class CasesScan extends Component {
   }
   ScanBarcode = (newBarcode) => {
     let scannedBarcode = newBarcode
-    this.setState({
-      pageErrorMessage: "Barcode Scanned: " + scannedBarcode
-    })
+
     //Instantiate Variables
     if(scannedBarcode != undefined && scannedBarcode != null) {
       let scannedItemsList = workingCaseSpace.objects("Working_Case_Space")
@@ -308,7 +306,7 @@ export default class CasesScan extends Component {
       }
       else {
         this.setState({
-          pageErrorMessage: barcodeLookup.productDesc
+          pageErrorMessage: ""
         })
       }
       //If item is not expired, save to working DB.
@@ -344,12 +342,31 @@ export default class CasesScan extends Component {
             console.log(e)
           }
         })
+        if(barcodeLookup.productModelNumber === "0000") {
+          try {
+              SoundPlayer.playSoundFile('UnknownProduct', 'wav')
+          } catch (e) {
+              console.log(`cannot play the sound file`, e)
+          }
+        }
+        else {
+          try {
+              SoundPlayer.playSoundFile('ScanSuccess', 'wav')
+          } catch (e) {
+              console.log(`cannot play the sound file`, e)
+          }
+        }
         this.setState({
           scanCount: (this.state.scanCount + 1)
         })
       }
-      //If is expired do not save, display message, and make horrible noise through tone generator.
+      //If is expired do not save, display message, and make horrible noise.
       else {
+        try {
+            SoundPlayer.playSoundFile('ExpiredProduct', 'wav')
+        } catch (e) {
+            console.log(`cannot play the sound file`, e)
+        }
         this.setState({
           pageErrorMessage: "This product is past Expiration Date"
         })
