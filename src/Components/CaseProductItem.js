@@ -47,6 +47,15 @@ export default class CaseProductItem extends Component {
   }
 
   RenderTrayItemContent() {
+    let formatedDate = ''
+    if(this.props.expired != '' && this.props.expired != null && this.props.expired != undefined) {
+      if(this.props.scanned === true) {
+        formatedDate = moment(this.props.expired, "MM-DD-YYYY").format("MMMM Do YYYY")
+      }
+      else {
+        formatedDate = moment(this.props.expired, "YYMMDD").format("MMMM Do YYYY")
+      }
+    }
     return(
       <View style={styles.productListItem}>
         <View style={styles.majorMinorRow}>
@@ -75,7 +84,7 @@ export default class CaseProductItem extends Component {
             </Text>
             <Text style={styles.trayText}>
               <Text style={styles.trayLabel}>Expiration Date: </Text>
-              {this.props.expired}
+              {formatedDate}
             </Text>
             <Text style={styles.trayText}>
               <Text style={styles.trayLabel}>Time Scanned: </Text>

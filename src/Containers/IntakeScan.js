@@ -201,6 +201,20 @@ export default class IntakeScan extends Component {
           if(item.barcode === scannedBarcode) {
             scanMatched = true
             scannedItemsList[i].count = scannedItemsList[i].count + 1
+            if(scannedItemsList[i].productModelNumber === '') {
+              try {
+                  SoundPlayer.playSoundFile('unknownproduct', 'wav')
+              } catch (e) {
+                  console.log(`cannot play the sound file`, e)
+              }
+            }
+            else {
+              try {
+                  SoundPlayer.playSoundFile('scansuccess', 'wav')
+              } catch (e) {
+                  console.log(`cannot play the sound file`, e)
+              }
+            }
           }
         }.bind(this));
       })
@@ -286,14 +300,14 @@ export default class IntakeScan extends Component {
           })
           if(barcodeLookup.productModelNumber === '') {
             try {
-                SoundPlayer.playSoundFile('UnknownProduct', 'wav')
+                SoundPlayer.playSoundFile('unknownproduct', 'wav')
             } catch (e) {
                 console.log(`cannot play the sound file`, e)
             }
           }
           else {
             try {
-                SoundPlayer.playSoundFile('ScanSuccess', 'wav')
+                SoundPlayer.playSoundFile('scansuccess', 'wav')
             } catch (e) {
                 console.log(`cannot play the sound file`, e)
             }
@@ -306,7 +320,7 @@ export default class IntakeScan extends Component {
           if(barcodeLookup.invalidScanSegment) {
             //set completeness flag here to drop return object and skip working space save
             try {
-                SoundPlayer.playSoundFile('InvalidScan', 'wav')
+                SoundPlayer.playSoundFile('invalidscan', 'wav')
             } catch (e) {
                 console.log(`cannot play the sound file`, e)
             }
@@ -708,7 +722,7 @@ export default class IntakeScan extends Component {
               <View style={styles.titleRow}>
                 <Text style={styles.titleText}>Intake Scan</Text>
               </View>
-              <View><Text style={styles.errorText}>{this.state.pageErrorMessage}</Text></View>
+              <View style={styles.errorTextContainer}><Text style={styles.errorText}>{this.state.pageErrorMessage}</Text></View>
               <View style={styles.sectionContainer}>
                 <Text>Test Scan Function: </Text>
                 <View style={styles.menuRow}>

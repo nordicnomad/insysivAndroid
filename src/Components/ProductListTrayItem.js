@@ -31,11 +31,12 @@ export default class ProductListTrayItem extends Component {
 
   render() {
     let formatDate = this.props.itemExpiration
-    if(formatDate != '' && formatDate != undefined && formatDate != null) {
-      moment(formatDate, "YYMMDD").format("MMMM Do YYYY")
+    if(formatDate === '' || formatDate === undefined || formatDate === null) {
+      formatDate = ''
     }
     else {
-      formatDate = ''
+      formatDate = moment(formatDate, "YYMMDD").format("MMMM Do YYYY")
+
     }
     return (
       <View style={styles.productListItem}>

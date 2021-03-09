@@ -740,6 +740,13 @@ export default StyleSheet.create({
     textAlign: 'center',
     fontWeight: '800',
   },
+  errorTextContainer: {
+    flexDirection: 'column',
+    alignSelf: 'stretch',
+    marginTop: 10,
+    marginBottom: -15,
+    paddingHorizontal: 24,
+  },
   errorText: {
     color: '#EE7A38',
     fontWeight: '800',

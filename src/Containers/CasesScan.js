@@ -309,10 +309,11 @@ export default class CasesScan extends Component {
           pageErrorMessage: ""
         })
       }
-      //If item is not expired, save to working DB.
-      let currentTimeStamp = new Date().toISOString()
-      let currentDate = moment(currentTimeStamp).format("YYMMDD")
-      if(parseFloat(barcodeLookup.expirationDate) > parseFloat(currentDate)) {
+      console.log("SCANNED RFID")
+      console.log(barcodeLookup.scannedRfid)
+      if(barcodeLookup.scannedRfid === false) {
+        console.log("SCANNED RFID FALSE EXPIRATION FORMAT")
+        console.log(barcodeLookup.expirationDate)
         workingCaseSpace.write(() => {
           try {
             workingCaseSpace.create('Working_Case_Space', {
@@ -336,22 +337,22 @@ export default class CasesScan extends Component {
           }
           catch (e) {
             this.setState({
-              pageErrorMessage: "Error on Working Case Space Create"
+              pageErrorMessage: "Scan Save Error: " + e
             })
             console.log("Error on Working Case Space Create")
             console.log(e)
           }
         })
-        if(barcodeLookup.productModelNumber === "0000") {
+        if(barcodeLookup.productModelNumber === "0000" || barcodeLookup.productModelNumber === "" || barcodeLookup.productModelNumber === null || barcodeLookup.productModelNumber === undefined) {
           try {
-              SoundPlayer.playSoundFile('UnknownProduct', 'wav')
+              SoundPlayer.playSoundFile('unknownproduct', 'wav')
           } catch (e) {
               console.log(`cannot play the sound file`, e)
           }
         }
         else {
           try {
-              SoundPlayer.playSoundFile('ScanSuccess', 'wav')
+              SoundPlayer.playSoundFile('scansuccess', 'wav')
           } catch (e) {
               console.log(`cannot play the sound file`, e)
           }
@@ -360,18 +361,81 @@ export default class CasesScan extends Component {
           scanCount: (this.state.scanCount + 1)
         })
       }
-      //If is expired do not save, display message, and make horrible noise.
       else {
-        try {
-            SoundPlayer.playSoundFile('ExpiredProduct', 'wav')
-        } catch (e) {
-            console.log(`cannot play the sound file`, e)
+        //If item is not expired, save to working DB.
+        let currentTimeStamp = new Date().toISOString()
+        let compareDate = moment(barcodeLookup.expirationDate, "MM-DD-YYYY").toISOString()
+        console.log("RFID SCANNED TRUE EXPIRATION DATE")
+        console.log(barcodeLookup.expirationDate)
+        console.log(compareDate)
+        console.log("CURRENT DATE")
+        console.log(currentTimeStamp)
+        console.log("IS EXPIRED CHECK")
+        console.log(moment(currentTimeStamp).isBefore(compareDate))
+        if(moment(currentTimeStamp).isBefore(compareDate)) {
+          //Item is not expired
+          workingCaseSpace.write(() => {
+            try {
+              workingCaseSpace.create('Working_Case_Space', {
+                barcode: scannedBarcode,
+                description: barcodeLookup.productDescription,
+                scannedRfid: barcodeLookup.scannedRfid,
+                cprod_pk_product_sequence: null,
+                cprod_line_number: null,
+                cprod_billing_code: null,
+                cprod_change_timestamp: new Date().toISOString(),
+                cprod_change_userid: "Scanner",
+                cprod_expiration_date: barcodeLookup.expirationDate,
+                cprod_license_number: barcodeLookup.licenseNumber,
+                cprod_product_model_number: barcodeLookup.productModelNumber,
+                cprod_lot_serial_number: barcodeLookup.lotSerialNumber,
+                cprod_no_charge_reason: null,
+                cprod_no_charge_type: null,
+                cprod_remote_id: null,
+                cprod_requisition_number: null
+              })
+            }
+            catch (e) {
+              this.setState({
+                pageErrorMessage: "Scan Save Error: " + e
+              })
+              console.log("Error on Working Case Space Create")
+              console.log(e)
+            }
+          })
+          console.log("PRODUCT MODEL NUMBER")
+          console.log(barcodeLookup.productModelNumber)
+          if(barcodeLookup.productModelNumber === "0000" || barcodeLookup.productModelNumber === "" || barcodeLookup.productModelNumber === null || barcodeLookup.productModelNumber === undefined) {
+            try {
+                SoundPlayer.playSoundFile('unknownproduct', 'wav')
+            } catch (e) {
+                console.log(`cannot play the sound file`, e)
+            }
+          }
+          else {
+            try {
+                SoundPlayer.playSoundFile('scansuccess', 'wav')
+            } catch (e) {
+                console.log(`cannot play the sound file`, e)
+            }
+          }
+          this.setState({
+            scanCount: (this.state.scanCount + 1)
+          })
         }
-        this.setState({
-          pageErrorMessage: "This product is past Expiration Date"
-        })
+        //If is expired do not save, display message, and make horrible noise.
+        else {
+          try {
+              SoundPlayer.playSoundFile('expiredproduct', 'wav')
+          } catch (e) {
+              console.log(`cannot play the sound file`, e)
+          }
+          this.setState({
+            pageErrorMessage: "This Product is Past Expiration Date: " + barcodeLookup.expirationDate
+          })
+          console.log(this.state.pageErrorMessage)
+        }
       }
-
     }
   }
 
@@ -595,7 +659,6 @@ export default class CasesScan extends Component {
                     </TouchableOpacity>
                   </View>
                 </View>
-                <View><Text style={styles.errorText}>{this.state.pageErrorMessage}</Text></View>
                 <View style={styles.sectionContainer}>
                   <View style={styles.shadedBackgroundWrapper}>
                     {/*<Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>{this.state.caseNumber}</Text>*/}
@@ -605,16 +668,17 @@ export default class CasesScan extends Component {
                     <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Procedure: </Text>{this.state.procedureDescription}</Text>
                   </View>
                 </View>
-                <View style={styles.sectionContainer}>
-                  <Text>Test Scan Function: </Text>
-                  <TouchableOpacity onPress={() => this.generateScanTest(this.state.testCount)} style={styles.miniSubmitButton}><Text style={styles.miniSubmitButtonText}>Scan Test</Text></TouchableOpacity>
-                </View>
+                <View style={styles.errorTextContainer}><Text style={styles.errorText}>{this.state.pageErrorMessage}</Text></View>
                 <View style={styles.sectionContainer}>
                   <View style={styles.menuRow}>
                     <View style={styles.majorColumn}>
                       {this.GetScannerStatus(this.state.scannerConnected)}
                     </View>
                     <View style={styles.majorColumn}>
+                    <Text>Test Scan Function: </Text>
+                      <TouchableOpacity onPress={() => this.generateScanTest(this.state.testCount)} style={styles.miniSubmitButton}>
+                        <Text style={styles.miniSubmitButtonText}>Scan Test</Text>
+                      </TouchableOpacity>
                     </View>
                   </View>
                   {this.renderCaseProducts()}

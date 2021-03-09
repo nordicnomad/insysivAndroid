@@ -1024,7 +1024,7 @@ export default class AccountInfo extends Component {
               <View style={styles.titleRow}>
                 <Text style={styles.titleText}>Account Information</Text>
               </View>
-              <View>
+              <View style={styles.errorTextContainer}>
                 <Text style={styles.errorText}>
                   {this.state.syncProgressMessage}
                 </Text>

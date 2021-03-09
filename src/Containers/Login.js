@@ -325,7 +325,7 @@ export default class Login extends Component {
               <Text style={styles.loginButtonText}>Log In</Text>
             </TouchableOpacity>
           </View>
-          <View><Text style={styles.errorText}>{this.state.loginError}</Text></View>
+          <View style={styles.errorTextContainer}><Text style={styles.errorText}>{this.state.loginError}</Text></View>
         </View>
       </ScrollView>
     );

@@ -107,15 +107,17 @@ export function RFIDlabelSearch(rfidLabel) {
     let barcodeSecondaryLookup = BarcodeSearch(rfidLabel, null, true)
 
     if(barcodeSecondaryLookup != null && barcodeSecondaryLookup != undefined) {
+      console.log('BARCODE SECONDARY LOOKUP')
+      console.log(barcodeSecondaryLookup)
       let lotSerial = ''
-      if(barcodeSecondaryLookup.lotNumber === null) {
+      if(barcodeSecondaryLookup.batchOrLotNumber === null || barcodeSecondaryLookup.batchOrLotNumber === '' || barcodeSecondaryLookup.batchOrLotNumber === undefined) {
         lotSerial = barcodeSecondaryLookup.serialNumber
       }
-      else if(barcodeSecondaryLookup.serialNumber === null) {
-        lotSerial = barcodeSecondaryLookup.lotNumber
+      else if(barcodeSecondaryLookup.serialNumber === null || barcodeSecondaryLookup.serialNumber === '' || barcodeSecondaryLookup.serialNumber === undefined) {
+        lotSerial = barcodeSecondaryLookup.batchOrLotNumber
       }
       else {
-        lotSerial = barcodeSecondaryLookup.lotNumber + "/" + barcodeSecondaryLookup.serialNumber
+        lotSerial = barcodeSecondaryLookup.batchOrLotNumber + "/" + barcodeSecondaryLookup.serialNumber
       }
       matchedRfidProduct = {
         licenseNumber: barcodeSecondaryLookup.licenseNumber,
