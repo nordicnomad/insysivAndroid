@@ -36,6 +36,8 @@ export default class CasesScan extends Component {
       doctorName: '',
       procedureDescription: '',
       siteName: '',
+      lastCompleteFlag: true,
+      lastScannedObject: {},
     }
 
     activeUser = new Realm({
@@ -298,13 +300,25 @@ export default class CasesScan extends Component {
 
       //Behaves differently than intake scan since like items aren't grouped.
       //Each unique RFID tag is a line item and all RFID tags are unique.
-      let barcodeLookup = RFIDlabelSearch(scannedBarcode)
+      let barcodeLookup = RFIDlabelSearch(scannedBarcode, this.state.lastScannedObject, this.state.lastCompleteFlag)
       if(barcodeLookup === null || barcodeLookup === undefined) {
         this.setState({
           pageErrorMessage: "BAD LOOKUP"
         })
       }
       else {
+        if(barcodeLookup.passThroughCompletenessFlag === true) {
+          this.setState({
+            lastCompleteFlag: true,
+            lastScannedObject: barcodeLookup,
+          })
+        }
+        else {
+          this.setState({
+            lastCompleteFlag: false,
+            lastScannedObject: barcodeLookup,
+          })
+        }
         this.setState({
           pageErrorMessage: ""
         })
@@ -312,68 +326,10 @@ export default class CasesScan extends Component {
       console.log("SCANNED RFID")
       console.log(barcodeLookup.scannedRfid)
       if(barcodeLookup.scannedRfid === false) {
+        //item was secondary barcode
         console.log("SCANNED RFID FALSE EXPIRATION FORMAT")
         console.log(barcodeLookup.expirationDate)
-        workingCaseSpace.write(() => {
-          try {
-            workingCaseSpace.create('Working_Case_Space', {
-              barcode: scannedBarcode,
-              description: barcodeLookup.productDescription,
-              scannedRfid: barcodeLookup.scannedRfid,
-              cprod_pk_product_sequence: null,
-              cprod_line_number: null,
-              cprod_billing_code: null,
-              cprod_change_timestamp: new Date().toISOString(),
-              cprod_change_userid: "Scanner",
-              cprod_expiration_date: barcodeLookup.expirationDate,
-              cprod_license_number: barcodeLookup.licenseNumber,
-              cprod_product_model_number: barcodeLookup.productModelNumber,
-              cprod_lot_serial_number: barcodeLookup.lotSerialNumber,
-              cprod_no_charge_reason: null,
-              cprod_no_charge_type: null,
-              cprod_remote_id: null,
-              cprod_requisition_number: null
-            })
-          }
-          catch (e) {
-            this.setState({
-              pageErrorMessage: "Scan Save Error: " + e
-            })
-            console.log("Error on Working Case Space Create")
-            console.log(e)
-          }
-        })
-        if(barcodeLookup.productModelNumber === "0000" || barcodeLookup.productModelNumber === "" || barcodeLookup.productModelNumber === null || barcodeLookup.productModelNumber === undefined) {
-          try {
-              SoundPlayer.playSoundFile('unknownproduct', 'wav')
-          } catch (e) {
-              console.log(`cannot play the sound file`, e)
-          }
-        }
-        else {
-          try {
-              SoundPlayer.playSoundFile('scansuccess', 'wav')
-          } catch (e) {
-              console.log(`cannot play the sound file`, e)
-          }
-        }
-        this.setState({
-          scanCount: (this.state.scanCount + 1)
-        })
-      }
-      else {
-        //If item is not expired, save to working DB.
-        let currentTimeStamp = new Date().toISOString()
-        let compareDate = moment(barcodeLookup.expirationDate, "MM-DD-YYYY").toISOString()
-        console.log("RFID SCANNED TRUE EXPIRATION DATE")
-        console.log(barcodeLookup.expirationDate)
-        console.log(compareDate)
-        console.log("CURRENT DATE")
-        console.log(currentTimeStamp)
-        console.log("IS EXPIRED CHECK")
-        console.log(moment(currentTimeStamp).isBefore(compareDate))
-        if(moment(currentTimeStamp).isBefore(compareDate)) {
-          //Item is not expired
+        if(barcodeLookup.passThroughCompletenessFlag === true) {
           workingCaseSpace.write(() => {
             try {
               workingCaseSpace.create('Working_Case_Space', {
@@ -403,8 +359,6 @@ export default class CasesScan extends Component {
               console.log(e)
             }
           })
-          console.log("PRODUCT MODEL NUMBER")
-          console.log(barcodeLookup.productModelNumber)
           if(barcodeLookup.productModelNumber === "0000" || barcodeLookup.productModelNumber === "" || barcodeLookup.productModelNumber === null || barcodeLookup.productModelNumber === undefined) {
             try {
                 SoundPlayer.playSoundFile('unknownproduct', 'wav')
@@ -419,6 +373,112 @@ export default class CasesScan extends Component {
                 console.log(`cannot play the sound file`, e)
             }
           }
+          this.setState({
+            scanCount: (this.state.scanCount + 1)
+          })
+        }
+        else {
+          if(barcodeLookup.invalidScanSegment) {
+            //set completeness flag here to drop return object and skip working space save
+            try {
+                SoundPlayer.playSoundFile('invalidscan', 'wav')
+            } catch (e) {
+                console.log(`cannot play the sound file`, e)
+            }
+            this.setState({
+              pageErrorMessage: "Invalid Scan Segment Order",
+              lastCompleteFlag: true,
+            })
+          }
+          else {
+            try {
+                SoundPlayer.playSoundFile('continuescan', 'wav')
+            } catch (e) {
+                console.log(`cannot play the sound file`, e)
+            }
+            this.setState({
+              pageErrorMessage: "Scan Next Barcode Segment",
+              lastCompleteFlag: false,
+            })
+          }
+        }
+      }
+      else {
+        //Item was RFID labeled product
+        //If item is not expired, save to working DB.
+        let currentTimeStamp = new Date().toISOString()
+        let compareDate = moment(barcodeLookup.expirationDate, "MM-DD-YYYY").toISOString()
+        console.log("RFID SCANNED TRUE EXPIRATION DATE")
+        console.log(barcodeLookup.expirationDate)
+        console.log(compareDate)
+        console.log("CURRENT DATE")
+        console.log(currentTimeStamp)
+        console.log("IS EXPIRED CHECK")
+        console.log(moment(currentTimeStamp).isBefore(compareDate))
+        if(moment(currentTimeStamp).isBefore(compareDate)) {
+          //Item is not expired
+          if(barcodeLookup.passThroughCompletenessFlag === true) {
+            workingCaseSpace.write(() => {
+              try {
+                workingCaseSpace.create('Working_Case_Space', {
+                  barcode: scannedBarcode,
+                  description: barcodeLookup.productDescription,
+                  scannedRfid: barcodeLookup.scannedRfid,
+                  cprod_pk_product_sequence: null,
+                  cprod_line_number: null,
+                  cprod_billing_code: null,
+                  cprod_change_timestamp: new Date().toISOString(),
+                  cprod_change_userid: "Scanner",
+                  cprod_expiration_date: barcodeLookup.expirationDate,
+                  cprod_license_number: barcodeLookup.licenseNumber,
+                  cprod_product_model_number: barcodeLookup.productModelNumber,
+                  cprod_lot_serial_number: barcodeLookup.lotSerialNumber,
+                  cprod_no_charge_reason: null,
+                  cprod_no_charge_type: null,
+                  cprod_remote_id: null,
+                  cprod_requisition_number: null
+                })
+              }
+              catch (e) {
+                this.setState({
+                  pageErrorMessage: "Scan Save Error: " + e
+                })
+                console.log("Error on Working Case Space Create")
+                console.log(e)
+              }
+            })
+            console.log("PRODUCT MODEL NUMBER")
+            console.log(barcodeLookup.productModelNumber)
+            if(barcodeLookup.productModelNumber === "0000" || barcodeLookup.productModelNumber === "" || barcodeLookup.productModelNumber === null || barcodeLookup.productModelNumber === undefined) {
+              try {
+                  SoundPlayer.playSoundFile('unknownproduct', 'wav')
+              } catch (e) {
+                  console.log(`cannot play the sound file`, e)
+              }
+            }
+            else {
+              try {
+                  SoundPlayer.playSoundFile('scansuccess', 'wav')
+              } catch (e) {
+                  console.log(`cannot play the sound file`, e)
+              }
+            }
+          }
+          else {
+            if(barcodeLookup.invalidScanSegment) {
+              //set completeness flag here to drop return object and skip working space save
+              try {
+                  SoundPlayer.playSoundFile('invalidscan', 'wav')
+              } catch (e) {
+                  console.log(`cannot play the sound file`, e)
+              }
+              this.setState({
+                pageErrorMessage: "Invalid Scan Segment Order",
+                lastCompleteFlag: true,
+              })
+            }
+          }
+
           this.setState({
             scanCount: (this.state.scanCount + 1)
           })
@@ -674,12 +734,12 @@ export default class CasesScan extends Component {
                     <View style={styles.majorColumn}>
                       {this.GetScannerStatus(this.state.scannerConnected)}
                     </View>
-                    <View style={styles.majorColumn}>
-                    <Text>Test Scan Function: </Text>
+                    {/*<View style={styles.majorColumn}>
+                      <Text>Test Scan Function: </Text>
                       <TouchableOpacity onPress={() => this.generateScanTest(this.state.testCount)} style={styles.miniSubmitButton}>
                         <Text style={styles.miniSubmitButtonText}>Scan Test</Text>
                       </TouchableOpacity>
-                    </View>
+                    </View>*/}
                   </View>
                   {this.renderCaseProducts()}
                 </View>

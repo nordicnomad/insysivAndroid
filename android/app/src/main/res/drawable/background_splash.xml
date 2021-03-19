@@ -11,4 +11,13 @@
         android:gravity="center"
         />
 
+    <item
+        android:drawable="@drawable/insysiv_message"
+        android:bottom="60dp"
+        android:height="30dp"
+        android:width="100dp"
+        android:tint="@color/loading_dark"
+        android:gravity="bottom|center"
+        />
+
 </layer-list>

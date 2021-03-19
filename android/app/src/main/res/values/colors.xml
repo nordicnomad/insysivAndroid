@@ -2,4 +2,5 @@
 <resources>
     <color name="background">#ffffff</color>
     <color name="primary_dark">#000</color>
+    <color name="loading_dark">#333</color>
 </resources>

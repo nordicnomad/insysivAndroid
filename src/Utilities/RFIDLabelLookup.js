@@ -5,7 +5,9 @@ var Realm = require('realm');
 let products ;
 let rfidLabels ;
 
-export function RFIDlabelSearch(rfidLabel) {
+export function RFIDlabelSearch(rfidLabel, lastReturnObject, lastCompleteFlag) {
+  console.log("RFID LOOKUP LAST RETURN OBJECT")
+  console.log(lastReturnObject)
   let passedLabel = rfidLabel
   let matchedLabel = {
     licenseNumber: "",
@@ -37,6 +39,8 @@ export function RFIDlabelSearch(rfidLabel) {
     maximumValue: "",
     nonOrdered: "",
     productNote: "",
+    passThroughCompletenessFlag: lastCompleteFlag,
+    invalidScanSegment: false,
   }
 
   //Define database schemas
@@ -104,7 +108,7 @@ export function RFIDlabelSearch(rfidLabel) {
   }
 
   if(matchedLabel.productModelNumber === '' || matchedLabel.productModelNumber === null || matchedLabel.productModelNumber === undefined) {
-    let barcodeSecondaryLookup = BarcodeSearch(rfidLabel, null, true)
+    let barcodeSecondaryLookup = BarcodeSearch(rfidLabel, lastReturnObject, lastCompleteFlag)
 
     if(barcodeSecondaryLookup != null && barcodeSecondaryLookup != undefined) {
       console.log('BARCODE SECONDARY LOOKUP')
@@ -146,6 +150,8 @@ export function RFIDlabelSearch(rfidLabel) {
         maximumValue: barcodeSecondaryLookup.maximumValue,
         nonOrdered: barcodeSecondaryLookup.nonOrdered,
         productNote: barcodeSecondaryLookup.productNote,
+        passThroughCompletenessFlag: barcodeSecondaryLookup.passThroughCompletenessFlag,
+        invalidScanSegment: barcodeSecondaryLookup.invalidScanSegment,
       }
     }
     else {
@@ -176,6 +182,8 @@ export function RFIDlabelSearch(rfidLabel) {
         maximumValue: '',
         nonOrdered: '',
         productNote: '',
+        passThroughCompletenessFlag: true,
+        invalidScanSegment: false,
       }
     }
   }
@@ -212,6 +220,8 @@ export function RFIDlabelSearch(rfidLabel) {
         maximumValue: product.maximumValue,
         nonOrdered: product.nonOrdered,
         productNote: product.productNote,
+        passThroughCompletenessFlag: true,
+        invalidScanSegment: false,
       }
     })
   }

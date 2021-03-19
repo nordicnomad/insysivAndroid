@@ -6,22 +6,22 @@ import UserData from '../dummyData/login.json'
 import DummyProducts from '../dummyData/productsOffline.json'
 import DummyBarcodes from '../dummyData/productBarcodesOffline.json'
 import DummyLabels from '../dummyData/rfidLabelsOffline.json'
-import DummyCases from '../dummyData/casesOffline.json'
 import DummyDocs from '../dummyData/physiciansOffline.json'
 import DummySites from '../dummyData/sitesOffline.json'
 import DummyUsers from '../dummyData/userTablesOffline.json'
 import DummyProcedures from '../dummyData/proceduresOffline.json'
+import DummyVendors from '../dummyData/vendorsOffline.json'
 
 var Realm = require('realm');
 let activeUser ;
 let products ;
 let productBarCodes ;
 let rfidLabels ;
-let activeCases ;
 let physiciansList ;
 let locationsList ;
 let proceduresList ;
 let usersList ;
+let vendorsList ;
 let activeScanableCase ;
 let workingCaseSpace ;
 let workingScanSpace ;
@@ -34,6 +34,7 @@ export default class AccountInfo extends Component {
     this.state = {
       selectedValue: 0,
       gates: [],
+      warningModalState: false,
       account: {
         organization: {
           name: 'Replace with something in user object',
@@ -150,20 +151,16 @@ export default class AccountInfo extends Component {
         scannerCheckInAuth: "string",
       }}]
     });
-    activeCases = new Realm({
-      schema: [{name: 'Active_Cases',
+    vendorsList = new Realm ({
+      schema: [{name: 'Vendors_List',
       properties: {
-        siteId: "string?",
-        caseNumber: "int",
-        dateIn: "string?",
-        timeIn: "string?",
-        dateOut: "string?",
-        timeOut: "string?",
-        patientId: "string",
-        syncSiteName: "string?",
-        billingVerified: "int?"
+        licenseNumber: "string",
+        vendorName: "string",
+        active: "string?",
+        accepted: "string?"
       }}]
-    });
+    })
+
     activeScanableCase = new Realm({
       schema: [{name: 'Active_Scanable_Case',
       properties: {
@@ -263,7 +260,7 @@ export default class AccountInfo extends Component {
   }
   componentDidMount() {
     this.getUserData()
-    this.getAccountData()
+    //this.getAccountData()
   }
   static navigationOptions = ({navigation}) => {
     return {
@@ -765,58 +762,48 @@ export default class AccountInfo extends Component {
     }
   }
 
-  LoadDummyCaseTable = () => {
-    let caseResponse = DummyCases
+  LoadDummyVendorsTable = () => {
+    let vendorResponse = DummyVendors
 
-    this.saveCaseTable(caseResponse)
+    this.saveVendorsTable(vendorResponse)
   }
 
-  saveCaseTable = (caseResponse) => {
-    let savedCases = activeCases.objects('Active_Cases')
-    let newCases = caseResponse
+  saveVendorsTable = (vendorResponse) => {
+    let savedVendors = vendorsList.objects('Vendors_List')
+    let newVendors = vendorResponse
 
-    if(savedCases != undefined && savedCases != null && savedCases.length > 0) {
-      activeCases.write(() => {
-        activeCases.deleteAll()
-        newCases.forEach(function(caseRec, i) {
+    if(savedVendors != undefined && savedVendors != null && savedVendors.length > 0) {
+      vendorsList.write(() => {
+        vendorsList.deleteAll()
+        newVendors.forEach(function(vendor, i) {
           try {
-            activeCases.create('Active_Cases', {
-              siteId: caseRec.siteId,
-              caseNumber: caseRec.caseNumber,
-              dateIn: caseRec.dateIn,
-              timeIn: caseRec.timeIn,
-              dateOut: caseRec.dateOut,
-              timeOut: caseRec.timeOut,
-              patientId: caseRec.patientId,
-              syncSiteName: caseRec.syncSiteName,
-              billingVerified: caseRec.billingVerified
+            vendorsList.create('Vendors_List', {
+              licenseNumber: vendor.licenseNumber,
+              vendorName: vendor.vendorName,
+              active: vendor.active,
+              accepted: vendor.accepted
             })
           }
           catch (e) {
-            console.log("Error on case creation");
+            console.log("Error on vendor creation");
             console.log(e);
           }
         })
       })
     }
     else {
-      activeCases.write(() => {
-        newCases.forEach(function(caseRec, i) {
+      vendorsList.write(() => {
+        newVendors.forEach(function(vendor, i) {
           try {
-            activeCases.create('Active_Cases', {
-              siteId: caseRec.siteId,
-              caseNumber: caseRec.caseNumber,
-              dateIn: caseRec.dateIn,
-              timeIn: caseRec.timeIn,
-              dateOut: caseRec.dateOut,
-              timeOut: caseRec.timeOut,
-              patientId: caseRec.patientId,
-              syncSiteName: caseRec.syncSiteName,
-              billingVerified: caseRec.billingVerified
+            vendorsList.create('Vendors_List', {
+              licenseNumber: vendor.licenseNumber,
+              vendorName: vendor.vendorName,
+              active: vendor.active,
+              accepted: vendor.accepted
             })
           }
           catch (e) {
-            console.log("Error on case creation");
+            console.log("Error on vendor creation");
             console.log(e);
           }
         })
@@ -976,6 +963,21 @@ export default class AccountInfo extends Component {
       })
     }
   }
+  SaveVendors
+  CheckWorkingForLogout = () => {
+    let caseSpace = workingCaseSpace.objects('Working_Case_Space').length
+    let scanSpace = workingScanSpace.objects('Working_Scan_Space').length
+    console.log("LOGOUT WORKING SPACE CHECK")
+    console.log(caseSpace)
+    console.log(scanSpace)
+
+    if(caseSpace.toString() === "0" && scanSpace.toString() === "0") {
+      this.logoutUser()
+    }
+    else {
+      this.setState({warningModalState: true})
+    }
+  }
 
   logoutUser = () => {
     activeUser.write(() => {
@@ -994,14 +996,49 @@ export default class AccountInfo extends Component {
     this.props.navigation.navigate('Login')
   }
 
+  RenderWarningModal() {
+    if(this.state.warningModalState === true) {
+      return(
+        <View style={styles.modalBackgroundContainer}>
+          <View style={styles.modalInnerContainer}>
+            <View style={styles.modalTitleWrapper}>
+              <Text style={styles.modalTitleText}>Data Will Be Lost!</Text>
+            </View>
+            <Text>Logging out now will cause data to be deleted before it has synchronized to your server.</Text>
+            <Text>Would you like to continue? </Text>
+            <View style={styles.sectionContainer}>
+              <View style={styles.modalButtonRow}>
+                <View style={styles.majorColumn}>
+                  <TouchableOpacity
+                    style={styles.miniSubmitButton}
+                    onPress={() => this.logoutUser()}>
+                    <Text style={styles.miniSubmitButtonText}>Continue</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.majorColumn}>
+                  <TouchableOpacity
+                    style={styles.miniSubmitButton}
+                    onPress={() => this.setState({warningModalState: false})}>
+                    <Text style={styles.miniSubmitButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+      )
+    }
+    else {
+      return(<View></View>)
+    }
+  }
+
   render() {
     let isLoggedIn = activeUser.objects('Active_User')
     if(isLoggedIn.length === 0) {
       return(this.props.navigation.navigate('Login'))
     }
     else {
-
-
         let outputProducts = products.objects('Products_Lookup');
         let printProducts = outputProducts.length;
         let outputBarcodes = productBarCodes.objects('Product_Bar_Codes');
@@ -1010,8 +1047,8 @@ export default class AccountInfo extends Component {
         let printRFIDLabels = outputLabels.length;
         let outputUsers = usersList.objects('Users_List');
         let printUsers = outputUsers.length;
-        let outputCases = activeCases.objects('Active_Cases');
-        let printCases = outputCases.length;
+        let outputVendors = vendorsList.objects('Vendors_List');
+        let printVendors = outputVendors.length;
         let outputProcedures = proceduresList.objects('Procedures_List');
         let printProcedures = outputProcedures.length;
         let outputDocs = physiciansList.objects('Physicians_List');
@@ -1024,13 +1061,52 @@ export default class AccountInfo extends Component {
               <View style={styles.titleRow}>
                 <Text style={styles.titleText}>Account Information</Text>
               </View>
-              <View style={styles.errorTextContainer}>
-                <Text style={styles.errorText}>
-                  {this.state.syncProgressMessage}
+              <View style={styles.sectionContainer}>
+                <Text style={styles.bodyTextHeading}>System Information</Text>
+                <Text style={styles.bodyText}>
+                  <Text style={styles.bodyTextLabel}>System Version: </Text>
+                  {this.state.account.organization.systemVersion}
+                </Text>
+                <Text style={styles.bodyText}>
+                  <Text style={styles.bodyTextLabel}>Host Account: </Text>
+                  {this.state.account.organization.name}
                 </Text>
               </View>
               <View style={styles.sectionContainer}>
+                <Text style={styles.bodyTextHeading}>Customer Service</Text>
+                <Text style={styles.bodyText}>
+                  <Text style={styles.bodyTextLabel}>Phone: </Text>
+                  {this.state.account.organization.customerServicePhone}
+                </Text>
+                <Text style={styles.bodyText}>
+                  <Text style={styles.bodyTextLabel}>Email: </Text>
+                  {this.state.account.organization.customerServiceEmail}
+                </Text>
+              </View>
+              <View style={styles.sectionContainer}>
+                <Text style={styles.bodyText}>
+                  <Text style={styles.bodyTextLabel}>Current User: </Text>
+                  {this.state.user.username}
+                </Text>
+                <View style={styles.accountCenterWrapper}>
+                  <View style={styles.buttonRow}>
+                    <TouchableOpacity
+                      style={styles.loginButton}
+                      activeOpacity={0.6}
+                      onPress={() => this.CheckWorkingForLogout()
+                    }>
+                      <Text style={styles.loginButtonText}>Log Out</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+              <View style={styles.sectionContainer}>
                 <Text style={styles.bodyTextHeading}>Application Data</Text>
+                <View style={styles.errorTextContainer}>
+                  <Text style={styles.errorText}>
+                    {this.state.syncProgressMessage}
+                  </Text>
+                </View>
                 <View style={styles.tabControlRow}>
                   <View style={styles.leftColumn}>
                     <Text>Product Table</Text>
@@ -1127,55 +1203,16 @@ export default class AccountInfo extends Component {
                 </View>
                 <View style={styles.tabControlRow}>
                   <View style={styles.leftColumn}>
-                    <Text>Test Case Data</Text>
-                    <Text>{printCases}</Text>
+                    <Text>Test Vendor Data</Text>
+                    <Text>{printVendors}</Text>
                   </View>
                   <View style={styles.rightColumn}>
-                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyCaseTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyVendorsTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
                   </View>
                 </View>
               </View>
-              <View style={styles.sectionContainer}>
-                <Text style={styles.bodyTextHeading}>System Information</Text>
-                <Text style={styles.bodyText}>
-                  <Text style={styles.bodyTextLabel}>System Version: </Text>
-                  {this.state.account.organization.systemVersion}
-                </Text>
-                <Text style={styles.bodyText}>
-                  <Text style={styles.bodyTextLabel}>Host Account: </Text>
-                  {this.state.account.organization.name}
-                </Text>
-              </View>
-              <View style={styles.sectionContainer}>
-                <Text style={styles.bodyTextHeading}>Customer Service</Text>
-                <Text style={styles.bodyText}>
-                  <Text style={styles.bodyTextLabel}>Phone: </Text>
-                  {this.state.account.organization.customerServicePhone}
-                </Text>
-                <Text style={styles.bodyText}>
-                  <Text style={styles.bodyTextLabel}>Email: </Text>
-                  {this.state.account.organization.customerServiceEmail}
-                </Text>
-              </View>
-              <View style={styles.sectionContainer}>
-                <Text style={styles.bodyText}>
-                  <Text style={styles.bodyTextLabel}>Current User: </Text>
-                  {this.state.user.username}
-                </Text>
-                <View style={styles.accountCenterWrapper}>
-                  <View style={styles.buttonRow}>
-                    <TouchableOpacity
-                      style={styles.loginButton}
-                      activeOpacity={0.6}
-                      onPress={() => this.logoutUser()
-                    }>
-                      <Text style={styles.loginButtonText}>Log Out</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-
             </View>
+            {this.RenderWarningModal()}
           </ScrollView>
       );
     }

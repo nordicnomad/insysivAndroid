@@ -505,6 +505,8 @@ export default StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     flexWrap: 'wrap',
+    borderBottomColor: '#ccc',
+    borderBottomWidth: 1,
   },
   majorMinorRow: {
     display: 'flex',
@@ -653,7 +655,7 @@ export default StyleSheet.create({
     top: 0,
     left: 0,
     width: width,
-    height: height,
+    height: '100%'
   },
   modalTitleWrapper: {
     position: 'relative',

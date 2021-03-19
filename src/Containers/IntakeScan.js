@@ -11,6 +11,7 @@ import SoundPlayer from 'react-native-sound-player'
 
 var Realm = require('realm');
 let activeUser ;
+let vendorsList ;
 let workingScanSpace ;
 let scanListener = {}
 
@@ -47,6 +48,15 @@ export default class IntakeScan extends Component {
           //Additional Organization Level Configuration Options go Here.
       }}]
     });
+    vendorsList = new Realm ({
+      schema: [{name: 'Vendors_List',
+      properties: {
+        licenseNumber: "string",
+        vendorName: "string",
+        active: "string?",
+        accepted: "string?"
+      }}]
+    })
 
     workingScanSpace = new Realm({
       schema: [{name: 'Working_Scan_Space',
@@ -330,8 +340,14 @@ export default class IntakeScan extends Component {
             })
           }
           else {
+            try {
+                SoundPlayer.playSoundFile('continuescan', 'wav')
+            } catch (e) {
+                console.log(`cannot play the sound file`, e)
+            }
             this.setState({
-              pageErrorMessage: "Scan Next Barcode Segment"
+              pageErrorMessage: "Scan Next Barcode Segment",
+              lastCompleteFlag: false,
             })
           }
         }
@@ -664,7 +680,19 @@ export default class IntakeScan extends Component {
       )
     }
     else {
+      let vendorLookup = vendorsList.objects("Vendors_List")
+      let vendorBuildString = ""
+
+      let vendorFiltration = []
+      let vendorName = ''
+
       scannedItems.forEach(function(item, index){
+        vendorBuildString = 'licenseNumber CONTAINS "' + item.orderThruVendor + '"'
+        vendorFiltration = vendorLookup.filtered(vendorBuildString)
+
+        if(vendorFiltration != '' && vendorFiltration != undefined && vendorFiltration != null) {
+          vendorName = vendorFiltration[0].vendorName
+        }
         scanOutput.push(
           <ProductListTrayItem
             key={index}
@@ -679,7 +707,7 @@ export default class IntakeScan extends Component {
             itemBatchLot = {item.batchOrLotNumber}
             itemExpiration={item.expirationDate}
             itemLicenseNumber={item.productVendorLicense}
-            itemOrderVendor={item.orderThruVendor}
+            itemOrderVendor={vendorName}
             itemAutoReplace={item.autoReplace}
             itemDiscontinued={item.discontinued}
             itemProductCategory={item.productCategory}
@@ -720,20 +748,22 @@ export default class IntakeScan extends Component {
           <ScrollView style={styles.scrollContainer}>
             <View style={styles.container}>
               <View style={styles.titleRow}>
-                <Text style={styles.titleText}>Intake Scan</Text>
+                <View style={styles.majorColumn}>
+                  <Text style={styles.titleText}>Intake Scan</Text>
+                </View>
+                <View style={styles.majorColumn}>
+                  <TouchableOpacity onPress={() => this.resetScanList()} style={styles.miniSubmitButton}><Text style={styles.miniSubmitButtonText}>Clear List</Text></TouchableOpacity>
+                </View>
               </View>
               <View style={styles.errorTextContainer}><Text style={styles.errorText}>{this.state.pageErrorMessage}</Text></View>
-              <View style={styles.sectionContainer}>
+              {/*<View style={styles.sectionContainer}>
                 <Text>Test Scan Function: </Text>
                 <View style={styles.menuRow}>
                   <View style={styles.majorColumn}>
                     <TouchableOpacity onPress={() => this.generateScanTest(this.state.testCount)} style={styles.miniSubmitButton}><Text style={styles.miniSubmitButtonText}>Scan Test</Text></TouchableOpacity>
                   </View>
-                  <View style={styles.majorColumn}>
-                    <TouchableOpacity onPress={() => this.resetScanList()} style={styles.miniSubmitButton}><Text style={styles.miniSubmitButtonText}>Clear List</Text></TouchableOpacity>
-                  </View>
                 </View>
-              </View>
+              </View>*/}
               <View style={styles.sectionContainer}>
                 <View style={styles.menuRow}>
                   <View style={styles.majorColumn}>

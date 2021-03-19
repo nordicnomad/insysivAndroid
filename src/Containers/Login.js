@@ -55,6 +55,9 @@ export default class Login extends Component {
   componentDidMount() {
     let usersLoaded = usersList.objects('Users_List')
     let activeUsers = activeUser.objects('Active_User')
+    //clear old error messages
+    this.setState({loginError: ""})
+    //forward to home if already logged in, if no prior login get user table. 
     if(activeUsers === null || activeUsers === undefined || activeUsers.length === 0 ) {
       if(usersLoaded === null || usersLoaded === undefined || usersLoaded.length === 0) {
         //this.fetchUsersTable()

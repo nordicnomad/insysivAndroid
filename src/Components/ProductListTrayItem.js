@@ -36,7 +36,6 @@ export default class ProductListTrayItem extends Component {
     }
     else {
       formatDate = moment(formatDate, "YYMMDD").format("MMMM Do YYYY")
-
     }
     return (
       <View style={styles.productListItem}>
@@ -95,34 +94,10 @@ export default class ProductListTrayItem extends Component {
           </View>
           <View style={styles.straightRow}>
             <View style={styles.equalColumn}>
-              <Text style={styles.trayLabel}>License Number</Text>
-            </View>
-            <View style={styles.equalColumn}>
-              <Text style={styles.trayText}>{this.props.itemLicenseNumber}</Text>
-            </View>
-          </View>
-          <View style={styles.straightRow}>
-            <View style={styles.equalColumn}>
-              <Text style={styles.trayLabel}>Vendor Number</Text>
+              <Text style={styles.trayLabel}>Vendor Name</Text>
             </View>
             <View style={styles.equalColumn}>
               <Text style={styles.trayText}>{this.props.itemOrderVendor}</Text>
-            </View>
-          </View>
-          <View style={styles.straightRow}>
-            <View style={styles.equalColumn}>
-              <Text style={styles.trayLabel}>Auto Replace</Text>
-            </View>
-            <View style={styles.equalColumn}>
-              <Text style={styles.trayText}>{this.props.itemAutoReplace}</Text>
-            </View>
-          </View>
-          <View style={styles.straightRow}>
-            <View style={styles.equalColumn}>
-              <Text style={styles.trayLabel}>Discontinued</Text>
-            </View>
-            <View style={styles.equalColumn}>
-              <Text style={styles.trayText}>{this.props.itemDiscontinued}</Text>
             </View>
           </View>
           <View style={styles.straightRow}>
@@ -203,22 +178,6 @@ export default class ProductListTrayItem extends Component {
             </View>
             <View style={styles.equalColumn}>
               <Text style={styles.trayText}>{this.props.itemConsignment}</Text>
-            </View>
-          </View>
-          <View style={styles.straightRow}>
-            <View style={styles.equalColumn}>
-              <Text style={styles.trayLabel}>Minimum Value</Text>
-            </View>
-            <View style={styles.equalColumn}>
-              <Text style={styles.trayText}>{this.props.itemMinimumValue}</Text>
-            </View>
-          </View>
-          <View style={styles.straightRow}>
-            <View style={styles.equalColumn}>
-              <Text style={styles.trayLabel}>Maximum Value</Text>
-            </View>
-            <View style={styles.equalColumn}>
-              <Text style={styles.trayText}>{this.props.itemMaximumValue}</Text>
             </View>
           </View>
           <View style={styles.straightRow}>

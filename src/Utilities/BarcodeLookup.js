@@ -170,7 +170,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
 
     hibcAppIdentifiers.forEach((aiCode, i) => {
       if(aiCode.charAt(0) === "+" && aiCode.charAt(2) != "$") {
-        primaryCode = hibcAppStrings[i]
+        primaryCode = hibcAppIdentifiers[i]
       }
     });
     if(primaryCode === '') {
@@ -305,7 +305,13 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
           console.log(idObject)
         }
         if(idObject.identifier === "01") {
-          primaryCode = uccNumAppStrings[i]
+          primaryCode = uccNumAppIdentifiers[i]
+        }
+        //secondary productModelNumber location
+        else if(idObject.identifier === "240") {
+          if(primaryCode === '') {
+            primaryCode = uccNumAppIdentifiers[i]
+          }
         }
     })
 
@@ -321,6 +327,10 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     uccNumAppIdentifiers.forEach((identifier, i) => {
       decodeReturnObject = DecodeUCC(identifier, uccNumAppStrings[i], decodeReturnObject)
     })
+    //code 240 can sometimes contain manufacturerModelNumber
+    if(primaryCode === "(240)") {
+      decodeReturnObject.productModelNumber = decodeReturnObject.secondaryProductAttributes
+    }
   }
 
   else if(passedBarcode.substring(0,1) === '(') {
@@ -380,7 +390,12 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     })
     uccAppIdentifiers.forEach((aiCode, i) => {
       if(aiCode === "(01)") {
-        primaryCode = uccAppStrings[i]
+        primaryCode = uccAppIdentifiers[i]
+      }
+      else if(aiCode === "(240)") {
+        if(primaryCode === '') {
+          primaryCode = uccAppIdentifiers[i]
+        }
       }
     });
     if(primaryCode === '') {
@@ -395,18 +410,33 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     uccAppIdentifiers.forEach((identifier, i) => {
       decodeReturnObject = DecodeUCC(identifier, uccAppStrings[i], decodeReturnObject)
     })
+    if(primaryCode === "(240)") {
+      decodeReturnObject.productModelNumber = decodeReturnObject.secondaryProductAttributes
+    }
   }
 
   //Search barcode table for manufacturer number match and product table for product number match
   if(primaryCode != '') {
-    let buildBarcodeFilterString = 'productBarCode1 CONTAINS "' + decodeReturnObject.manufacturerModelNumber + '"'
-    let filteredBarcodeMatches = barcodeTable.filtered(buildBarcodeFilterString)
+    console.log("PRIMARY CODE")
+    console.log(primaryCode)
     let productModelNumber = ""
-    filteredBarcodeMatches.forEach((barcode, i) => {
-      if(productModelNumber === "") {
-        productModelNumber = barcode.productModelNumber
-      }
-    })
+    if(primaryCode === '240' || primaryCode === '(240)') {
+      //supporting medtronic product model number search
+      console.log("SECONDARY MEDTRONIC PMN")
+      console.log(decodeReturnObject.productModelNumber)
+      productModelNumber = decodeReturnObject.productModelNumber
+    }
+    else {
+      //normal manufacturer model number search
+      let buildBarcodeFilterString = 'productBarCode1 CONTAINS "' + decodeReturnObject.manufacturerModelNumber + '"'
+      let filteredBarcodeMatches = barcodeTable.filtered(buildBarcodeFilterString)
+      filteredBarcodeMatches.forEach((barcode, i) => {
+        if(productModelNumber === "") {
+          productModelNumber = barcode.productModelNumber
+        }
+      })
+    }
+
     if(productModelNumber != '') {
       let buildProductFilterString = 'productModelNumber CONTAINS "' + productModelNumber + '"'
       let filteredProductMatches = productTable.filtered(buildProductFilterString)
@@ -431,7 +461,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
             waste: false,
             scanned: true,
           }
-          //numbers need to be strings for realm db 
+          //numbers need to be strings for realm db
           if(product.licenseNumber != null) {matchedProduct.licenseNumber = product.licenseNumber.toString()} else {matchedProduct.licenseNumber = ''}
           if(product.orderThruVendor != null) {matchedProduct.orderThruVendor = product.orderThruVendor.toString()} else {matchedProduct.orderThruVendor = ''}
           if(product.productCategory != null) {matchedProduct.productCategory = product.productCategory.toString()} else {matchedProduct.productCategory = ''}
@@ -449,6 +479,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
         }
       });
     }
+
 
   }
 
