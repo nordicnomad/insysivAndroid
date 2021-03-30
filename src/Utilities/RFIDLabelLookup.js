@@ -17,6 +17,7 @@ export function RFIDlabelSearch(rfidLabel, lastReturnObject, lastCompleteFlag) {
     tagid: "",
   }
   let matchedRfidProduct = {
+    scannedLabel: rfidLabel,
     licenseNumber: "",
     productModelNumber: "",
     orderThruVendor: "",
@@ -124,6 +125,7 @@ export function RFIDlabelSearch(rfidLabel, lastReturnObject, lastCompleteFlag) {
         lotSerial = barcodeSecondaryLookup.batchOrLotNumber + "/" + barcodeSecondaryLookup.serialNumber
       }
       matchedRfidProduct = {
+        scannedLabel: rfidLabel,
         licenseNumber: barcodeSecondaryLookup.licenseNumber,
         productModelNumber: barcodeSecondaryLookup.productModelNumber,
         lotSerialNumber: lotSerial,
@@ -152,10 +154,12 @@ export function RFIDlabelSearch(rfidLabel, lastReturnObject, lastCompleteFlag) {
         productNote: barcodeSecondaryLookup.productNote,
         passThroughCompletenessFlag: barcodeSecondaryLookup.passThroughCompletenessFlag,
         invalidScanSegment: barcodeSecondaryLookup.invalidScanSegment,
+        isUnknown: false,
       }
     }
     else {
       matchedRfidProduct = {
+        scannedLabel: rfidLabel,
         licenseNumber: "Error / No Match",
         productModelNumber: "0000",
         lotSerialNumber: "0000",
@@ -184,6 +188,7 @@ export function RFIDlabelSearch(rfidLabel, lastReturnObject, lastCompleteFlag) {
         productNote: '',
         passThroughCompletenessFlag: true,
         invalidScanSegment: false,
+        isUnknown: true,
       }
     }
   }
@@ -194,6 +199,7 @@ export function RFIDlabelSearch(rfidLabel, lastReturnObject, lastCompleteFlag) {
 
     filteredProductMatches.forEach((product, i) => {
       matchedRfidProduct = {
+        scannedLabel: rfidLabel,
         licenseNumber: product.licenseNumber,
         lotSerialNumber: matchedLabel.lotSerialNumber,
         expirationDate: matchedLabel.expirationDate,
@@ -222,6 +228,7 @@ export function RFIDlabelSearch(rfidLabel, lastReturnObject, lastCompleteFlag) {
         productNote: product.productNote,
         passThroughCompletenessFlag: true,
         invalidScanSegment: false,
+        isUnknown: false,
       }
     })
   }

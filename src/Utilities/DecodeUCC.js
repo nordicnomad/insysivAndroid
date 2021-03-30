@@ -9,6 +9,7 @@ export function DecodeUCC(appIdentifier, passedBarcodeString, uccDecodeReturnObj
   // ucc (01) 14 digits - numeric
   let containerCodeModelNumber = ''
   let containerCodeVendorLicense = ''
+  let barcodeMatchSegment = ''
   // ucc (02) 14 digits - numeric
   let numberOfContainers = ''
   // ucc (10) 1-20 alphanumeric
@@ -43,6 +44,7 @@ export function DecodeUCC(appIdentifier, passedBarcodeString, uccDecodeReturnObj
     containerCodeVendorLicense = passedBarcode.substring(1, 7)
     //Product Number, 5 characters starting at position 8
     containerCodeModelNumber = passedBarcode.substring(8, 13)
+    barcodeMatchSegment = passedBarcode
 
     console.log("01 passedbarcode")
     console.log(passedBarcode)
@@ -51,6 +53,7 @@ export function DecodeUCC(appIdentifier, passedBarcodeString, uccDecodeReturnObj
 
     returnObject.manufacturerModelNumber = containerCodeModelNumber
     returnObject.productVendorLicense = containerCodeVendorLicense
+    returnObject.barcodeMatchSegment = barcodeMatchSegment
   }
   else if(identifier === '(02)') {
     // ucc (02) 14 digits - numeric

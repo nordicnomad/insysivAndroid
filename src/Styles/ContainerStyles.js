@@ -593,6 +593,14 @@ export default StyleSheet.create({
     color: '#333',
     fontWeight: "300",
   },
+  invalidSaveLabel: {
+    textAlign: 'right',
+    fontSize: 14,
+    color: '#888',
+    fontWeight: 'bold',
+    marginBottom: 0,
+    marginRight: 15,
+  },
 
   /* Old inventory scan styles */
   scrollView: {

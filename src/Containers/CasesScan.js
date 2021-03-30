@@ -37,6 +37,7 @@ export default class CasesScan extends Component {
       procedureDescription: '',
       siteName: '',
       lastCompleteFlag: true,
+      showSaveInvalid: false,
       lastScannedObject: {},
     }
 
@@ -291,137 +292,121 @@ export default class CasesScan extends Component {
       )
     }
   }
+  SaveInvalidScan = (lastLookup) => {
+    workingCaseSpace.write(() => {
+      try {
+        workingCaseSpace.create('Working_Case_Space', {
+          barcode: lastLookup.scannedLabel,
+          description: lastLookup.productDescription,
+          scannedRfid: lastLookup.scannedRfid,
+          cprod_pk_product_sequence: null,
+          cprod_line_number: null,
+          cprod_billing_code: null,
+          cprod_change_timestamp: new Date().toISOString(),
+          cprod_change_userid: "Scanner",
+          cprod_expiration_date: lastLookup.expirationDate,
+          cprod_license_number: lastLookup.licenseNumber,
+          cprod_product_model_number: lastLookup.productModelNumber,
+          cprod_lot_serial_number: lastLookup.lotSerialNumber,
+          cprod_no_charge_reason: null,
+          cprod_no_charge_type: null,
+          cprod_remote_id: null,
+          cprod_requisition_number: null
+        })
+        this.setState({
+          pageErrorMessage: "",
+          showSaveInvalid: false,
+        })
+      }
+      catch (e) {
+        console.log("Error on working case space invalid item creation");
+        console.log(e);
+        this.setState({
+          pageErrorMessage: "Item Save Error",
+          showSaveInvalid: false,
+        })
+      }
+    });
+
+  }
+  RenderSaveInvalidSection(showSaveInvalid) {
+    if(showSaveInvalid === true) {
+      return(
+        <View>
+          <View style={styles.menuRow}>
+            <View style={styles.majorColumn}>
+              <Text style={styles.invalidSaveLabel}>Save Invalid Scan Segment as an Unknown Product:</Text>
+            </View>
+            <View style={styles.majorColumn}>
+              <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.SaveInvalidScan(this.state.lastScannedObject)}>
+                <Text style={styles.miniSubmitButtonText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )
+    }
+    else {
+      return(<View></View>)
+    }
+  }
   ScanBarcode = (newBarcode) => {
-    let scannedBarcode = newBarcode
-
-    //Instantiate Variables
-    if(scannedBarcode != undefined && scannedBarcode != null) {
-      let scannedItemsList = workingCaseSpace.objects("Working_Case_Space")
-
-      //Behaves differently than intake scan since like items aren't grouped.
-      //Each unique RFID tag is a line item and all RFID tags are unique.
-      let barcodeLookup = RFIDlabelSearch(scannedBarcode, this.state.lastScannedObject, this.state.lastCompleteFlag)
-      if(barcodeLookup === null || barcodeLookup === undefined) {
-        this.setState({
-          pageErrorMessage: "BAD LOOKUP"
-        })
+    if(newBarcode.substring(0,1) === "{") {
+      console.log('INVALID SCAN FORMAT')
+      try {
+          SoundPlayer.playSoundFile('invalidscan', 'wav')
+      } catch (e) {
+          console.log(`cannot play the sound file`, e)
       }
-      else {
-        if(barcodeLookup.passThroughCompletenessFlag === true) {
+      this.setState({
+        pageErrorMessage: "Unsupported Barcode Format",
+        showSaveInvalid: false,
+        lastCompleteFlag: true,
+      })
+    }
+    else {
+      let scannedBarcode = newBarcode
+
+      //Instantiate Variables
+      if(scannedBarcode != undefined && scannedBarcode != null) {
+        let scannedItemsList = workingCaseSpace.objects("Working_Case_Space")
+
+        //Behaves differently than intake scan since like items aren't grouped.
+        //Each unique RFID tag is a line item and all RFID tags are unique.
+        let barcodeLookup = RFIDlabelSearch(scannedBarcode, this.state.lastScannedObject, this.state.lastCompleteFlag)
+        if(barcodeLookup === null || barcodeLookup === undefined) {
           this.setState({
-            lastCompleteFlag: true,
-            lastScannedObject: barcodeLookup,
+            pageErrorMessage: "BAD LOOKUP"
           })
         }
         else {
-          this.setState({
-            lastCompleteFlag: false,
-            lastScannedObject: barcodeLookup,
-          })
-        }
-        this.setState({
-          pageErrorMessage: ""
-        })
-      }
-      console.log("SCANNED RFID")
-      console.log(barcodeLookup.scannedRfid)
-      if(barcodeLookup.scannedRfid === false) {
-        //item was secondary barcode
-        console.log("SCANNED RFID FALSE EXPIRATION FORMAT")
-        console.log(barcodeLookup.expirationDate)
-        if(barcodeLookup.passThroughCompletenessFlag === true) {
-          workingCaseSpace.write(() => {
-            try {
-              workingCaseSpace.create('Working_Case_Space', {
-                barcode: scannedBarcode,
-                description: barcodeLookup.productDescription,
-                scannedRfid: barcodeLookup.scannedRfid,
-                cprod_pk_product_sequence: null,
-                cprod_line_number: null,
-                cprod_billing_code: null,
-                cprod_change_timestamp: new Date().toISOString(),
-                cprod_change_userid: "Scanner",
-                cprod_expiration_date: barcodeLookup.expirationDate,
-                cprod_license_number: barcodeLookup.licenseNumber,
-                cprod_product_model_number: barcodeLookup.productModelNumber,
-                cprod_lot_serial_number: barcodeLookup.lotSerialNumber,
-                cprod_no_charge_reason: null,
-                cprod_no_charge_type: null,
-                cprod_remote_id: null,
-                cprod_requisition_number: null
-              })
-            }
-            catch (e) {
-              this.setState({
-                pageErrorMessage: "Scan Save Error: " + e
-              })
-              console.log("Error on Working Case Space Create")
-              console.log(e)
-            }
-          })
-          if(barcodeLookup.productModelNumber === "0000" || barcodeLookup.productModelNumber === "" || barcodeLookup.productModelNumber === null || barcodeLookup.productModelNumber === undefined) {
-            try {
-                SoundPlayer.playSoundFile('unknownproduct', 'wav')
-            } catch (e) {
-                console.log(`cannot play the sound file`, e)
-            }
-          }
-          else {
-            try {
-                SoundPlayer.playSoundFile('scansuccess', 'wav')
-            } catch (e) {
-                console.log(`cannot play the sound file`, e)
-            }
-          }
-          this.setState({
-            scanCount: (this.state.scanCount + 1)
-          })
-        }
-        else {
-          if(barcodeLookup.invalidScanSegment) {
-            //set completeness flag here to drop return object and skip working space save
-            try {
-                SoundPlayer.playSoundFile('invalidscan', 'wav')
-            } catch (e) {
-                console.log(`cannot play the sound file`, e)
-            }
+          if(barcodeLookup.passThroughCompletenessFlag === true) {
             this.setState({
-              pageErrorMessage: "Invalid Scan Segment Order",
               lastCompleteFlag: true,
+              lastScannedObject: barcodeLookup,
             })
           }
           else {
-            try {
-                SoundPlayer.playSoundFile('continuescan', 'wav')
-            } catch (e) {
-                console.log(`cannot play the sound file`, e)
-            }
             this.setState({
-              pageErrorMessage: "Scan Next Barcode Segment",
               lastCompleteFlag: false,
+              lastScannedObject: barcodeLookup,
             })
           }
+          this.setState({
+            pageErrorMessage: ""
+          })
         }
-      }
-      else {
-        //Item was RFID labeled product
-        //If item is not expired, save to working DB.
-        let currentTimeStamp = new Date().toISOString()
-        let compareDate = moment(barcodeLookup.expirationDate, "MM-DD-YYYY").toISOString()
-        console.log("RFID SCANNED TRUE EXPIRATION DATE")
-        console.log(barcodeLookup.expirationDate)
-        console.log(compareDate)
-        console.log("CURRENT DATE")
-        console.log(currentTimeStamp)
-        console.log("IS EXPIRED CHECK")
-        console.log(moment(currentTimeStamp).isBefore(compareDate))
-        if(moment(currentTimeStamp).isBefore(compareDate)) {
-          //Item is not expired
+        console.log("SCANNED RFID")
+        console.log(barcodeLookup.scannedRfid)
+        if(barcodeLookup.scannedRfid === false) {
+          //item was secondary barcode
+          console.log("SCANNED RFID FALSE EXPIRATION FORMAT")
+          console.log(barcodeLookup.expirationDate)
           if(barcodeLookup.passThroughCompletenessFlag === true) {
             workingCaseSpace.write(() => {
               try {
                 workingCaseSpace.create('Working_Case_Space', {
-                  barcode: scannedBarcode,
+                  barcode: barcodeLookup.scannedLabel,
                   description: barcodeLookup.productDescription,
                   scannedRfid: barcodeLookup.scannedRfid,
                   cprod_pk_product_sequence: null,
@@ -447,9 +432,7 @@ export default class CasesScan extends Component {
                 console.log(e)
               }
             })
-            console.log("PRODUCT MODEL NUMBER")
-            console.log(barcodeLookup.productModelNumber)
-            if(barcodeLookup.productModelNumber === "0000" || barcodeLookup.productModelNumber === "" || barcodeLookup.productModelNumber === null || barcodeLookup.productModelNumber === undefined) {
+            if(barcodeLookup.isUnknown === true) {
               try {
                   SoundPlayer.playSoundFile('unknownproduct', 'wav')
               } catch (e) {
@@ -463,6 +446,9 @@ export default class CasesScan extends Component {
                   console.log(`cannot play the sound file`, e)
               }
             }
+            this.setState({
+              scanCount: (this.state.scanCount + 1)
+            })
           }
           else {
             if(barcodeLookup.invalidScanSegment) {
@@ -474,26 +460,115 @@ export default class CasesScan extends Component {
               }
               this.setState({
                 pageErrorMessage: "Invalid Scan Segment Order",
+                showSaveInvalid: true,
                 lastCompleteFlag: true,
               })
             }
+            else {
+              try {
+                  SoundPlayer.playSoundFile('continuescan', 'wav')
+              } catch (e) {
+                  console.log(`cannot play the sound file`, e)
+              }
+              this.setState({
+                pageErrorMessage: "Scan Next Barcode Segment",
+                lastCompleteFlag: false,
+              })
+            }
           }
-
-          this.setState({
-            scanCount: (this.state.scanCount + 1)
-          })
         }
-        //If is expired do not save, display message, and make horrible noise.
         else {
-          try {
-              SoundPlayer.playSoundFile('expiredproduct', 'wav')
-          } catch (e) {
-              console.log(`cannot play the sound file`, e)
+          //Item was RFID labeled product
+          //If item is not expired, save to working DB.
+          let currentTimeStamp = new Date().toISOString()
+          let compareDate = moment(barcodeLookup.expirationDate, "MM-DD-YYYY").toISOString()
+          console.log("RFID SCANNED TRUE EXPIRATION DATE")
+          console.log(barcodeLookup.expirationDate)
+          console.log(compareDate)
+          console.log("CURRENT DATE")
+          console.log(currentTimeStamp)
+          console.log("IS EXPIRED CHECK")
+          console.log(moment(currentTimeStamp).isBefore(compareDate))
+          if(moment(currentTimeStamp).isBefore(compareDate)) {
+            //Item is not expired
+            if(barcodeLookup.passThroughCompletenessFlag === true) {
+              workingCaseSpace.write(() => {
+                try {
+                  workingCaseSpace.create('Working_Case_Space', {
+                    barcode: barcodeLookup.scannedLabel,
+                    description: barcodeLookup.productDescription,
+                    scannedRfid: barcodeLookup.scannedRfid,
+                    cprod_pk_product_sequence: null,
+                    cprod_line_number: null,
+                    cprod_billing_code: null,
+                    cprod_change_timestamp: new Date().toISOString(),
+                    cprod_change_userid: "Scanner",
+                    cprod_expiration_date: barcodeLookup.expirationDate,
+                    cprod_license_number: barcodeLookup.licenseNumber,
+                    cprod_product_model_number: barcodeLookup.productModelNumber,
+                    cprod_lot_serial_number: barcodeLookup.lotSerialNumber,
+                    cprod_no_charge_reason: null,
+                    cprod_no_charge_type: null,
+                    cprod_remote_id: null,
+                    cprod_requisition_number: null
+                  })
+                }
+                catch (e) {
+                  this.setState({
+                    pageErrorMessage: "Scan Save Error: " + e
+                  })
+                  console.log("Error on Working Case Space Create")
+                  console.log(e)
+                }
+              })
+              console.log("PRODUCT MODEL NUMBER")
+              console.log(barcodeLookup.productModelNumber)
+              if(barcodeLookup.isUnknown === true) {
+                try {
+                    SoundPlayer.playSoundFile('unknownproduct', 'wav')
+                } catch (e) {
+                    console.log(`cannot play the sound file`, e)
+                }
+              }
+              else {
+                try {
+                    SoundPlayer.playSoundFile('scansuccess', 'wav')
+                } catch (e) {
+                    console.log(`cannot play the sound file`, e)
+                }
+              }
+            }
+            else {
+              if(barcodeLookup.invalidScanSegment) {
+                //set completeness flag here to drop return object and skip working space save
+                try {
+                    SoundPlayer.playSoundFile('invalidscan', 'wav')
+                } catch (e) {
+                    console.log(`cannot play the sound file`, e)
+                }
+                this.setState({
+                  pageErrorMessage: "Invalid Scan Segment Order",
+                  lastCompleteFlag: true,
+                })
+              }
+            }
+
+            this.setState({
+              scanCount: (this.state.scanCount + 1)
+            })
           }
-          this.setState({
-            pageErrorMessage: "This Product is Past Expiration Date: " + barcodeLookup.expirationDate
-          })
-          console.log(this.state.pageErrorMessage)
+          //If is expired do not save, display message, and make horrible noise.
+          else {
+            try {
+                SoundPlayer.playSoundFile('expiredproduct', 'wav')
+            } catch (e) {
+                console.log(`cannot play the sound file`, e)
+            }
+            this.setState({
+              pageErrorMessage: "This Product is Past Expiration Date: " + barcodeLookup.expirationDate
+            })
+            console.log(this.state.pageErrorMessage)
+          }
         }
       }
     }
@@ -729,6 +804,7 @@ export default class CasesScan extends Component {
                   </View>
                 </View>
                 <View style={styles.errorTextContainer}><Text style={styles.errorText}>{this.state.pageErrorMessage}</Text></View>
+                {this.RenderSaveInvalidSection(this.state.showSaveInvalid)}
                 <View style={styles.sectionContainer}>
                   <View style={styles.menuRow}>
                     <View style={styles.majorColumn}>

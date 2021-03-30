@@ -33,7 +33,8 @@ export default class IntakeScan extends Component {
       scannerConnected: false,
       lastCompleteFlag: true,
       lastScannedObject: {},
-      pageErrorMessage: ''
+      pageErrorMessage: '',
+      showSaveInvalid: false,
     }
 
     activeUser = new Realm({
@@ -192,26 +193,230 @@ export default class IntakeScan extends Component {
       ),
     }
   };
+  SaveInvalidScan = (lastLookup) => {
+    workingScanSpace.write(() => {
+      try {
+        workingScanSpace.create('Working_Scan_Space', {
+          barcode: lastLookup.barcode,
+          serialContainerCode: lastLookup.serialContainerCode,
+          manufacturerModelNumber: lastLookup.manufacturerModelNumber,
+          vendorLicenseNumber: lastLookup.vendorLicenseNumber,
+          numberOfContainers: lastLookup.numberOfContainers,
+          batchOrLotNumber: lastLookup.batchOrLotNumber,
+          expirationDate: lastLookup.expirationDate,
+          productVariant: lastLookup.productVariant,
+          serialNumber: lastLookup.serialNumber,
+          hibcc: lastLookup.hibcc,
+          lotNumber: lastLookup.lotNumber,
+          quantityEach: lastLookup.quantityEach,
+          secondaryProductAttributes: lastLookup.secondaryProductAttributes,
+          hibcSecondaryExpiration: lastLookup.hibcSecondaryExpiration,
+          hibcSecondaryManufacture: lastLookup.hibcSecondaryManufacture,
+          secondarySerialNumber: lastLookup.secondarySerialNumber,
+          hibcSecondarySerial: lastLookup.hibcSecondarySerial,
+          quantityOfUnitsContained: lastLookup.quantityOfUnitsContained,
+          hibcManufactureDate: lastLookup.hibcManufactureDate,
+          passThroughCompletenessFlag: lastLookup.passThroughCompletenessFlag,
+          trayState: lastLookup.trayState,
+          isUnknown: lastLookup.isUnknown,
+          licenseNumber: lastLookup.licenseNumber,
+          productModelNumber: lastLookup.productModelNumber,
+          orderThruVendor: lastLookup.orderThruVendor,
+          productDescription: "Unknown Product",
+          autoReplace: lastLookup.autoReplace,
+          discontinued: lastLookup.discontinued,
+          productCategory: lastLookup.productCategory,
+          hospitalItemNumber: lastLookup.hospitalItemNumber,
+          unitOfMeasure: lastLookup.unitOfMeasure,
+          unitOfMeasureQuantity: lastLookup.unitOfMeasureQuantity,
+          reorderValue: lastLookup.reorderValue,
+          quantityOnHand: lastLookup.quantityOnHand,
+          quantityOrdered: lastLookup.quantityOrdered,
+          lastRequistionNumber: lastLookup.lastRequistionNumber,
+          orderStatus: lastLookup.orderStatus,
+          active: lastLookup.active,
+          accepted: lastLookup.accepted,
+          consignment: lastLookup.consignment,
+          minimumValue: lastLookup.minimumValue,
+          maximumValue: lastLookup.maximumValue,
+          nonOrdered: lastLookup.nonOrdered,
+          productNote: lastLookup.productNote,
+          scannedTime: lastLookup.scannedTime,
+          count: lastLookup.count,
+          waste: lastLookup.waste,
+          scanned: lastLookup.scanned,
+        })
+        this.setState({
+          pageErrorMessage: "",
+          showSaveInvalid: false,
+        })
+      }
+      catch (e) {
+        console.log("Error on working scan space invalid item creation");
+        console.log(e);
+        this.setState({
+          pageErrorMessage: "Item Save Error",
+          showSaveInvalid: false,
+        })
+      }
+    });
+
+  }
+  RenderSaveInvalidSection(showSaveInvalid) {
+    if(showSaveInvalid === true) {
+      return(
+        <View>
+          <View style={styles.menuRow}>
+            <View style={styles.majorColumn}>
+              <Text style={styles.invalidSaveLabel}>Save Invalid Scan Segment as an Unknown Product:</Text>
+            </View>
+            <View style={styles.majorColumn}>
+              <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.SaveInvalidScan(this.state.lastScannedObject)}>
+                <Text style={styles.miniSubmitButtonText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )
+    }
+    else {
+      return(<View></View>)
+    }
+  }
   ScanBarcode = (newBarcode) => {
-    //Instantiate Variables
-    let lastCompleteFlag = this.state.lastCompleteFlag
+    if(newBarcode.substring(0,1) === "{") {
+      console.log('INVALID SCAN FORMAT')
+      try {
+          SoundPlayer.playSoundFile('invalidscan', 'wav')
+      } catch (e) {
+          console.log(`cannot play the sound file`, e)
+      }
+      this.setState({
+        pageErrorMessage: "Unsupported Barcode Format",
+        showSaveInvalid: false,
+        lastCompleteFlag: true,
+      })
+    }
+    else {
+      this.setState({
+        showSaveInvalid: false,
+      })
+      //Instantiate Variables
+      let lastCompleteFlag = this.state.lastCompleteFlag
 
-    if(newBarcode != undefined && newBarcode != null) {
-      let scannedItemsList = workingScanSpace.objects('Working_Scan_Space')
-      let scannedBarcode = newBarcode
-      let scanMatched = false
-      let totalCount = 1
-      let barcodeLookup = {}
+      if(newBarcode != undefined && newBarcode != null) {
+        let scannedItemsList = workingScanSpace.objects('Working_Scan_Space')
+        let scannedBarcode = newBarcode
+        let scanMatched = false
+        let totalCount = 1
+        let barcodeLookup = {}
 
-      //Check scanned items for existing barcode increase count of identical scans
-      workingScanSpace.write(() => {
-        scannedItemsList.forEach(function(item, i) {
-          totalCount = totalCount + parseFloat(item.count)
+        //Check scanned items for existing barcode increase count of identical scans
+        workingScanSpace.write(() => {
+          scannedItemsList.forEach(function(item, i) {
+            totalCount = totalCount + parseFloat(item.count)
 
-          if(item.barcode === scannedBarcode) {
-            scanMatched = true
-            scannedItemsList[i].count = scannedItemsList[i].count + 1
-            if(scannedItemsList[i].productModelNumber === '') {
+            if(item.barcode === scannedBarcode) {
+              scanMatched = true
+              scannedItemsList[i].count = scannedItemsList[i].count + 1
+              if(scannedItemsList[i].productModelNumber === '') {
+                try {
+                    SoundPlayer.playSoundFile('unknownproduct', 'wav')
+                } catch (e) {
+                    console.log(`cannot play the sound file`, e)
+                }
+              }
+              else {
+                try {
+                    SoundPlayer.playSoundFile('scansuccess', 'wav')
+                } catch (e) {
+                    console.log(`cannot play the sound file`, e)
+                }
+              }
+            }
+          }.bind(this));
+        })
+
+        //If not a known product create an unknown product scanned item object
+        if(scanMatched === false) {
+          barcodeLookup = BarcodeSearch(scannedBarcode, this.state.lastScannedObject, this.state.lastCompleteFlag)
+          console.log("BARCODE SEARCH FUNCTION RETURN")
+          console.log(barcodeLookup)
+          if(barcodeLookup != null) {
+            if(barcodeLookup.passThroughCompletenessFlag === true) {
+              this.setState({
+                lastCompleteFlag: true,
+                lastScannedObject: barcodeLookup,
+              })
+            }
+            else {
+              this.setState({
+                lastCompleteFlag: false,
+                lastScannedObject: barcodeLookup,
+              })
+            }
+          }
+          //Save new scanned product to working scan space
+          if(barcodeLookup.passThroughCompletenessFlag === true) {
+            workingScanSpace.write(() => {
+              try {
+                workingScanSpace.create('Working_Scan_Space', {
+                  barcode: barcodeLookup.barcode,
+                  serialContainerCode: barcodeLookup.serialContainerCode,
+                  manufacturerModelNumber: barcodeLookup.manufacturerModelNumber,
+                  vendorLicenseNumber: barcodeLookup.vendorLicenseNumber,
+                  numberOfContainers: barcodeLookup.numberOfContainers,
+                  batchOrLotNumber: barcodeLookup.batchOrLotNumber,
+                  expirationDate: barcodeLookup.expirationDate,
+                  productVariant: barcodeLookup.productVariant,
+                  serialNumber: barcodeLookup.serialNumber,
+                  hibcc: barcodeLookup.hibcc,
+                  lotNumber: barcodeLookup.lotNumber,
+                  quantityEach: barcodeLookup.quantityEach,
+                  secondaryProductAttributes: barcodeLookup.secondaryProductAttributes,
+                  hibcSecondaryExpiration: barcodeLookup.hibcSecondaryExpiration,
+                  hibcSecondaryManufacture: barcodeLookup.hibcSecondaryManufacture,
+                  secondarySerialNumber: barcodeLookup.secondarySerialNumber,
+                  hibcSecondarySerial: barcodeLookup.hibcSecondarySerial,
+                  quantityOfUnitsContained: barcodeLookup.quantityOfUnitsContained,
+                  hibcManufactureDate: barcodeLookup.hibcManufactureDate,
+                  passThroughCompletenessFlag: barcodeLookup.passThroughCompletenessFlag,
+                  trayState: barcodeLookup.trayState,
+                  isUnknown: barcodeLookup.isUnknown,
+                  licenseNumber: barcodeLookup.licenseNumber,
+                  productModelNumber: barcodeLookup.productModelNumber,
+                  orderThruVendor: barcodeLookup.orderThruVendor,
+                  productDescription: barcodeLookup.productDescription,
+                  autoReplace: barcodeLookup.autoReplace,
+                  discontinued: barcodeLookup.discontinued,
+                  productCategory: barcodeLookup.productCategory,
+                  hospitalItemNumber: barcodeLookup.hospitalItemNumber,
+                  unitOfMeasure: barcodeLookup.unitOfMeasure,
+                  unitOfMeasureQuantity: barcodeLookup.unitOfMeasureQuantity,
+                  reorderValue: barcodeLookup.reorderValue,
+                  quantityOnHand: barcodeLookup.quantityOnHand,
+                  quantityOrdered: barcodeLookup.quantityOrdered,
+                  lastRequistionNumber: barcodeLookup.lastRequistionNumber,
+                  orderStatus: barcodeLookup.orderStatus,
+                  active: barcodeLookup.active,
+                  accepted: barcodeLookup.accepted,
+                  consignment: barcodeLookup.consignment,
+                  minimumValue: barcodeLookup.minimumValue,
+                  maximumValue: barcodeLookup.maximumValue,
+                  nonOrdered: barcodeLookup.nonOrdered,
+                  productNote: barcodeLookup.productNote,
+                  scannedTime: barcodeLookup.scannedTime,
+                  count: barcodeLookup.count,
+                  waste: barcodeLookup.waste,
+                  scanned: barcodeLookup.scanned,
+                })
+              }
+              catch (e) {
+                console.log("Error on working scan space creation");
+                console.log(e);
+              }
+            })
+            if(barcodeLookup.isUnknown === true) {
               try {
                   SoundPlayer.playSoundFile('unknownproduct', 'wav')
               } catch (e) {
@@ -225,146 +430,51 @@ export default class IntakeScan extends Component {
                   console.log(`cannot play the sound file`, e)
               }
             }
-          }
-        }.bind(this));
-      })
-
-      //If not a known product create an unknown product scanned item object
-      if(scanMatched === false) {
-        barcodeLookup = BarcodeSearch(scannedBarcode, this.state.lastScannedObject, this.state.lastCompleteFlag)
-        console.log("BARCODE SEARCH FUNCTION RETURN")
-        console.log(barcodeLookup)
-        if(barcodeLookup != null) {
-          if(barcodeLookup.passThroughCompletenessFlag === true) {
             this.setState({
-              lastCompleteFlag: true,
-              lastScannedObject: barcodeLookup,
+              pageErrorMessage: ""
             })
           }
           else {
-            this.setState({
-              lastCompleteFlag: false,
-              lastScannedObject: barcodeLookup,
-            })
-          }
-        }
-        //Save new scanned product to working scan space
-        if(barcodeLookup.passThroughCompletenessFlag === true) {
-          workingScanSpace.write(() => {
-            try {
-              workingScanSpace.create('Working_Scan_Space', {
-                barcode: barcodeLookup.barcode,
-                serialContainerCode: barcodeLookup.serialContainerCode,
-                manufacturerModelNumber: barcodeLookup.manufacturerModelNumber,
-                vendorLicenseNumber: barcodeLookup.vendorLicenseNumber,
-                numberOfContainers: barcodeLookup.numberOfContainers,
-                batchOrLotNumber: barcodeLookup.batchOrLotNumber,
-                expirationDate: barcodeLookup.expirationDate,
-                productVariant: barcodeLookup.productVariant,
-                serialNumber: barcodeLookup.serialNumber,
-                hibcc: barcodeLookup.hibcc,
-                lotNumber: barcodeLookup.lotNumber,
-                quantityEach: barcodeLookup.quantityEach,
-                secondaryProductAttributes: barcodeLookup.secondaryProductAttributes,
-                hibcSecondaryExpiration: barcodeLookup.hibcSecondaryExpiration,
-                hibcSecondaryManufacture: barcodeLookup.hibcSecondaryManufacture,
-                secondarySerialNumber: barcodeLookup.secondarySerialNumber,
-                hibcSecondarySerial: barcodeLookup.hibcSecondarySerial,
-                quantityOfUnitsContained: barcodeLookup.quantityOfUnitsContained,
-                hibcManufactureDate: barcodeLookup.hibcManufactureDate,
-                passThroughCompletenessFlag: barcodeLookup.passThroughCompletenessFlag,
-                trayState: barcodeLookup.trayState,
-                isUnknown: barcodeLookup.isUnknown,
-                licenseNumber: barcodeLookup.licenseNumber,
-                productModelNumber: barcodeLookup.productModelNumber,
-                orderThruVendor: barcodeLookup.orderThruVendor,
-                productDescription: barcodeLookup.productDescription,
-                autoReplace: barcodeLookup.autoReplace,
-                discontinued: barcodeLookup.discontinued,
-                productCategory: barcodeLookup.productCategory,
-                hospitalItemNumber: barcodeLookup.hospitalItemNumber,
-                unitOfMeasure: barcodeLookup.unitOfMeasure,
-                unitOfMeasureQuantity: barcodeLookup.unitOfMeasureQuantity,
-                reorderValue: barcodeLookup.reorderValue,
-                quantityOnHand: barcodeLookup.quantityOnHand,
-                quantityOrdered: barcodeLookup.quantityOrdered,
-                lastRequistionNumber: barcodeLookup.lastRequistionNumber,
-                orderStatus: barcodeLookup.orderStatus,
-                active: barcodeLookup.active,
-                accepted: barcodeLookup.accepted,
-                consignment: barcodeLookup.consignment,
-                minimumValue: barcodeLookup.minimumValue,
-                maximumValue: barcodeLookup.maximumValue,
-                nonOrdered: barcodeLookup.nonOrdered,
-                productNote: barcodeLookup.productNote,
-                scannedTime: barcodeLookup.scannedTime,
-                count: barcodeLookup.count,
-                waste: barcodeLookup.waste,
-                scanned: barcodeLookup.scanned,
+            if(barcodeLookup.invalidScanSegment) {
+              //set completeness flag here to drop return object and skip working space save
+              try {
+                  SoundPlayer.playSoundFile('invalidscan', 'wav')
+              } catch (e) {
+                  console.log(`cannot play the sound file`, e)
+              }
+              this.setState({
+                pageErrorMessage: "Invalid Scan Segment Order",
+                showSaveInvalid: true,
+                lastCompleteFlag: true,
               })
             }
-            catch (e) {
-              console.log("Error on working scan space creation");
-              console.log(e);
+            else {
+              try {
+                  SoundPlayer.playSoundFile('continuescan', 'wav')
+              } catch (e) {
+                  console.log(`cannot play the sound file`, e)
+              }
+              this.setState({
+                pageErrorMessage: "Scan Next Barcode Segment",
+                lastCompleteFlag: false,
+              })
             }
-          })
-          if(barcodeLookup.productModelNumber === '') {
-            try {
-                SoundPlayer.playSoundFile('unknownproduct', 'wav')
-            } catch (e) {
-                console.log(`cannot play the sound file`, e)
-            }
-          }
-          else {
-            try {
-                SoundPlayer.playSoundFile('scansuccess', 'wav')
-            } catch (e) {
-                console.log(`cannot play the sound file`, e)
-            }
-          }
-          this.setState({
-            pageErrorMessage: ""
-          })
-        }
-        else {
-          if(barcodeLookup.invalidScanSegment) {
-            //set completeness flag here to drop return object and skip working space save
-            try {
-                SoundPlayer.playSoundFile('invalidscan', 'wav')
-            } catch (e) {
-                console.log(`cannot play the sound file`, e)
-            }
-            this.setState({
-              pageErrorMessage: "Invalid Scan Segment Order",
-              lastCompleteFlag: true,
-            })
-          }
-          else {
-            try {
-                SoundPlayer.playSoundFile('continuescan', 'wav')
-            } catch (e) {
-                console.log(`cannot play the sound file`, e)
-            }
-            this.setState({
-              pageErrorMessage: "Scan Next Barcode Segment",
-              lastCompleteFlag: false,
-            })
           }
         }
+
+        //update count with what's actually stored in db after lookup operations
+        let newTotalCount = 0
+        scannedItemsList.forEach(function(countScan, index) {
+          newTotalCount = newTotalCount + parseFloat(countScan.count)
+        })
+
+        //Update LocalState with new information
+        this.setState({
+          scannedItems: scannedItemsList,
+          scannedBarcode: scannedBarcode,
+          scanCount: newTotalCount,
+        })
       }
-
-      //update count with what's actually stored in db after lookup operations
-      let newTotalCount = 0
-      scannedItemsList.forEach(function(countScan, index) {
-        newTotalCount = newTotalCount + parseFloat(countScan.count)
-      })
-
-      //Update LocalState with new information
-      this.setState({
-        scannedItems: scannedItemsList,
-        scannedBarcode: scannedBarcode,
-        scanCount: newTotalCount,
-      })
     }
   }
 
@@ -756,6 +866,7 @@ export default class IntakeScan extends Component {
                 </View>
               </View>
               <View style={styles.errorTextContainer}><Text style={styles.errorText}>{this.state.pageErrorMessage}</Text></View>
+              {this.RenderSaveInvalidSection(this.state.showSaveInvalid)}
               {/*<View style={styles.sectionContainer}>
                 <Text>Test Scan Function: </Text>
                 <View style={styles.menuRow}>

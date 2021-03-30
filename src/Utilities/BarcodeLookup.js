@@ -21,6 +21,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     // ucc (01) 14 digits - numeric
     manufacturerModelNumber: '',
     vendorLicenseNumber: '',
+    barcodeMatchSegment: '',
     // ucc (02) 14 digits - numeric
     numberOfContainers: '',
     // ucc (10) 1-20 alphanumeric
@@ -428,7 +429,9 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     }
     else {
       //normal manufacturer model number search
-      let buildBarcodeFilterString = 'productBarCode1 CONTAINS "' + decodeReturnObject.manufacturerModelNumber + '"'
+      console.log("BARCODE MATCH SEGMENT")
+      console.log(decodeReturnObject.barcodeMatchSegment)
+      let buildBarcodeFilterString = 'productBarCode1 CONTAINS "' + decodeReturnObject.barcodeMatchSegment + '"'
       let filteredBarcodeMatches = barcodeTable.filtered(buildBarcodeFilterString)
       filteredBarcodeMatches.forEach((barcode, i) => {
         if(productModelNumber === "") {
