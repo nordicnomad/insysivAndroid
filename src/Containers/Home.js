@@ -96,6 +96,9 @@ export default class Home extends Component {
           />
         </View>
       ),
+      headerLeft:(
+        <View></View>
+      ),
       headerRight: (
         <View style={{flexDirection:'row'}}>
           <View style={{flex: 1,paddingRight:10,}}>

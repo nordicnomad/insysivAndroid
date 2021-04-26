@@ -37,16 +37,18 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
 
     returnObject.barcodeMatchSegment = barcodeMatchSegment
   }
-  else if(identifier.substring(0,4) === "+$$+") {
-    if(identifier === '+$$+7') {
+  else if(identifier.substring(0,4) === "/$$+") {
+    barcodeMatchSegment = hibcDecodeReturnObject.barcodeMatchSegment
+    if(identifier === '/$$+7') {
       //Serial Number only (Alternate Option)
 
       //Alphanumeric 18 characters + 4 identifier
       hibcSerialNumber = passedBarcode.substring(5)
 
       returnObject.serialNumber = hibcSerialNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier === '+$$+2') {
+    else if(identifier === '/$$+2') {
       //Expiration Date (MMDDYY) followed by Serial Number
 
       // Exp. Date: Numeric 6 characters + 4 identifier
@@ -56,8 +58,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
 
       returnObject.expirationDate = hibcExpirationDate.substring(4, 6) + hibcExpirationDate.substring(0, 2) + hibcExpirationDate.substring(2, 4)
       returnObject.serialNumber = hibcSerialNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier === '+$$+3') {
+    else if(identifier === '/$$+3') {
       //Expiration Date (YYMMDD) followed by Serial Number
 
       //Exp. Date: Numeric 6 characters + 4 identifier
@@ -67,8 +70,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
 
       returnObject.expirationDate = hibcExpirationDate
       returnObject.serialNumber = hibcSerialNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier === '+$$+4') {
+    else if(identifier === '/$$+4') {
       //Expiration Date (YYMMDDHH) followed by Serial Number
 
       //Exp. Date: Numeric 8 characters + 4 identifiers
@@ -78,8 +82,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
 
       returnObject.expirationDate = hibcExpirationDate.substring(0,6)
       returnObject.serialNumber = hibcSerialNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier === '+$$+5') {
+    else if(identifier === '/$$+5') {
       //Expiration Date (YYJJJ) followed by Serial Number
 
       //Exp. Date: numeric Julian Date format 5 characters plus 4 identifier
@@ -89,8 +94,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
 
       returnObject.expirationDate = moment(hibcExpirationDate, "YYDDDD").format("YYMM[01]")
       returnObject.serialNumber = hibcSerialNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier === '+$$+6') {
+    else if(identifier === '/$$+6') {
       //Expiration Date followed by Serial Number
 
       // Exp. Date: Numeric Julian Date format with hour 7 characters plus 4 identifier
@@ -100,8 +106,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
 
       returnObject.expirationDate = moment(hibcExpirationDate, "YYDDDDHH").format("YYMMDD")
       returnObject.serialNumber = hibcSerialNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,4) === '+$$+') {
+    else if(identifier.substring(0,4) === '/$$+') {
       //Expiration Date (MMYY) followed by Serial Number
 
       // Exp. Date: Numeric 4 characters + 3 identifier
@@ -111,26 +118,31 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
 
       returnObject.expirationDate = hibcExpirationDate.substring(2,4) + hibcExpirationDate.substring(0,2) + "01"
       returnObject.serialNumber = hibcSerialNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
   }
-  else if(identifier.substring(0,3) === "+$+") {
-    if(identifier.substring(0,3) === '+$+') {
+  else if(identifier.substring(0,3) === "/$+") {
+    barcodeMatchSegment = hibcDecodeReturnObject.barcodeMatchSegment
+    if(identifier.substring(0,3) === '/$+') {
       //Serial Number only
 
       // Alphanumeric 18 characters + 2
       hibcSerialNumber = passedBarcode.substring(3)
 
       returnObject.serialNumber = hibcSerialNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
   }
-  else if(identifier.substring(0,3) === "+$$") {
-    if(identifier.substring(0,4) === '+$$7') {
+  else if(identifier.substring(0,3) === "/$$") {
+    barcodeMatchSegment = hibcDecodeReturnObject.barcodeMatchSegment
+    if(identifier.substring(0,4) === '/$$7') {
       //Lot Number Only (Alternate Option) 18 characters + 3 idenfitier alphanumeric
       hibcLotNumber = passedBarcode.substring(4)
 
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,4) === '+$$2') {
+    else if(identifier.substring(0,4) === '/$$2') {
       //Expiration Date (MMDDYY) followed by Lot Number
 
       // 6 characters MMDDYY + 3 identifier numeric
@@ -140,8 +152,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
 
       returnObject.expirationDate = hibcExpirationDate.substring(4, 6) + hibcExpirationDate.substring(0, 2) + hibcExpirationDate.substring(2, 4)
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,4) === '+$$3') {
+    else if(identifier.substring(0,4) === '/$$3') {
       //Expiration Date (YYMMDD) followed by Lot Number
 
       // Exp. Date: Numeric 6 characters + 3 identifier
@@ -151,8 +164,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
 
       returnObject.expirationDate = hibcExpirationDate
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,4) === '+$$4') {
+    else if(identifier.substring(0,4) === '/$$4') {
       //Expiration Date (YYMMDDHH) followed by Lot Number
 
       // Exp. Date: Numeric 8 characters + 3 identifier
@@ -162,8 +176,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
 
       returnObject.expirationDate = hibcExpirationDate.substring(0,6)
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,4) === '+$$5') {
+    else if(identifier.substring(0,4) === '/$$5') {
       //Expiration Date (YYJJJ) followed by Lot Number
 
       // Exp. Date: numeric Julian Date format 5 characters + 3
@@ -174,8 +189,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
 
       returnObject.expirationDate = moment(hibcExpirationDate, "YYDDDD").format("YYMMDD")
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,4) === '+$$6') {
+    else if(identifier.substring(0,4) === '/$$6') {
       //Expiration Date (YYJJJHH) followed by Lot Number
 
       // Exp. Date: numeric Julian Date format with hour 7 characters + 3 identifier
@@ -185,8 +201,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
 
       returnObject.expirationDate = moment(hibcExpirationDate, "YYDDDDHH").format("YYMMDD")
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,4) === '+$$8') {
+    else if(identifier.substring(0,4) === '/$$8') {
       //Qty QQ Exp Date MMYY and Lot Number
 
       hibcQuantity = passedBarcode.substring(4, 6)
@@ -198,8 +215,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       returnObject.quantityEach = hibcQuantity
       returnObject.expirationDate = hibcExpirationDate.substring(2,4) + hibcExpirationDate.substring(0,2) + "01"
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,5) === '+$$82') {
+    else if(identifier.substring(0,5) === '/$$82') {
       //Qty QQ Exp Date MMDDYY and Lot Number
 
       hibcQuantity = passedBarcode.substring(5, 7)
@@ -211,8 +229,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       returnObject.quantityEach = hibcQuantity
       returnObject.expirationDate = hibcExpirationDate.substring(4, 6) + hibcExpirationDate.substring(0, 2) + hibcExpirationDate.substring(2, 4)
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,5) === '+$$83') {
+    else if(identifier.substring(0,5) === '/$$83') {
       //Qty QQ Exp Date YYMMDD and Lot Number
 
       hibcQuantity = passedBarcode.substring(5, 7)
@@ -224,8 +243,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       returnObject.quantityEach = hibcQuantity
       returnObject.expirationDate = hibcExpirationDate
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,5) === '+$$84') {
+    else if(identifier.substring(0,5) === '/$$84') {
       //Qty QQ Exp Date YYMMDDHH and Lot Number
 
       hibcQuantity = passedBarcode.substring(5, 7)
@@ -237,8 +257,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       returnObject.quantityEach = hibcQuantity
       returnObject.expirationDate = hibcExpirationDate.substring(0,6)
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,5) === '+$$85') {
+    else if(identifier.substring(0,5) === '/$$85') {
       //Qty QQ Exp Date YYJJJ and Lot Number
 
       hibcQuantity = passedBarcode.substring(5, 7)
@@ -250,8 +271,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       returnObject.quantityEach = hibcQuantity
       returnObject.expirationDate = oment(hibcExpirationDate, "YYDDDD").format("YYMMDD")
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,5) === '+$$86') {
+    else if(identifier.substring(0,5) === '/$$86') {
       //Qty QQ Exp Date YYJJJHH and Lot Number
 
       hibcQuantity = passedBarcode.substring(5, 7)
@@ -263,8 +285,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       returnObject.quantityEach = hibcQuantity
       returnObject.expirationDate = moment(hibcExpirationDate, "YYDDDDHH").format("YYMMDD")
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,5) === '+$$87') {
+    else if(identifier.substring(0,5) === '/$$87') {
       //Qty QQ and Lot Number
 
       hibcQuantity = passedBarcode.substring(5, 7)
@@ -273,8 +296,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
 
       returnObject.quantityEach = hibcQuantity
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,4) === '+$$9') {
+    else if(identifier.substring(0,4) === '/$$9') {
       //Qty QQQQQ Exp Date MMYY and Lot Number
 
       hibcQuantity = passedBarcode.substring(4, 9)
@@ -286,8 +310,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       returnObject.quantityEach = hibcQuantity
       returnObject.expirationDate = hibcExpirationDate.substring(2,4) + hibcExpirationDate.substring(0,2) + "01"
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,5) === '+$$92') {
+    else if(identifier.substring(0,5) === '/$$92') {
       //Qty QQQQQ Exp Date MMDDYY and Lot Number
 
       hibcQuantity = passedBarcode.substring(5, 10)
@@ -299,8 +324,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       returnObject.quantityEach = hibcQuantity
       returnObject.expirationDate = hibcExpirationDate.substring(4, 6) + hibcExpirationDate.substring(0, 2) + hibcExpirationDate.substring(2, 4)
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,5) === '+$$93') {
+    else if(identifier.substring(0,5) === '/$$93') {
       //Qty QQQQQ Exp Date YYMMDD and Lot Number
 
       hibcQuantity = passedBarcode.substring(5, 10)
@@ -312,8 +338,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       returnObject.quantityEach = hibcQuantity
       returnObject.expirationDate = hibcExpirationDate
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,5) === '+$$94') {
+    else if(identifier.substring(0,5) === '/$$94') {
       //Qty QQQQQ Exp Date YYMMDDHH and Lot Number
 
       hibcQuantity = passedBarcode.substring(5, 10)
@@ -325,8 +352,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       returnObject.quantityEach = hibcQuantity
       returnObject.expirationDate = hibcExpirationDate.substring(0,6)
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,5) === '+$$95') {
+    else if(identifier.substring(0,5) === '/$$95') {
       //Qty QQQQQ Exp Date YYJJJ and Lot Number
 
       hibcQuantity = passedBarcode.substring(5, 10)
@@ -336,10 +364,11 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       hibcLotNumber = passedBarcode.substring(15)
 
       returnObject.quantityEach = hibcQuantity
-      returnObject.expirationDate = oment(hibcExpirationDate, "YYDDDD").format("YYMMDD")
+      returnObject.expirationDate = moment(hibcExpirationDate, "YYDDDD").format("YYMMDD")
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,5) === '+$$96') {
+    else if(identifier.substring(0,5) === '/$$96') {
       //Qty QQQQQ Exp Date YYJJJHH and Lot Number
 
       hibcQuantity = passedBarcode.substring(5, 10)
@@ -351,8 +380,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
       returnObject.quantityEach = hibcQuantity
       returnObject.expirationDate = moment(hibcExpirationDate, "YYDDDDHH").format("YYMMDD")
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,5) === '+$$97') {
+    else if(identifier.substring(0,5) === '/$$97') {
       //Qty QQQQQ and Lot Number
 
       hibcQuantity = passedBarcode.substring(5, 10)
@@ -361,8 +391,9 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
 
       returnObject.quantityEach = hibcQuantity
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier.substring(0,3) === '+$$') {
+    else if(identifier.substring(0,3) === '/$$') {
       //Expiration Date (MMYY) followed by Lot Number
 
       //	4 characters MMYY + 2 idenfitier numeric
@@ -372,41 +403,49 @@ export function DecodeHIBC(appIdentifier, passedBarcodeString, hibcDecodeReturnO
 
       returnObject.expirationDate = hibcExpirationDate.substring(2,4) + hibcExpirationDate.substring(0,2) + "01"
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
   }
-  else if(identifier.substring(0,2) === '+$') {
-    if(identifier.substring(0,2) === '+$') {
+  else if(identifier.substring(0,2) === '/$') {
+    barcodeMatchSegment = hibcDecodeReturnObject.barcodeMatchSegment
+    if(identifier.substring(0,2) === '/$') {
       //Lot Number Only 18 characters + 1 idenfitier alphanumeric
       hibcLotNumber = passedBarcode.substring(2)
 
       returnObject.batchOrLotNumber = hibcLotNumber
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
   }
-  else if(identifier.substring(0,2) === '+/') {
-    if(identifier.substring(0,3) === '+/S') {
+  else if(identifier.substring(0,1) === '/') {
+    barcodeMatchSegment = hibcDecodeReturnObject.barcodeMatchSegment
+    if(identifier.substring(0,2) === '/S') {
       //Supplemental Serial Number, where lot number also required and included in main secondary data string
       //alphanumeric 18 characters plus 2 identifier
-      hibcSecondarySerial = passedBarcode.substring(3)
+      hibcSecondarySerial = passedBarcode.substring(2)
 
-      returnObject.hibcSecondarySerial = hibcSecondarySerial
+      returnObject.serialNumber = hibcSecondarySerial
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier === '+/16D') {
+    else if(identifier.substring(0,4) === '/16D') {
       //Manufacturing Date (YYYYMMDD) (supplemental to secondary barcode)
       //numeric 8 characters plus 4 identifier
-      hibcSecondaryManufacture = passedBarcode.substring(5)
+      hibcSecondaryManufacture = passedBarcode.substring(4)
 
       returnObject.hibcSecondaryManufacture = hibcSecondaryManufacture.substring(2)
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
-    else if(identifier === '+/14D') {
+    else if(identifier.substring(0,4) === '/14D') {
       //Expiration Date (YYYYMMDD) (supplemental to secondary barcode)
       //numeric 8 characters plus 4 identifier
-      hibcSecondaryExpiration = passedBarcode.substring(5)
+      hibcSecondaryExpiration = passedBarcode.substring(4)
 
-      returnObject.hibcSecondaryExpiration = hibcSecondaryExpiration.substring(2)
+      returnObject.expirationDate = hibcSecondaryExpiration.substring(2)
+      returnObject.barcodeMatchSegment = barcodeMatchSegment
     }
   }
-
   else {
+    barcodeMatchSegment = hibcDecodeReturnObject.barcodeMatchSegment
+    returnObject.barcodeMatchSegment = barcodeMatchSegment
     // Error or skip, unsupported UCC encoding
     console.log("HIBC ENCODING DETECTED OUTSIDE SUPPORTED BOUNDS")
     // Maybe pass some notifcation forward that the string was skipped eventually.

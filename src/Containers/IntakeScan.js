@@ -268,7 +268,7 @@ export default class IntakeScan extends Component {
         <View>
           <View style={styles.menuRow}>
             <View style={styles.majorColumn}>
-              <Text style={styles.invalidSaveLabel}>Save Invalid Scan Segment as an Unknown Product:</Text>
+              <Text style={styles.invalidSaveLabel}>Save this Scan Segment as an Unknown Product:</Text>
             </View>
             <View style={styles.majorColumn}>
               <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.SaveInvalidScan(this.state.lastScannedObject)}>
@@ -312,30 +312,33 @@ export default class IntakeScan extends Component {
         let barcodeLookup = {}
 
         //Check scanned items for existing barcode increase count of identical scans
-        workingScanSpace.write(() => {
-          scannedItemsList.forEach(function(item, i) {
-            totalCount = totalCount + parseFloat(item.count)
+        if(lastCompleteFlag === true) {
+          workingScanSpace.write(() => {
+            scannedItemsList.forEach(function(item, i) {
+              totalCount = totalCount + parseFloat(item.count)
 
-            if(item.barcode === scannedBarcode) {
-              scanMatched = true
-              scannedItemsList[i].count = scannedItemsList[i].count + 1
-              if(scannedItemsList[i].productModelNumber === '') {
-                try {
-                    SoundPlayer.playSoundFile('unknownproduct', 'wav')
-                } catch (e) {
-                    console.log(`cannot play the sound file`, e)
+              if(item.barcode === scannedBarcode) {
+                scanMatched = true
+                scannedItemsList[i].count = scannedItemsList[i].count + 1
+                if(scannedItemsList[i].productModelNumber === '') {
+                  try {
+                      SoundPlayer.playSoundFile('unknownproduct', 'wav')
+                  } catch (e) {
+                      console.log(`cannot play the sound file`, e)
+                  }
+                }
+                else {
+                  try {
+                      SoundPlayer.playSoundFile('scansuccess', 'wav')
+                  } catch (e) {
+                      console.log(`cannot play the sound file`, e)
+                  }
                 }
               }
-              else {
-                try {
-                    SoundPlayer.playSoundFile('scansuccess', 'wav')
-                } catch (e) {
-                    console.log(`cannot play the sound file`, e)
-                }
-              }
-            }
-          }.bind(this));
-        })
+            }.bind(this));
+          })
+        }
+
 
         //If not a known product create an unknown product scanned item object
         if(scanMatched === false) {
@@ -615,6 +618,7 @@ export default class IntakeScan extends Component {
       scanCount: 0,
       scannedItems: [],
       pageErrorMessage: "Scan List Cleared",
+      showSaveInvalid: false,
     })
   }
   SynchronizeIntakeToDesktop = () => {
@@ -867,14 +871,14 @@ export default class IntakeScan extends Component {
               </View>
               <View style={styles.errorTextContainer}><Text style={styles.errorText}>{this.state.pageErrorMessage}</Text></View>
               {this.RenderSaveInvalidSection(this.state.showSaveInvalid)}
-              {/*<View style={styles.sectionContainer}>
+              <View style={styles.sectionContainer}>
                 <Text>Test Scan Function: </Text>
                 <View style={styles.menuRow}>
                   <View style={styles.majorColumn}>
                     <TouchableOpacity onPress={() => this.generateScanTest(this.state.testCount)} style={styles.miniSubmitButton}><Text style={styles.miniSubmitButtonText}>Scan Test</Text></TouchableOpacity>
                   </View>
                 </View>
-              </View>*/}
+              </View>
               <View style={styles.sectionContainer}>
                 <View style={styles.menuRow}>
                   <View style={styles.majorColumn}>

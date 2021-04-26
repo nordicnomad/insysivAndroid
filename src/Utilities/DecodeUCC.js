@@ -37,6 +37,7 @@ export function DecodeUCC(appIdentifier, passedBarcodeString, uccDecodeReturnObj
     // ucc (00) 18 digits - numeric
     serialContainerCode = passedBarcode
 
+    returnObject.barcodeMatchSegment  = uccDecodeReturnObject.barcodeMatchSegment
     returnObject.serialContainerCode = serialContainerCode
   }
   else if(identifier === '(01)') {
@@ -53,75 +54,87 @@ export function DecodeUCC(appIdentifier, passedBarcodeString, uccDecodeReturnObj
 
     returnObject.manufacturerModelNumber = containerCodeModelNumber
     returnObject.productVendorLicense = containerCodeVendorLicense
-    returnObject.barcodeMatchSegment = barcodeMatchSegment
+    returnObject.barcodeMatchSegment = "01" + barcodeMatchSegment
   }
   else if(identifier === '(02)') {
     // ucc (02) 14 digits - numeric
     numberOfContainers = passedBarcode
 
+    returnObject.barcodeMatchSegment  = uccDecodeReturnObject.barcodeMatchSegment
     returnObject.numberOfContainers = numberOfContainers
   }
   else if(identifier === '(10)') {
     // ucc (10) 1-20 alphanumeric
     batchOrLotNumber = passedBarcode
 
+    returnObject.barcodeMatchSegment  = uccDecodeReturnObject.barcodeMatchSegment
     returnObject.batchOrLotNumber = batchOrLotNumber
   }
   else if(identifier === '(17)') {
     // ucc (17) 6 digit YYMMDD
     expirationDate = passedBarcode
 
+    returnObject.barcodeMatchSegment  = uccDecodeReturnObject.barcodeMatchSegment
     returnObject.expirationDate = expirationDate
   }
   else if(identifier === '(20)') {
     // ucc (20) 2 digits
     productVariant = passedBarcode
 
+    returnObject.barcodeMatchSegment  = uccDecodeReturnObject.barcodeMatchSegment
     returnObject.productVariant = productVariant
   }
   else if(identifier === '(21)') {
     // ucc (21) 1-20 alphanumeric
     serialNumber = passedBarcode
 
+    returnObject.barcodeMatchSegment  = uccDecodeReturnObject.barcodeMatchSegment
     returnObject.serialNumber = serialNumber
   }
   else if(identifier === '(22)') {
     // ucc (22) 1-29 alphanumeric
     hibcc = passedBarcode
 
+    returnObject.barcodeMatchSegment  = uccDecodeReturnObject.barcodeMatchSegment
     returnObject.hibcc = hibcc
   }
   else if(identifier === '(23)') {
     // ucc (23) 1-19 alphanumeric
     lotNumber = passedBarcode
 
+    returnObject.barcodeMatchSegment  = uccDecodeReturnObject.barcodeMatchSegment
     returnObject.lotNumber = lotNumber
   }
   else if(identifier === '(30)') {
     // ucc (30) number of requisit length
     quantityEach = passedBarcode
 
+    returnObject.barcodeMatchSegment  = uccDecodeReturnObject.barcodeMatchSegment
     returnObject.quantityEach = quantityEach
   }
   else if(identifier === '(240)') {
     // ucc (240) 1-30 alphanumeric
     secondaryProductAttributes =  passedBarcode
 
+    returnObject.barcodeMatchSegment  = uccDecodeReturnObject.barcodeMatchSegment
     returnObject.secondaryProductAttributes = secondaryProductAttributes
   }
   else if(identifier === '(250)') {
     // ucc (250) 1-30 alphanumeric
     secondarySerialNumber = passedBarcode
 
+    returnObject.barcodeMatchSegment  = uccDecodeReturnObject.barcodeMatchSegment
     returnObject.secondarySerialNumber = secondarySerialNumber
   }
   else if(identifier === '(37)') {
     // ucc (37) 1-8 digits
     quantityOfUnitsContained = passedBarcode
 
+    returnObject.barcodeMatchSegment  = uccDecodeReturnObject.barcodeMatchSegment
     returnObject.quantityOfUnitsContained = quantityOfUnitsContained
   }
   else {
+    returnObject.barcodeMatchSegment  = uccDecodeReturnObject.barcodeMatchSegment
     // Error or skip, unsupported UCC encoding
     console.log("UCC ENCODING DETECTED OUTSIDE SUPPORTED BOUNDS")
     // Maybe pass some notifcation forward that the string was skipped eventually.

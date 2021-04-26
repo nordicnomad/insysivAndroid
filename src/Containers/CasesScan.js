@@ -1,5 +1,5 @@
 import React, {Fragment, Component} from 'react';
-import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert } from 'react-native'
+import { StyleSheet, Text, View, Button, TouchableOpacity, Image, ScrollView, Alert, BackHandler } from 'react-native'
 import ZebraScanner from 'react-native-zebra-scanner'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import HeaderLogo from '../Images/insysivLogoHorizontal.jpg'
@@ -141,6 +141,7 @@ export default class CasesScan extends Component {
     }
   }
   componentWillUnmount() {
+    BackHandler.removeEventListener('hardwareBackPress', () => this.doubleBackButton());
     try {
       ZebraScanner.removeScanListener(scanListener)
     }
@@ -150,6 +151,7 @@ export default class CasesScan extends Component {
 
   }
   componentDidMount() {
+    BackHandler.addEventListener('hardwareBackPress',  () => this.doubleBackButton());
     this.checkForScanner()
     let activeCaseDetail = activeScanableCase.objects("Active_Scanable_Case")
     let physiciansDisplayObject = {
@@ -190,6 +192,9 @@ export default class CasesScan extends Component {
       siteName: sitesDisplayObject[0].siteDescription,
     })
   }
+  doubleBackButton = () => {
+    this.props.navigation.navigate('CasesSetup')
+  }
   async checkForScanner () {
     let scannerStatus = await ZebraScanner.isAvailable();
     if(scannerStatus) {
@@ -220,6 +225,9 @@ export default class CasesScan extends Component {
             source={HeaderLogo}
           />
         </View>
+      ),
+      headerLeft:(
+        <View></View>
       ),
       headerRight: (
         <View style={{flexDirection:'row'}}>
@@ -335,7 +343,7 @@ export default class CasesScan extends Component {
         <View>
           <View style={styles.menuRow}>
             <View style={styles.majorColumn}>
-              <Text style={styles.invalidSaveLabel}>Save Invalid Scan Segment as an Unknown Product:</Text>
+              <Text style={styles.invalidSaveLabel}>Save this Scan Segment as an Unknown Product:</Text>
             </View>
             <View style={styles.majorColumn}>
               <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.SaveInvalidScan(this.state.lastScannedObject)}>
@@ -366,7 +374,9 @@ export default class CasesScan extends Component {
     }
     else {
       let scannedBarcode = newBarcode
-
+      this.setState({
+        showSaveInvalid: false,
+      })
       //Instantiate Variables
       if(scannedBarcode != undefined && scannedBarcode != null) {
         let scannedItemsList = workingCaseSpace.objects("Working_Case_Space")
@@ -613,7 +623,8 @@ export default class CasesScan extends Component {
       workingCaseSpace.deleteAll()
     })
     this.setState({
-      pageErrorMessage: "Case Cleared"
+      pageErrorMessage: "Case Cleared",
+      showSaveInvalid: false,
     })
     this.props.navigation.navigate('Home')
   }
@@ -810,12 +821,12 @@ export default class CasesScan extends Component {
                     <View style={styles.majorColumn}>
                       {this.GetScannerStatus(this.state.scannerConnected)}
                     </View>
-                    {/*<View style={styles.majorColumn}>
+                    <View style={styles.majorColumn}>
                       <Text>Test Scan Function: </Text>
                       <TouchableOpacity onPress={() => this.generateScanTest(this.state.testCount)} style={styles.miniSubmitButton}>
                         <Text style={styles.miniSubmitButtonText}>Scan Test</Text>
                       </TouchableOpacity>
-                    </View>*/}
+                    </View>
                   </View>
                   {this.renderCaseProducts()}
                 </View>

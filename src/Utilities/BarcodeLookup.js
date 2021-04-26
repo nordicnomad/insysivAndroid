@@ -98,7 +98,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
   let barcodeTable = productBarCodes.objects('Product_Bar_Codes')
 
   //check for encoding identifier
-  if(passedBarcode.substring(0,1) === '+' || passedBarcode.substring(0,1) === '$') {
+  if(passedBarcode.substring(0,1) === '+' || passedBarcode.substring(0,1) === '$' || passedBarcode.substring(0,1) === '/') {
     let hibcAIcharLocations = []
     let hibcAppIdentifiers = []
     let hibcAppStrings = []
@@ -130,6 +130,8 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
       }
       lastCharacter = passedBarcode.charAt(i)
     }
+    console.log("HIBCAICHARLOCATIONS OBJECTS")
+    console.log(hibcAIcharLocations)
 
     //Add first four characters from initial locations to app identifier array
     hibcAIcharLocations.forEach((location, i) => {
@@ -154,20 +156,22 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
           if(passedBarcode.length < currentHibcPosition) {
             continueEval = false
           }
-          else if(hibcAIcharLocations[i+1].pos < currentHibcPosition) {
+          else if(hibcAIcharLocations[i+1].pos < currentHibcPosition + 1) {
             continueEval = false
           }
         }
       }
       else {
         let currentHibcPosition = evalHibcPosition
-        while(passedBarcode.length > (currentHibcPosition + 1)) {
+        while(passedBarcode.length > (currentHibcPosition)) {
           buildHibcBarcodeString = buildHibcBarcodeString + passedBarcode.charAt(currentHibcPosition)
           currentHibcPosition = currentHibcPosition + 1
         }
       }
       hibcAppStrings.push(buildHibcBarcodeString)
     });
+    console.log("HIBCAPPSTRINGS ARRAY")
+    console.log(hibcAppStrings)
 
     hibcAppIdentifiers.forEach((aiCode, i) => {
       if(aiCode.charAt(0) === "+" && aiCode.charAt(2) != "$") {
@@ -183,6 +187,8 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     }
 
     //Decode HIBC string elements and populate return object
+    console.log("HIBC APP IDENTIFIERS")
+    console.log(hibcAppIdentifiers)
     hibcAppIdentifiers.forEach((identifier, i) => {
       decodeReturnObject = DecodeHIBC(identifier, hibcAppStrings[i], decodeReturnObject)
     })
@@ -527,6 +533,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
   console.log("LASTCOMPELTE FLAG")
   console.log(lastCompleteFlag)
   if(lastCompleteFlag === true) {
+    combinedProductReturn.barcode = combinedProductReturn.barcodeMatchSegment
     if(primaryCode != '') {
       if(combinedProductReturn.expirationDate != '' || combinedProductReturn.batchOrLotNumber != '' || combinedProductReturn.serialNumber != '') {
         //normal full barcode scan
@@ -544,6 +551,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     }
   }
   else {
+    combinedProductReturn.barcode = decodeReturnObject.barcodeMatchSegment
     //last scan was incomplete
     if(primaryCode != '') {
       //scanned a new first segment on an incomplete first segment
@@ -560,7 +568,6 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     else {
       if(combinedProductReturn.expirationDate != '' || combinedProductReturn.batchOrLotNumber != '' || combinedProductReturn.serialNumber != '') {
         //normal second segment barcode scan
-        combinedProductReturn.barcode = combinedProductReturn.barcode + passedBarcode
         combinedProductReturn.passThroughCompletenessFlag = true
       }
       else {
