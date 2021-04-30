@@ -118,6 +118,7 @@ export default class CasesScan extends Component {
       schema: [{name: 'Working_Case_Space',
       properties: {
         barcode: "string",
+        barcodeMatch: "string?",
         description: "string",
         scannedRfid: "bool?",
         cprod_pk_product_sequence: "int?",

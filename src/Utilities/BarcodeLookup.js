@@ -16,6 +16,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
 
   // ucc state tree for multiple concatenated Application Identifier types in one barcode.
   let decodeReturnObject = {
+    barcode: '',
     // ucc (00) 18 digits - numeric
     serialContainerCode: '',
     // ucc (01) 14 digits - numeric

@@ -64,6 +64,7 @@ export default class IntakeScan extends Component {
         properties:
         {
           barcode: 'string',
+          barcodeMatch: 'string?',
           serialContainerCode: 'string?',
           manufacturerModelNumber: 'string?',
           vendorLicenseNumber: 'string?',
