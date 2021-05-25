@@ -64,7 +64,7 @@ export default class IntakeScan extends Component {
         properties:
         {
           barcode: 'string',
-          barcodeMatch: 'string?',
+          barcodeMatchSegment: 'string?',
           serialContainerCode: 'string?',
           manufacturerModelNumber: 'string?',
           vendorLicenseNumber: 'string?',
@@ -199,6 +199,7 @@ export default class IntakeScan extends Component {
       try {
         workingScanSpace.create('Working_Scan_Space', {
           barcode: lastLookup.barcode,
+          barcodeMatchSegment: lastLookup.barcode,
           serialContainerCode: lastLookup.serialContainerCode,
           manufacturerModelNumber: lastLookup.manufacturerModelNumber,
           vendorLicenseNumber: lastLookup.vendorLicenseNumber,
@@ -318,6 +319,9 @@ export default class IntakeScan extends Component {
             scannedItemsList.forEach(function(item, i) {
               totalCount = totalCount + parseFloat(item.count)
 
+              console.log("SCAN MATCHING PARAMETERS")
+              console.log(item.barcode)
+              console.log(scannedBarcode)
               if(item.barcode === scannedBarcode) {
                 scanMatched = true
                 scannedItemsList[i].count = scannedItemsList[i].count + 1
@@ -366,6 +370,7 @@ export default class IntakeScan extends Component {
               try {
                 workingScanSpace.create('Working_Scan_Space', {
                   barcode: barcodeLookup.barcode,
+                  barcodeMatchSegment: barcodeLookup.barcodeMatchSegment,
                   serialContainerCode: barcodeLookup.serialContainerCode,
                   manufacturerModelNumber: barcodeLookup.manufacturerModelNumber,
                   vendorLicenseNumber: barcodeLookup.vendorLicenseNumber,
@@ -645,7 +650,7 @@ export default class IntakeScan extends Component {
       console.log("SYNC PRODUCT: " + index)
       console.log(product.productModelNumber)
       try {
-        fetch('http://25.78.82.76:5100/api/CheckinProducts', {
+        fetch('http://45.42.176.50:5100/api/CheckinProducts', {
           method: 'POST',
           headers: {
             Accept: 'application/json',
@@ -812,7 +817,7 @@ export default class IntakeScan extends Component {
           <ProductListTrayItem
             key={index}
             unknownFlag={item.isUnknown}
-            itemBarcode={item.barcode}
+            itemBarcode={item.barcodeMatchSegment}
             itemName={item.productDescription}
             itemCount={item.count}
             itemModel={item.productModelNumber}

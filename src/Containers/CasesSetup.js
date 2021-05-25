@@ -268,7 +268,7 @@ export default class CasesSetup extends Component {
     //test server call
     console.log("FETCHDOCTORTABLE CALLED FROM CASESSETUP PAGE")
     try {
-      return fetch('http://25.78.82.76:5100/api/Physicians')
+      return fetch('http://45.42.176.50:5100/api/Physicians')
       .then((docresponse) => docresponse.json())
       .then((docresponseJson) => {
         console.log("PHYSICIANS RESPONSE")
@@ -332,7 +332,7 @@ export default class CasesSetup extends Component {
     //test server call
     console.log("FETCHPROCEDURETABLE CALLED FROM CASESSETUP PAGE")
     try {
-      return fetch('http://25.78.82.76:5100/api/ProcedureTables')
+      return fetch('http://45.42.176.50:5100/api/ProcedureTables')
       .then((proresponse) => proresponse.json())
       .then((proresponseJson) => {
         console.log("PROCEDURE RESPONSE")
@@ -396,7 +396,7 @@ export default class CasesSetup extends Component {
     //test server call
     console.log("FETCHLOCATIONTABLE CALLED FROM CASESSETUP PAGE")
     try{
-      return fetch('http://25.78.82.76:5100/api/HospitalSites')
+      return fetch('http://45.42.176.50:5100/api/HospitalSites')
       .then((siteresponse) => siteresponse.json())
       .then((siteresponseJson) => {
         console.log("HOSPITAL SITES RESPONSE")

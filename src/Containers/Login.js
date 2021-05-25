@@ -57,7 +57,7 @@ export default class Login extends Component {
     let activeUsers = activeUser.objects('Active_User')
     //clear old error messages
     this.setState({loginError: ""})
-    //forward to home if already logged in, if no prior login get user table. 
+    //forward to home if already logged in, if no prior login get user table.
     if(activeUsers === null || activeUsers === undefined || activeUsers.length === 0 ) {
       if(usersLoaded === null || usersLoaded === undefined || usersLoaded.length === 0) {
         //this.fetchUsersTable()
@@ -92,7 +92,7 @@ export default class Login extends Component {
     //test server call
     console.log("FETCHBARCODETABLE CALLED FROM ACCOUNT INFORMATION PAGE")
     try{
-      return fetch('http://25.78.82.76:5100/api/UserTables')
+      return fetch('http://45.42.176.50:5100/api/UserTables')
       .then((userTableResponse) => userTableResponse.json())
       .then((userTableResponseJson) => {
         console.log("USERS RESPONSE")
@@ -178,7 +178,7 @@ export default class Login extends Component {
     //make API call to JWT Service
     //test server call
     console.log("ACTIVEUSERCALL CALLED FROM LOGIN PAGE")
-    return fetch('http://25.78.82.76:5000/connect/token')
+    return fetch('http://45.42.176.50:5000/connect/token')
     .then((tokenresponse) => tokenresponse.json())
     .then((tokenresponseJson) => {
       console.log("TOKEN RESPONSE")

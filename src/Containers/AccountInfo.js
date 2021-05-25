@@ -185,6 +185,7 @@ export default class AccountInfo extends Component {
       schema: [{name: 'Working_Case_Space',
       properties: {
         barcode: "string",
+        barcodeMatchSegment: "string?",
         description: "string",
         scannedRfid: "bool?",
         cprod_pk_product_sequence: "int?",
@@ -207,6 +208,7 @@ export default class AccountInfo extends Component {
         properties:
         {
           barcode: 'string',
+          barcodeMatchSegment: "string?",
           serialContainerCode: 'string?',
           manufacturerModelNumber: 'string?',
           vendorLicenseNumber: 'string?',
@@ -368,7 +370,7 @@ export default class AccountInfo extends Component {
     //Barcode Calls
     //test server call
     console.log("FETCHBARCODETABLE CALLED FROM ACCOUNT INFORMATION PAGE")
-    return fetch('http://25.78.82.76:5100/api/ProductBarCodes')
+    return fetch('http://45.42.176.50:5100/api/ProductBarCodes')
     .then((pbcresponse) => pbcresponse.json())
     .then((pbcresponseJson) => {
       console.log("BARCODE RESPONSE")
@@ -398,7 +400,7 @@ export default class AccountInfo extends Component {
     //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/subscriptions')
     //test server call
     console.log("FETCHRPRODUCTTABLE CALLED FROM ACCOUNT INFORMATION PAGE")
-    return fetch('http://25.78.82.76:5100/api/Products')
+    return fetch('http://45.42.176.50:5100/api/Products')
     .then((response) => response.json())
     .then((responseJson) => {
       console.log("PRODUCT RESPONSE")
@@ -633,7 +635,7 @@ export default class AccountInfo extends Component {
     //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/subscriptions')
     //test server call
     console.log("FETCHRFIDTABLE CALLED FROM ACCOUNT INFORMATION PAGE")
-    return fetch('http://25.78.82.76:5100/api/RfidLabels')
+    return fetch('http://45.42.176.50:5100/api/RfidLabels')
     .then((rfidresponse) => rfidresponse.json())
     .then((rfidresponseJson) => {
       console.log("RFID RESPONSE")

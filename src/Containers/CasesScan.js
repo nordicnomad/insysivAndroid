@@ -118,7 +118,7 @@ export default class CasesScan extends Component {
       schema: [{name: 'Working_Case_Space',
       properties: {
         barcode: "string",
-        barcodeMatch: "string?",
+        barcodeMatchSegment: "string?",
         description: "string",
         scannedRfid: "bool?",
         cprod_pk_product_sequence: "int?",
@@ -686,7 +686,7 @@ export default class CasesScan extends Component {
     //Loop products and individually post to product and case data to sproc
     scannedCaseProducts.forEach((caseProduct, i) => {
       try {
-        fetch('http://25.78.82.76:5100/api/AddCaseProductSproc', {
+        fetch('http://45.42.176.50:5100/api/AddCaseProductSproc', {
           method: 'POST',
           headers: {
             Accept: 'application/json',

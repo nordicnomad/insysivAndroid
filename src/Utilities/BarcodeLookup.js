@@ -16,7 +16,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
 
   // ucc state tree for multiple concatenated Application Identifier types in one barcode.
   let decodeReturnObject = {
-    barcode: '',
+    barcode: passedBarcode,
     // ucc (00) 18 digits - numeric
     serialContainerCode: '',
     // ucc (01) 14 digits - numeric
@@ -203,7 +203,7 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     let uccNumAppIdentifiers = []
     let uccNumAppStrings = []
 
-    const alphaNumMatch = /^[0-9a-zA-Z]+$/;
+    const alphaNumMatch = /^[0-9a-zA-Z-]+$/;
     let currentUCCNumEvalPosition = 0
     let nextUCCNumEvalEndTarget = 3
     let workingAIString = ''
@@ -534,9 +534,8 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
   console.log("LASTCOMPELTE FLAG")
   console.log(lastCompleteFlag)
   if(lastCompleteFlag === true) {
-    combinedProductReturn.barcode = combinedProductReturn.barcodeMatchSegment
     if(primaryCode != '') {
-      if(combinedProductReturn.expirationDate != '' || combinedProductReturn.batchOrLotNumber != '' || combinedProductReturn.serialNumber != '') {
+      if(combinedProductReturn.expirationDate != '' && (combinedProductReturn.batchOrLotNumber != '' || combinedProductReturn.serialNumber != '')) {
         //normal full barcode scan
         combinedProductReturn.passThroughCompletenessFlag = true
       }
@@ -552,12 +551,12 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
     }
   }
   else {
-    combinedProductReturn.barcode = decodeReturnObject.barcodeMatchSegment
     //last scan was incomplete
     if(primaryCode != '') {
       //scanned a new first segment on an incomplete first segment
-      if(combinedProductReturn.expirationDate != '' || combinedProductReturn.batchOrLotNumber != '' || combinedProductReturn.serialNumber != '') {
+      if(combinedProductReturn.expirationDate != '' && (combinedProductReturn.batchOrLotNumber != '' || combinedProductReturn.serialNumber != '')) {
         //new normal full barcode scan
+        combinedProductReturn.barcode = passedBarcode
         combinedProductReturn.passThroughCompletenessFlag = true
       }
       else {
@@ -567,8 +566,9 @@ export function BarcodeSearch(barcode, lastReturnObject, lastCompleteFlag) {
       }
     }
     else {
-      if(combinedProductReturn.expirationDate != '' || combinedProductReturn.batchOrLotNumber != '' || combinedProductReturn.serialNumber != '') {
+      if(combinedProductReturn.expirationDate != '' && (combinedProductReturn.batchOrLotNumber != '' || combinedProductReturn.serialNumber != '')) {
         //normal second segment barcode scan
+        combinedProductReturn.barcode = combinedProductReturn.barcodeMatchSegment + passedBarcode
         combinedProductReturn.passThroughCompletenessFlag = true
       }
       else {
