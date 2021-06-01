@@ -5,7 +5,7 @@ import HeaderLogo from '../Images/insysivLogoHorizontal.jpg'
 import UserData from '../dummyData/login.json'
 import DummyProducts from '../dummyData/productsOffline.json'
 import DummyBarcodes from '../dummyData/productBarcodesOffline.json'
-import DummyLabels from '../dummyData/rfidLabelsOffline.json'
+import DummyLabels from '../dummyData/rfidLabelsOfflineReal.json'
 import DummyDocs from '../dummyData/physiciansOffline.json'
 import DummySites from '../dummyData/sitesOffline.json'
 import DummyUsers from '../dummyData/userTablesOffline.json'
@@ -100,15 +100,11 @@ export default class AccountInfo extends Component {
     rfidLabels = new Realm({
       schema: [{name: 'RFID_Labels',
       properties: {
-        productTransactionNumber: "int?",
-        licenseNumber: "string",
+        licenseNumber: "string?",
         productModelNumber: "string",
         lotSerialNumber: "string?",
         expirationDate: "string?",
         tagid: "string?",
-        caseProductSequence: "int?",
-        bcPrimary: "string?",
-        bcSecondary: "string?",
       }}]
     });
     physiciansList = new Realm({
@@ -389,7 +385,7 @@ export default class AccountInfo extends Component {
       this.setState({
         isFetchingBarcodes: false,
         showSyncFooter: true,
-        syncProgressMessage: 'Syncing Failed'
+        syncProgressMessage: 'Syncing Failed: ' + error
       })
     });
   }
@@ -421,7 +417,7 @@ export default class AccountInfo extends Component {
       this.setState({
         isFetchingProducts: false,
         showSyncFooter: true,
-        syncProgressMessage: 'Syncing Failed'
+        syncProgressMessage: 'Syncing Failed: ' + error
       })
     });
   }
@@ -572,7 +568,7 @@ export default class AccountInfo extends Component {
   saveRfidTable = (responserfids) => {
     let savedRfidLabels = rfidLabels.objects('RFID_Labels')
     let newRfidLabels = responserfids
-
+    console.log('SAVE RFID TABLE CALLED')
     this.setState({
       isFetchingLabels: true,
       syncProgressMessage: "Saving Labels",
@@ -582,24 +578,25 @@ export default class AccountInfo extends Component {
       rfidLabels.write(() => {
         rfidLabels.deleteAll()
         newRfidLabels.forEach(function(label, i) {
-          try {
-            rfidLabels.create('RFID_Labels', {
-              productTransactionNumber: label.productTransactionNumber,
-              licenseNumber: label.licenseNumber,
-              productModelNumber: label.productModelNumber,
-              lotSerialNumber: label.lotSerialNumber,
-              expirationDate: label.expirationDate,
-              tagid: label.tagid,
-              caseProductSequence: label.caseProductSequence,
-              bcPrimary: label.bcPrimary,
-              bcSecondary: label.bcSecondary,
-            })
+          if(label.productModelNumber != null && label.productModelNumber != undefined) {
+            try {
+              rfidLabels.create('RFID_Labels', {
+                licenseNumber: label.licenseNumber,
+                productModelNumber: label.productModelNumber,
+                lotSerialNumber: label.lotSerialNumber,
+                expirationDate: label.expirationDate,
+                tagid: label.tagid,
+              })
+            }
+            catch (e) {
+              this.setState({
+                syncProgressMessage:"Error on rfid label creation " + i
+              })
+              console.log(e);
+            }
           }
-          catch (e) {
-            this.setState({
-              syncProgressMessage:"Error on rfid label creation " + i
-            })
-            console.log(e);
+          else {
+            console.log("NULL MODEL NUMBER SKIPPED")
           }
         })
       })
@@ -609,15 +606,11 @@ export default class AccountInfo extends Component {
         newRfidLabels.forEach(function(label, i) {
           try {
             rfidLabels.create('RFID_Labels', {
-              productTransactionNumber: label.productTransactionNumber,
               licenseNumber: label.licenseNumber,
               productModelNumber: label.productModelNumber,
               lotSerialNumber: label.lotSerialNumber,
               expirationDate: label.expirationDate,
               tagid: label.tagid,
-              caseProductSequence: label.caseProductSequence,
-              bcPrimary: label.bcPrimary,
-              bcSecondary: label.bcSecondary,
             })
           }
           catch (e) {
@@ -638,13 +631,11 @@ export default class AccountInfo extends Component {
     return fetch('http://45.42.176.50:5100/api/RfidLabels')
     .then((rfidresponse) => rfidresponse.json())
     .then((rfidresponseJson) => {
-      console.log("RFID RESPONSE")
-      console.log(rfidresponseJson)
+      console.log("RFID RESPONSE RECEIVED")
       rfidLabelResponse = rfidresponseJson;
       this.saveRfidTable(rfidLabelResponse)
 
       this.setState({
-        rfidLabels: rfidLabelResponse,
         syncProgressMessage: 'RFID Labels Synced',
         isFetchingLabels: false,
         showSyncFooter: false,
@@ -655,7 +646,7 @@ export default class AccountInfo extends Component {
       this.setState({
         isFetchingLabels: false,
         showSyncFooter: true,
-        syncProgressMessage: 'Syncing Failed'
+        syncProgressMessage: 'Syncing Failed: ' + error
       })
     });
   }

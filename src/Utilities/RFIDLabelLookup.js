@@ -48,15 +48,11 @@ export function RFIDlabelSearch(rfidLabel, lastReturnObject, lastCompleteFlag) {
   rfidLabels = new Realm({
     schema: [{name: 'RFID_Labels',
     properties: {
-      productTransactionNumber: "int?",
-      licenseNumber: "string",
+      licenseNumber: "string?",
       productModelNumber: "string",
       lotSerialNumber: "string?",
       expirationDate: "string?",
       tagid: "string?",
-      caseProductSequence: "int?",
-      bcPrimary: "string?",
-      bcSecondary: "string?",
     }}]
   });
   products = new Realm({

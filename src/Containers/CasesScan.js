@@ -57,15 +57,11 @@ export default class CasesScan extends Component {
     rfidLabels = new Realm({
       schema: [{name: 'RFID_Labels',
       properties: {
-        productTransactionNumber: "int?",
-        licenseNumber: "string",
+        licenseNumber: "string?",
         productModelNumber: "string",
         lotSerialNumber: "string?",
         expirationDate: "string?",
         tagid: "string?",
-        caseProductSequence: "int?",
-        bcPrimary: "string?",
-        bcSecondary: "string?",
       }}]
     });
     physiciansList = new Realm({
