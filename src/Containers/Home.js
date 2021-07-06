@@ -38,6 +38,13 @@ export default class Home extends Component {
           isActive: true,
           route: "IntakeScan",
         },
+        {
+          id: 4,
+          label: "Locate",
+          icon: "map-marker",
+          isActive: true,
+          route: "LocateProduct",
+        },
       ],
       userInformation: {
         id: "",

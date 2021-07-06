@@ -9,6 +9,7 @@ import CasesScan from './src/Containers/CasesScan';
 import AccountInfo from './src/Containers/AccountInfo';
 import IntakeScan from './src/Containers/IntakeScan';
 import ProductLookup from './src/Containers/ProductLookup';
+import LocateProduct from './src/Containers/LocateProduct';
 import ReportLowstock from './src/Containers/ReportLowstock';
 import ReportAutoreceipt from './src/Containers/ReportAutoreceipt';
 import ReportExpiring from './src/Containers/ReportExpiring';
@@ -46,6 +47,10 @@ const AppNavigator = createStackNavigator({
   ProductLookup: {
     screen: ProductLookup,
     title: 'Product Lookup'
+  },
+  LocateProduct: {
+    screen: LocateProduct,
+    title: 'Locate Product'
   },
   ReportLowstock: {
     screen: ReportLowstock,
