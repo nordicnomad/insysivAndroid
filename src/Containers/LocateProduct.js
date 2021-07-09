@@ -228,6 +228,15 @@ export default class LocateProduct extends Component {
     })
   }
 
+  resetRFIDCount = () => {
+    this.setState({
+      scannedTags: [],
+      matchRFID: "",
+      currentMatchCount: 0,
+      systemMessage: 'Count Reset',
+    })
+  }
+
   render() {
     return (
       <ScrollView style={styles.scrollContainer}>
@@ -256,9 +265,18 @@ export default class LocateProduct extends Component {
             </View>
           </View>
           <View style={styles.sectionContainer}>
-            <Text style={styles.bodyTextLabel}>{this.state.systemMessage}</Text>
-            <Text style={styles.bodyTextLabel}>RFID Match Pings: {this.state.currentMatchCount}</Text>
-            <Text style={styles.bodyTextLabel}>{this.state.matchRFID}</Text>
+            <View syle={styles.pingIndicationContainer}>
+              <View syle={styles.pingIndicationWrapper}>
+                <TouchableOpacity onPress={() => this.resetRFIDCount}>
+                  <Text style={styles.pingIndicationCount}>{this.state.currentMatchCount}</Text>
+                  <Text style={styles.pingIndicationLabel}>RFID Match Pings</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            <View style={styles.pingMessagesContainer}>
+              <Text style={styles.bodyTextLabel}>{this.state.systemMessage}</Text>
+              <Text style={styles.bodyTextLabel}>Searching for: {this.state.matchRFID}</Text>
+            </View>
           </View>
         </View>
       </ScrollView>

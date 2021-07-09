@@ -304,19 +304,19 @@ export default class CasesScan extends Component {
           barcode: lastLookup.scannedLabel,
           description: lastLookup.productDescription,
           scannedRfid: lastLookup.scannedRfid,
-          cprod_pk_product_sequence: null,
-          cprod_line_number: null,
-          cprod_billing_code: null,
+          cprod_pk_product_sequence: 0,
+          cprod_line_number: 0,
+          cprod_billing_code: "",
           cprod_change_timestamp: new Date().toISOString(),
           cprod_change_userid: "Scanner",
           cprod_expiration_date: lastLookup.expirationDate,
           cprod_license_number: lastLookup.licenseNumber,
           cprod_product_model_number: lastLookup.productModelNumber,
           cprod_lot_serial_number: lastLookup.lotSerialNumber,
-          cprod_no_charge_reason: null,
-          cprod_no_charge_type: null,
-          cprod_remote_id: null,
-          cprod_requisition_number: null
+          cprod_no_charge_reason: "",
+          cprod_no_charge_type: "",
+          cprod_remote_id: "",
+          cprod_requisition_number: 0
         })
         this.setState({
           pageErrorMessage: "",
@@ -416,19 +416,19 @@ export default class CasesScan extends Component {
                   barcode: barcodeLookup.scannedLabel,
                   description: barcodeLookup.productDescription,
                   scannedRfid: barcodeLookup.scannedRfid,
-                  cprod_pk_product_sequence: null,
-                  cprod_line_number: null,
-                  cprod_billing_code: null,
+                  cprod_pk_product_sequence: 0,
+                  cprod_line_number: 0,
+                  cprod_billing_code: "",
                   cprod_change_timestamp: new Date().toISOString(),
                   cprod_change_userid: "Scanner",
                   cprod_expiration_date: barcodeLookup.expirationDate,
                   cprod_license_number: barcodeLookup.licenseNumber,
                   cprod_product_model_number: barcodeLookup.productModelNumber,
                   cprod_lot_serial_number: barcodeLookup.lotSerialNumber,
-                  cprod_no_charge_reason: null,
-                  cprod_no_charge_type: null,
-                  cprod_remote_id: null,
-                  cprod_requisition_number: null
+                  cprod_no_charge_reason: "",
+                  cprod_no_charge_type: "",
+                  cprod_remote_id: "",
+                  cprod_requisition_number: 0
                 })
               }
               catch (e) {
@@ -505,19 +505,19 @@ export default class CasesScan extends Component {
                     barcode: barcodeLookup.scannedLabel,
                     description: barcodeLookup.productDescription,
                     scannedRfid: barcodeLookup.scannedRfid,
-                    cprod_pk_product_sequence: null,
-                    cprod_line_number: null,
-                    cprod_billing_code: null,
+                    cprod_pk_product_sequence: 0,
+                    cprod_line_number: 0,
+                    cprod_billing_code: "",
                     cprod_change_timestamp: new Date().toISOString(),
                     cprod_change_userid: "Scanner",
                     cprod_expiration_date: barcodeLookup.expirationDate,
                     cprod_license_number: barcodeLookup.licenseNumber,
                     cprod_product_model_number: barcodeLookup.productModelNumber,
                     cprod_lot_serial_number: barcodeLookup.lotSerialNumber,
-                    cprod_no_charge_reason: null,
-                    cprod_no_charge_type: null,
-                    cprod_remote_id: null,
-                    cprod_requisition_number: null
+                    cprod_no_charge_reason: "",
+                    cprod_no_charge_type: "",
+                    cprod_remote_id: "",
+                    cprod_requisition_number: 0
                   })
                 }
                 catch (e) {

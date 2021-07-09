@@ -499,15 +499,15 @@ export default class CasesSetup extends Component {
           chead_patient_id: patientId,
           cproc_pk_procedure_code: procedureId,
           cproc_physician_id: doctorId,
-          cproc_billing_code: null,
-          cproc_sync_site_name: null,
+          cproc_billing_code: "",
+          cproc_sync_site_name: "",
 
-          chead_datetime_in: null,
-          chead_datetime_out: null,
-          chead_user_one: null,
-          chead_user_two: null,
-          chead_user_three: null,
-          chead_user_four: null,
+          chead_datetime_in: "",
+          chead_datetime_out: "",
+          chead_user_one: "",
+          chead_user_two: "",
+          chead_user_three: "",
+          chead_user_four: "",
         })
       }
       catch (e) {

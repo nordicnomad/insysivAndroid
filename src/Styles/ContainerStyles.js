@@ -762,5 +762,10 @@ export default StyleSheet.create({
     fontWeight: '800',
     marginBottom: 10,
     textAlign: 'left',
-  }
+  },
+  pingIndicationContainer: {},
+  pingIndicationWrapper: {},
+  pingIndicationCount: {},
+  pingIndicationLabel: {},
+  pingMessagesContainer: {},
 });
