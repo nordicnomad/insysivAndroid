@@ -9,35 +9,32 @@ import RFIDScanner, { RFIDScannerEvent } from 'react-native-zebra-rfid';
 import styles from '../Styles/ContainerStyles.js'
 
 let onRfidResult = {}
-_onFinishedPlayingSubscription = null
+//_onFinishedPlayingSubscription = null
 
 export default class LocateProduct extends Component {
   constructor(props) {
     super(props)
     this.state = {
       lookupRFID: "",
-      scannedTags: [],
       matchRFID: "",
-      currentMatchCount: 0,
-      loopCount: 0,
-      idIsSet: false,
-      wasSetError: false,
-      wasScannerError: false,
+      scannedTags: [],
+      totalCount: 0,
+      scanResultsObjectArray: [],
       systemMessage: '',
     }
     RFIDScanner.init();
     RFIDScanner.on(RFIDScannerEvent.TAGS, this.CompareScanToTarget);
   }
-  componentDidMount() {
-    _onFinishedPlayingSubscription = SoundPlayer.addEventListener('FinishedPlaying', ({ success }) => {
-      this.setState({
-        loopCount: (this.state.loopCount - 1),
-      })
-      this.checkLoopActivity(success);
-    })
-  }
+  //componentDidMount() {
+  //  _onFinishedPlayingSubscription = SoundPlayer.addEventListener('FinishedPlaying', ({ success }) => {
+  //    this.setState({
+  //      loopCount: (this.state.loopCount - 1),
+  //    })
+  //    this.checkLoopActivity(success);
+  //  })
+  //}
   componentWillUnmount() {
-    _onFinishedPlayingSubscription.remove();
+  //  _onFinishedPlayingSubscription.remove();
     RFIDScanner.removeon(RFIDScannerEvent.TAGS, this.CompareScanToTarget);
   }
   static navigationOptions = ({navigation}) => {
@@ -76,28 +73,94 @@ export default class LocateProduct extends Component {
   };
 
   CompareScanToTarget = (tags) => {
-    let hitCount = this.state.loopCount
-    let matchCount = this.state.currentMatchCount
+    let hitCount = tags.length
+    let totalCount = this.state.totalCount
+    let matchCount = 0
     let foundBool = false
+    let scanResults = this.state.scanResultsObjectArray
+    let greyCount = 0
+    let blueCount = 0
+    let scannedTags = this.state.scannedTags
+    let systemMessage = ''
 
+    scannedTags.push(tags)
 
     tags.forEach((tag, i) => {
       if(tag === this.state.matchRFID) {
         foundBool = true
+        matchCount = matchCount + 1
       }
     });
+
+    switch(true) {
+      case (hitCount > 8):
+        greyCount = 5
+        break;
+      case (hitCount > 6):
+        greyCount = 4
+        break;
+      case (hitCount > 4):
+        greyCount = 3
+        break;
+      case (hitCount > 2):
+        greyCount = 2
+        break;
+      case (hitCount > 0):
+        greyCount = 1
+        break;
+    }
+
+    switch(true) {
+      case (matchCount >= 5):
+        blueCount = 5
+        break;
+      case (matchCount >= 4):
+        blueCount = 4
+        break;
+      case (matchCount >= 3):
+        blueCount = 3
+        break;
+      case (matchCount >= 2):
+        blueCount = 2
+        break;
+      case (matchCount >= 1):
+        blueCount = 1
+        break;
+      default:
+        blueCount = 0
+    }
+
+    scanResults.push(
+      {
+        count: hitCount,
+        blue: blueCount,
+        grey: greyCount,
+      }
+    )
+
     if(foundBool === true) {
-      hitCount = hitCount + 1
-      matchCount = matchCount + 1
       SoundPlayer.playSoundFile('locatedproductping', 'mp3')
+      systemMessage = "RFID Tag Detected!"
       this.setState({
-        currentMatchCount: matchCount,
-        loopCount: hitCount
+        totalCount: matchCount + totalCount,
+        loopCount: hitCount,
+        scanResultsObjectArray: scanResults,
+        scannedTags: scannedTags,
+        systemMessage: systemMessage,
+      })
+    }
+    else {
+      this.setState({
+        totalCount: matchCount + totalCount,
+        loopCount: hitCount,
+        scanResultsObjectArray: scanResults,
+        scannedTags: scannedTags
       })
     }
   }
 
   checkLoopActivity = (success) => {
+    //This function might go away now that sound isn't looping.
     let playLoopCount = this.state.loopCount
     if(success === true) {
       if(playLoopCount >= 1) {
@@ -218,29 +281,143 @@ export default class LocateProduct extends Component {
   resetRFIDLocator = () => {
     this.setState({
       lookupRFID: "",
-      scannedTags: [],
+      scanResultsObjectArray: [],
       matchRFID: "",
-      currentMatchCount: 0,
-      idIsSet: false,
-      wasSetError: false,
-      wasScannerError: false,
+      totalCount: 0,
       systemMessage: '',
     })
   }
 
   resetRFIDCount = () => {
     this.setState({
-      scannedTags: [],
-      matchRFID: "",
-      currentMatchCount: 0,
+      scanResultsObjectArray: [],
+      totalCount: 0,
       systemMessage: 'Count Reset',
     })
   }
 
-  render() {
-    return (
-      <ScrollView style={styles.scrollContainer}>
-        <View style={styles.container}>
+  renderScanBars(bluesAmount, greysAmount, columnNumber) {
+    let blues = bluesAmount
+    let greys = greysAmount
+    let scanBarOutput = []
+
+    for(i = 0; i < 5; i++) {
+      if(blues >= i + 1) {
+        scanBarOutput.unshift(
+          <View key={"sb" + columnNumber + i} style={styles.locationReadoutMatchBar}></View>
+        )
+      }
+      else if(greys >= i + 1) {
+        scanBarOutput.unshift(
+          <View key={"sb" + columnNumber + i} style={styles.locationReadoutNoMatchBar}></View>
+        )
+      }
+      else {
+        scanBarOutput.unshift(
+          <View key={"sb" + columnNumber + i} style={styles.locationReadoutNoDataBar}></View>
+        )
+      }
+    }
+
+    return(scanBarOutput)
+  }
+
+  renderSearchColumns() {
+    let scanResultsArray = this.state.scanResultsObjectArray
+    let scanResultsOutput = []
+    if(scanResultsArray.length < 1) {
+      scanResultsOutput.push(
+        <View key={"scnd"} style={styles.noScanWrapper}>
+          <Text style={styles.noScanText}>Pull and Release Trigger</Text>
+          <Text style={styles.noScanText}>on Sled to Scan for Tag.</Text>
+        </View>
+      )
+    }
+    else {
+      scanResultsArray.forEach((scan, i) => {
+        scanResultsOutput.unshift(
+          <View key={"sc" + i} style={styles.locationReadoutColumn}>
+            {this.renderScanBars(scan.blue, scan.grey, i)}
+          </View>
+        )
+      });
+    }
+
+    return(scanResultsOutput)
+  }
+
+  renderScanObjects(scanObjectArray) {
+    let arrayToRender = scanObjectArray
+    let outputRender = []
+
+    arrayToRender.forEach((objects, i) => {
+      outputRender.push(
+        <View>
+          <Text>- - - - - - - -</Text>
+          <Text>{objects.count}</Text>
+          <Text>{objects.grey}</Text>
+          <Text>{objects.blue}</Text>
+        </View>
+      )
+    });
+
+    return(outputRender)
+  }
+
+  renderTagsTest(testTags) {
+    let tagsToRender = testTags
+    let outputElements = []
+    outputElements.push(<Text>{'['}</Text>)
+    tagsToRender.forEach((tagarray, i) => {
+      outputElements.push(<Text>{'['}</Text>)
+      tagarray.forEach((tag, i) => {
+        outputElements.push(<Text>{tag + ','}</Text>)
+      });
+      outputElements.push(<Text>{']'}</Text>)
+    });
+    outputElements.push(<Text>{']'}</Text>)
+
+    return(outputElements)
+  }
+
+  renderLocatorView(rfidstring) {
+    let rfidValue = rfidstring
+
+    if(rfidValue != '') {
+      return(
+        <View style={styles.sectionContainer}>
+          <View style={styles.locationContainer}>
+            <View style={styles.pingMessagesContainer}>
+              <TouchableOpacity onPress={() => this.resetRFIDLocator()}>
+                <Text style={styles.locationBodyTextLabel}>Searching for Tag ID: <Text style={styles.locationIDLabel}>{this.state.matchRFID}</Text></Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView horizontal={true} style={styles.locationReadoutContainer}>
+              <View style={styles.locationReadoutRow}>
+                {this.renderSearchColumns()}
+              </View>
+            </ScrollView>
+          </View>
+          <View style={styles.locationContainer}>
+            <Text style={styles.bodyMessageText}>{this.state.systemMessage}</Text>
+          </View>
+          <View style={styles.locationContainer}>
+
+            <View style={styles.pingIndicationContainer}>
+              <TouchableOpacity onPress={() => this.resetRFIDCount()}>
+                <View style={(this.state.totalCount > 0) ? styles.pingIndicationWrapperActive : styles.pingIndicationWrapper}>
+                  <Text style={styles.pingIndicationCount}>{this.state.totalCount}</Text>
+                  <Text style={styles.pingIndicationLabel}>RFID Match Pings</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )
+    }
+    else {
+      return(
+        <View>
           <View style={styles.titleRow}>
             <Text style={styles.titleText}>Locate Product</Text>
           </View>
@@ -264,21 +441,15 @@ export default class LocateProduct extends Component {
               </View>
             </View>
           </View>
-          <View style={styles.sectionContainer}>
-            <View syle={styles.pingIndicationContainer}>
-              <View syle={styles.pingIndicationWrapper}>
-                <TouchableOpacity onPress={() => this.resetRFIDCount}>
-                  <Text style={styles.pingIndicationCount}>{this.state.currentMatchCount}</Text>
-                  <Text style={styles.pingIndicationLabel}>RFID Match Pings</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-            <View style={styles.pingMessagesContainer}>
-              <Text style={styles.bodyTextLabel}>{this.state.systemMessage}</Text>
-              <Text style={styles.bodyTextLabel}>Searching for: {this.state.matchRFID}</Text>
-            </View>
-          </View>
         </View>
+      )
+    }
+  }
+
+  render() {
+    return (
+      <ScrollView style={styles.scrollContainer}>
+        {this.renderLocatorView(this.state.matchRFID)}
       </ScrollView>
     );
   }

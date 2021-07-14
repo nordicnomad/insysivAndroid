@@ -306,16 +306,16 @@ export default class CasesScan extends Component {
           scannedRfid: lastLookup.scannedRfid,
           cprod_pk_product_sequence: 0,
           cprod_line_number: 0,
-          cprod_billing_code: "",
+          cprod_billing_code: "Default",
           cprod_change_timestamp: new Date().toISOString(),
           cprod_change_userid: "Scanner",
           cprod_expiration_date: lastLookup.expirationDate,
           cprod_license_number: lastLookup.licenseNumber,
           cprod_product_model_number: lastLookup.productModelNumber,
           cprod_lot_serial_number: lastLookup.lotSerialNumber,
-          cprod_no_charge_reason: "",
-          cprod_no_charge_type: "",
-          cprod_remote_id: "",
+          cprod_no_charge_reason: "Default Value",
+          cprod_no_charge_type: "1",
+          cprod_remote_id: "Scanner",
           cprod_requisition_number: 0
         })
         this.setState({
@@ -418,16 +418,16 @@ export default class CasesScan extends Component {
                   scannedRfid: barcodeLookup.scannedRfid,
                   cprod_pk_product_sequence: 0,
                   cprod_line_number: 0,
-                  cprod_billing_code: "",
+                  cprod_billing_code: "Default",
                   cprod_change_timestamp: new Date().toISOString(),
                   cprod_change_userid: "Scanner",
                   cprod_expiration_date: barcodeLookup.expirationDate,
                   cprod_license_number: barcodeLookup.licenseNumber,
                   cprod_product_model_number: barcodeLookup.productModelNumber,
                   cprod_lot_serial_number: barcodeLookup.lotSerialNumber,
-                  cprod_no_charge_reason: "",
-                  cprod_no_charge_type: "",
-                  cprod_remote_id: "",
+                  cprod_no_charge_reason: "Default Value",
+                  cprod_no_charge_type: "1",
+                  cprod_remote_id: "Scanner",
                   cprod_requisition_number: 0
                 })
               }
@@ -507,16 +507,16 @@ export default class CasesScan extends Component {
                     scannedRfid: barcodeLookup.scannedRfid,
                     cprod_pk_product_sequence: 0,
                     cprod_line_number: 0,
-                    cprod_billing_code: "",
+                    cprod_billing_code: "Default",
                     cprod_change_timestamp: new Date().toISOString(),
                     cprod_change_userid: "Scanner",
                     cprod_expiration_date: barcodeLookup.expirationDate,
                     cprod_license_number: barcodeLookup.licenseNumber,
                     cprod_product_model_number: barcodeLookup.productModelNumber,
                     cprod_lot_serial_number: barcodeLookup.lotSerialNumber,
-                    cprod_no_charge_reason: "",
-                    cprod_no_charge_type: "",
-                    cprod_remote_id: "",
+                    cprod_no_charge_reason: "Default Value",
+                    cprod_no_charge_type: "1",
+                    cprod_remote_id: "Scanner",
                     cprod_requisition_number: 0
                   })
                 }
@@ -722,6 +722,7 @@ export default class CasesScan extends Component {
           })
         })
         .then((syncresponse) =>  {
+            console.log(syncresponse)
             let syncresponseJson = syncresponse.json()
             if (syncresponse.status >= 200 && syncresponse.status < 300) {
               console.log("SYNC CASE RESPONSE OBJECT")
@@ -731,6 +732,9 @@ export default class CasesScan extends Component {
               })
             } else {
               failedSyncs.push(caseProduct.barcode)
+              console.log("SYNC CASE RESPONSE ERROR")
+              console.log(syncresponseJson)
+              console.log(syncresponseJson.status)
               return syncresponseJson.then(error => {throw error;});
               this.setState({
                 errorLogMessage: 'SYNC Post Request Failed: ' + i
