@@ -90,6 +90,14 @@ export default class CaseProductItem extends Component {
               <Text style={styles.trayLabel}>Time Scanned: </Text>
               {moment(this.props.scannedTime).format("MMMM Do YYYY, h:mm:ss a")}
             </Text>
+            <Text style={styles.trayText}>
+              <Text style={styles.trayLabel}>Time In: </Text>
+              {this.props.timeIn}
+            </Text>
+            <Text style={styles.trayText}>
+              <Text style={styles.trayLabel}>Time Out: </Text>
+              {this.props.timeOut}
+            </Text>
           </View>
           <View style={styles.straightRow}>
             <View style={styles.equalColumn}>

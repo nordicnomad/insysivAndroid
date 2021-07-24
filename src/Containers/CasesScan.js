@@ -255,7 +255,10 @@ export default class CasesScan extends Component {
     let caseInformation = activeScanableCase.objects("Active_Scanable_Case")
     let caseProducts = workingCaseSpace.objects("Working_Case_Space")
     let caseProductsOutput = []
-
+    console.log("CASEINFORMATION IN RENDER")
+    console.log(caseInformation[0])
+    console.log(caseInformation[0].chead_datetime_in)
+    console.log(caseInformation[0].chead_datetime_out)
     if(caseProducts != undefined && caseProducts != null) {
       let sortedCaseProducts = caseProducts.sorted("cprod_change_timestamp", true)
       sortedCaseProducts.forEach(function(product, index){
@@ -270,6 +273,8 @@ export default class CasesScan extends Component {
             expired={product.cprod_expiration_date}
             manufacturer={product.manufacturer}
             waste={false}
+            timeIn={caseInformation[0].chead_datetime_in}
+            timeOut={caseInformation[0].chead_datetime_out}
             scanned={product.scannedRfid}
             wasteFunction={() => this.wasteScannedItem(product.description)}
             removeFunction={() => this.removeScannedItem(product.barcode)} />
@@ -315,7 +320,7 @@ export default class CasesScan extends Component {
           cprod_lot_serial_number: lastLookup.lotSerialNumber,
           cprod_no_charge_reason: "Default Value",
           cprod_no_charge_type: "1",
-          cprod_remote_id: "Scanner",
+          cprod_remote_id: 0,
           cprod_requisition_number: 0
         })
         this.setState({
@@ -711,7 +716,7 @@ export default class CasesScan extends Component {
             cprod_billing_code: caseProduct.cprod_billing_code,
             cprod_change_timestamp: caseProduct.cprod_change_timestamp,
             cprod_change_userid: caseProduct.cprod_change_userid,
-            cprod_expiration_date: caseProduct.cprod_expiration_date,
+            cprod_expiration_date: moment(caseProduct.cprod_expiration_date, "YYMMDD").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"),
             cprod_license_number: caseProduct.cprod_license_number,
             cprod_product_model_number: caseProduct.cprod_product_model_number,
             cprod_lot_serial_number: caseProduct.cprod_lot_serial_number,
@@ -726,7 +731,7 @@ export default class CasesScan extends Component {
             let syncresponseJson = syncresponse.json()
             if (syncresponse.status >= 200 && syncresponse.status < 300) {
               console.log("SYNC CASE RESPONSE OBJECT")
-              console.log(syncresponseJson)
+              console.log(syncresponse)
               this.setState({
                 errorLogMessage: 'SYNC Post Request Succeeded:' + i
               })
