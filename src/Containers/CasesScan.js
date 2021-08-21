@@ -77,7 +77,7 @@ export default class CasesScan extends Component {
     locationsList = new Realm({
       schema: [{name: 'Locations_List',
       properties: {
-        siteId: "string",
+        siteId: "int",
         siteDescription: "string",
         active: "string",
       }}]
@@ -175,10 +175,18 @@ export default class CasesScan extends Component {
       proceduresDisplayObject = proceduresObjects.filtered(buildProcedureString)
     }
 
+    console.log("SITE ID")
+    console.log(displayCaseDetail.chead_pk_site_id)
     if(displayCaseDetail.chead_pk_site_id != null && displayCaseDetail.chead_pk_site_id != undefined) {
-      let buildLocationString = 'siteId CONTAINS "' + displayCaseDetail.chead_pk_site_id + '"'
+      let buildLocationString = 'siteId = ' + displayCaseDetail.chead_pk_site_id + ''
+      console.log("LOCATION SEARCH STRING")
+      console.log(buildLocationString)
       let sitesObjects = locationsList.objects("Locations_List")
+      console.log("Number of Sites in DB")
+      console.log(sitesObjects.length)
       sitesDisplayObject = sitesObjects.filtered(buildLocationString)
+      console.log("Filtered Sites")
+      console.log(sitesDisplayObject.length)
     }
 
     this.setState({
@@ -687,7 +695,8 @@ export default class CasesScan extends Component {
     //Loop products and individually post to product and case data to sproc
     scannedCaseProducts.forEach((caseProduct, i) => {
       try {
-        fetch('http://45.42.176.50:5100/api/AddCaseProductSproc', {
+        //AddCaseProductSproc old name
+        fetch('http://45.42.176.50:5100/api/InsertCaseProduct', {
           method: 'POST',
           headers: {
             Accept: 'application/json',

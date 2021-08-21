@@ -34,7 +34,7 @@ export default class CasesSetup extends Component {
       newDoctorId: '',
       newLocationValue: 0,
       newLocationLabel: "",
-      newLocationId: '',
+      newLocationId: 0,
       newProcedureValue: 0,
       newProcedureLabel: "",
       newProcedureId: '',
@@ -65,7 +65,7 @@ export default class CasesSetup extends Component {
     locationsList = new Realm({
       schema: [{name: 'Locations_List',
       properties: {
-        siteId: "string",
+        siteId: "int",
         siteDescription: "string",
         active: "string",
       }}]
@@ -164,9 +164,9 @@ export default class CasesSetup extends Component {
     if(procedureData === null || procedureData === undefined || procedureData.length === 0) {
       this.FetchProcedureTable()
     }
-    if(locationData === null || locationData === undefined || locationData.length === 0) {
+    //if(locationData === null || locationData === undefined || locationData.length === 0) {
       this.FetchLocationTable()
-    }
+    //}
 
     this.setState({
       doctors: doctorData,

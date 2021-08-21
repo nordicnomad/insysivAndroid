@@ -120,7 +120,7 @@ export default class AccountInfo extends Component {
     locationsList = new Realm({
       schema: [{name: 'Locations_List',
       properties: {
-        siteId: "string",
+        siteId: "int",
         siteDescription: "string",
         active: "string",
       }}]
@@ -820,7 +820,7 @@ export default class AccountInfo extends Component {
         newSites.forEach(function(site, i) {
           try {
             locationsList.create('Locations_List', {
-              siteId: site.siteId.toString(),
+              siteId: site.siteId,
               siteDescription: site.siteDescription,
               active: site.active,
             })
@@ -837,7 +837,7 @@ export default class AccountInfo extends Component {
         newSites.forEach(function(site, i) {
           try {
             locationsList.create('Locations_List', {
-              siteId: site.siteId.toString(),
+              siteId: site.siteId,
               siteDescription: site.siteDescription,
               active: site.active,
             })
@@ -956,7 +956,6 @@ export default class AccountInfo extends Component {
       })
     }
   }
-  SaveVendors
   CheckWorkingForLogout = () => {
     let caseSpace = workingCaseSpace.objects('Working_Case_Space').length
     let scanSpace = workingScanSpace.objects('Working_Scan_Space').length
