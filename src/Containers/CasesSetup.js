@@ -25,9 +25,8 @@ export default class CasesSetup extends Component {
       doctors:[],
       locations:[],
       procedures:[],
-      caseNumberHasFocus: false,
       patientIdHasFocus: false,
-      newCaseNumber: '00000',
+      newCaseNumber: '',
       newPatientId: '',
       newDoctorValue: 0,
       newDoctorLabel: "",
@@ -158,6 +157,7 @@ export default class CasesSetup extends Component {
     let procedureData = proceduresList.objects('Procedures_List')
     let locationData = locationsList.objects('Locations_List')
 
+    this.FetchCaseNumber()
     if(doctorData === null || doctorData === undefined || doctorData.length === 0) {
       this.FetchDoctorTable()
     }
@@ -173,9 +173,6 @@ export default class CasesSetup extends Component {
       locations: locationData,
       procedures: procedureData,
     })
-  }
-  onCaseNumberFocusChange() {
-    this.setState({caseNumberHasFocus: !this.state.caseNumberHasFocus})
   }
   onPatientIdFocusChange() {
     this.setState({patientIdHasFocus: !this.state.patientIdHasFocus})
@@ -261,7 +258,29 @@ export default class CasesSetup extends Component {
 
     this.savePhysiciansTable(docResponse)
   }
-  async FetchDoctorTable() {
+  FetchCaseNumber() {
+    let caseNumberResponse = {}
+    console.log("FETCH CASE NUMBER CALLED")
+
+    try {
+      return fetch('http://45.42.176.50:5100/api/GetNextCaseNumber')
+      .then((casenumresponse) => casenumresponse.json())
+      .then((casenumresponse) => {
+        console.log("NEXT CASE NUMBER RESPONSE")
+        console.log(casenumresponse)
+
+        this.setState({
+          newCaseNumber: casenumresponse.toString(),
+        })
+      })
+    }
+    catch (e) {
+      console.log("NEXT CASE FETCH FAILED")
+      console.log(e)
+    }
+  }
+
+  FetchDoctorTable() {
     let physiciansResponse = []
 
     //Doctor Calls
@@ -325,7 +344,7 @@ export default class CasesSetup extends Component {
 
     this.saveProcedureTable(procedureResponse)
   }
-  async FetchProcedureTable() {
+  FetchProcedureTable() {
     let barcodeResponse = []
 
     //Procedure Calls
@@ -389,7 +408,7 @@ export default class CasesSetup extends Component {
 
     this.saveLocationsTable(siteResponse)
   }
-  async FetchLocationTable() {
+  FetchLocationTable() {
     let barcodeResponse = []
 
     //Location Calls
@@ -576,15 +595,10 @@ export default class CasesSetup extends Component {
               </View>*/}
               <View style={styles.sectionContainer}>
                 <View style={styles.shadedBackgroundWrapper}>
-                  {/*<View style={styles.formItemWrapper}>
+                  <View style={styles.formItemWrapper}>
                     <Text style={styles.inputTextLabel}>Case Number</Text>
-                    <TextInput
-                      style={this.state.caseNumberHasFocus === true ? styles.formInputFocus : styles.formInput}
-                      onFocus={() => this.onCaseNumberFocusChange()}
-                      onBlur={() => this.onCaseNumberFocusChange()}
-                      onChangeText={value => this.setState({newCaseNumber: value})}
-                      />
-                  </View>*/}
+                    <Text style={styles.generatedFormText}>{this.state.newCaseNumber}</Text>
+                  </View>
                   <View style={styles.formItemWrapper}>
                     <Text style={styles.inputTextLabel}>Patient Id</Text>
                     <TextInput

@@ -70,6 +70,27 @@ export default class Home extends Component {
       }
     }
 
+    {
+
+    }
+
+    patientsList = new Realm({
+      schema: [{name: 'Patients_List',
+        properties: {
+          patientId: "string",
+          firstName": "string",
+          middleInitial": "string?",
+          lastName: "string",
+          dateOfBirth: "string?",
+          gender: null,
+          patientIdNumber: "02625888",
+          caseNumber: 65364,
+          procedureTimestamp: "2021-08-20T13:19:05.653"
+        }
+
+      }]
+    })
+
     activeUser = new Realm({
       schema: [{name: 'Active_User',
         properties: {
