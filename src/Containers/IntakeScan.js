@@ -650,25 +650,24 @@ export default class IntakeScan extends Component {
       console.log("SYNC PRODUCT: " + index)
       console.log(product.productModelNumber)
       try {
-        fetch('http://45.42.176.50:5100/api/CheckinProducts', {
+        fetch('http://45.42.176.50:5100/api/InsertCheckInProducts', {
           method: 'POST',
           headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            //api endpoint model
-            pkChkin: 0,
-            licenseNumber: product.vendorLicenseNumber,
-            productModelNumber: product.productModelNumber,
-            productBarCode: product.barcode,
+            remote_id: "1",
+            create_userid: "Scanner",
+            license_number: product.vendorLicenseNumber,
+            expiration_date: product.expirationDate,
+            create_timestamp: new Date().toISOString(),
+            product_bar_code: product.barcode,
+            lot_serial_number: lotSerial,
+            product_model_number: product.productModelNumber,
+            quantity: product.count,
             encoding: 0,
-            transactionPrice: 0,
-            lotSerialNumber: lotSerial,
-            createTimestamp: new Date().toISOString(),
-            createUserid: userObject[0].userId,
-            qty: product.count,
-            expirationDate: product.expirationDate
+            transaction_price: 0
           })
         })
         .then((syncresponse) => {

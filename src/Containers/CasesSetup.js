@@ -27,6 +27,8 @@ export default class CasesSetup extends Component {
       procedures:[],
       patientIdHasFocus: false,
       newCaseNumber: '',
+      newPatientValue: 0,
+      newPatientLabel:"",
       newPatientId: '',
       newDoctorValue: 0,
       newDoctorLabel: "",
@@ -50,6 +52,21 @@ export default class CasesSetup extends Component {
           organizationName: "string?",
           //Additional Organization Level Configuration Options go Here.
       }}]
+    });
+    patientsList = new Realm({
+      schema: [{name: 'Patients_List',
+        properties: {
+          patientId: "string",
+          firstName: "string",
+          middleInitial: "string?",
+          lastName: "string",
+          dateOfBirth: "string?",
+          gender: "string?",
+          patientIdNumber: "string",
+          caseNumber: "int?",
+          procedureTimestamp: "string"
+        }
+      }]
     });
     physiciansList = new Realm({
       schema: [{name: 'Physicians_List',
@@ -174,8 +191,12 @@ export default class CasesSetup extends Component {
       procedures: procedureData,
     })
   }
-  onPatientIdFocusChange() {
-    this.setState({patientIdHasFocus: !this.state.patientIdHasFocus})
+  onPatientChange = (patientValue) => {
+    this.setState({
+      newPatientValue: patientValue,
+      newPatientLabel: this.state.patients[patientValue-1],
+      newPatientId: this.state.patients[patientValue-1].patientId,
+    })
   }
   onDoctorChange = (pickerValue) => {
     this.setState({
@@ -600,7 +621,16 @@ export default class CasesSetup extends Component {
                     <Text style={styles.generatedFormText}>{this.state.newCaseNumber}</Text>
                   </View>
                   <View style={styles.formItemWrapper}>
-                    <Text style={styles.inputTextLabel}>Patient Id</Text>
+                    <Text style={styles.inputTextLabel}>Patient</Text>
+                    <View style={styles.formPickerWrapper}>
+                      <Picker
+                        style={styles.formPicker}
+                        selectedValue={this.state.newPatientValue}
+                        onValueChange={this.onPatientChange}
+                        >
+                        {this.renderPatientChoices()}
+                      </Picker>
+                    </View>
                     <TextInput
                       style={this.state.patientIdHasFocus === true ? styles.formInputFocus : styles.formInput}
                       onFocus={() => this.onPatientIdFocusChange()}

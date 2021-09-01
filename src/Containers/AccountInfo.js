@@ -628,7 +628,7 @@ export default class AccountInfo extends Component {
     //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/subscriptions')
     //test server call
     console.log("FETCHRFIDTABLE CALLED FROM ACCOUNT INFORMATION PAGE")
-    return fetch('http://45.42.176.50:5100/api/RfidLabels')
+    return fetch('http://45.42.176.50:5100/api/RfidLabels/View')
     .then((rfidresponse) => rfidresponse.json())
     .then((rfidresponseJson) => {
       console.log("RFID RESPONSE RECEIVED")
