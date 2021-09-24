@@ -799,6 +799,7 @@ export default class CasesScan extends Component {
           console.log(currentTimeStamp)
           console.log("IS EXPIRED CHECK")
           console.log(moment(currentTimeStamp).isBefore(compareDate))
+
           if(moment(currentTimeStamp).isBefore(compareDate)) {
             //Item is not expired
             if(barcodeLookup.passThroughCompletenessFlag === true) {

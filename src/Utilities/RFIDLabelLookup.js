@@ -89,7 +89,7 @@ export function RFIDlabelSearch(rfidLabel, lastReturnObject, lastCompleteFlag) {
   let rfidTable = rfidLabels.objects('RFID_Labels')
 
   //check for rfid label barcode match
-  if(passedLabel != null && passedLabel != undefined) {
+  if(passedLabel != null && passedLabel != undefined && passedLabel.substring(0,3) === "000") {
     let buildLabelFilterString = 'tagid CONTAINS "' + passedLabel + '"'
     let filteredLabelMatches = rfidTable.filtered(buildLabelFilterString)
 
@@ -102,9 +102,85 @@ export function RFIDlabelSearch(rfidLabel, lastReturnObject, lastCompleteFlag) {
         tagid: label.tagid,
       }
     })
+
+    if(matchedLabel.productModelNumber != null && matchedLabel.productModelNumber != undefined && matchedLabel.productModelNumber != '') {
+      let buildProductFilterString = 'productModelNumber CONTAINS "' + matchedLabel.productModelNumber + '"'
+      let productObjects = products.objects("Products_Lookup")
+      let filteredProductMatches = productObjects.filtered(buildProductFilterString)
+
+      filteredProductMatches.forEach((product, i) => {
+        matchedRfidProduct = {
+          scannedLabel: rfidLabel,
+          licenseNumber: product.licenseNumber,
+          lotSerialNumber: matchedLabel.lotSerialNumber,
+          expirationDate: matchedLabel.expirationDate,
+          tagid: matchedLabel.tagid,
+          productModelNumber: product.productModelNumber,
+          orderThruVendor: product.orderThruVendor,
+          productDescription: product.productDescription,
+          scannedRfid: true,
+          autoReplace: product.autoReplace,
+          discontinued: product.discontinued,
+          productCategory: product.productCategory,
+          hospitalItemNumber: product.hospitalItemNumber,
+          unitOfMeasure: product.unitOfMeasure,
+          unitOfMeasureQuantity: product.unitOfMeasureQuantity,
+          reorderValue: product.reorderValue,
+          quantityOnHand: product.quantityOnHand,
+          quantityOrdered: product.quantityOrdered,
+          lastRequistionNumber: product.lastRequistionNumber,
+          orderStatus: product.orderStatus,
+          active: product.active,
+          accepted: product.accepted,
+          consignment: product.consignment,
+          minimumValue: product.minimumValue,
+          maximumValue: product.maximumValue,
+          nonOrdered: product.nonOrdered,
+          productNote: product.productNote,
+          passThroughCompletenessFlag: true,
+          invalidScanSegment: false,
+          isUnknown: false,
+        }
+      })
+    }
+    else {
+      matchedRfidProduct = {
+        scannedLabel: rfidLabel,
+        licenseNumber: "No Match",
+        productModelNumber: "0000",
+        lotSerialNumber: "0000",
+        expirationDate: "01-01-2300",
+        tagid: "0000",
+        orderThruVendor: '',
+        productDescription: 'Unknown Label',
+        scannedRfid: true,
+        autoReplace: '',
+        discontinued: '',
+        productCategory: '',
+        hospitalItemNumber: '',
+        unitOfMeasure: '',
+        unitOfMeasureQuantity: '',
+        reorderValue: '',
+        quantityOnHand: '',
+        quantityOrdered: '',
+        lastRequistionNumber: '',
+        orderStatus: '',
+        active: '',
+        accepted: '',
+        consignment: '',
+        minimumValue: '',
+        maximumValue: '',
+        nonOrdered: '',
+        productNote: '',
+        passThroughCompletenessFlag: true,
+        invalidScanSegment: false,
+        isUnknown: true,
+      }
+    }
+
   }
 
-  if(matchedLabel.productModelNumber === '' || matchedLabel.productModelNumber === null || matchedLabel.productModelNumber === undefined) {
+  if(passedLabel.substring(0,3) !== "000") {
     let barcodeSecondaryLookup = BarcodeSearch(rfidLabel, lastReturnObject, lastCompleteFlag)
 
     if(barcodeSecondaryLookup != null && barcodeSecondaryLookup != undefined) {
@@ -159,7 +235,7 @@ export function RFIDlabelSearch(rfidLabel, lastReturnObject, lastCompleteFlag) {
         licenseNumber: "Error / No Match",
         productModelNumber: "0000",
         lotSerialNumber: "0000",
-        expirationDate: "NA",
+        expirationDate: "01-01-2300",
         tagid: "0000",
         orderThruVendor: '',
         productDescription: 'Unknown Product',
@@ -187,46 +263,6 @@ export function RFIDlabelSearch(rfidLabel, lastReturnObject, lastCompleteFlag) {
         isUnknown: true,
       }
     }
-  }
-  else {
-    let buildProductFilterString = 'productModelNumber CONTAINS "' + matchedLabel.productModelNumber + '"'
-    let productObjects = products.objects("Products_Lookup")
-    let filteredProductMatches = productObjects.filtered(buildProductFilterString)
-
-    filteredProductMatches.forEach((product, i) => {
-      matchedRfidProduct = {
-        scannedLabel: rfidLabel,
-        licenseNumber: product.licenseNumber,
-        lotSerialNumber: matchedLabel.lotSerialNumber,
-        expirationDate: matchedLabel.expirationDate,
-        tagid: matchedLabel.tagid,
-        productModelNumber: product.productModelNumber,
-        orderThruVendor: product.orderThruVendor,
-        productDescription: product.productDescription,
-        scannedRfid: true,
-        autoReplace: product.autoReplace,
-        discontinued: product.discontinued,
-        productCategory: product.productCategory,
-        hospitalItemNumber: product.hospitalItemNumber,
-        unitOfMeasure: product.unitOfMeasure,
-        unitOfMeasureQuantity: product.unitOfMeasureQuantity,
-        reorderValue: product.reorderValue,
-        quantityOnHand: product.quantityOnHand,
-        quantityOrdered: product.quantityOrdered,
-        lastRequistionNumber: product.lastRequistionNumber,
-        orderStatus: product.orderStatus,
-        active: product.active,
-        accepted: product.accepted,
-        consignment: product.consignment,
-        minimumValue: product.minimumValue,
-        maximumValue: product.maximumValue,
-        nonOrdered: product.nonOrdered,
-        productNote: product.productNote,
-        passThroughCompletenessFlag: true,
-        invalidScanSegment: false,
-        isUnknown: false,
-      }
-    })
   }
   //return
   return(matchedRfidProduct)
