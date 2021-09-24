@@ -25,6 +25,7 @@ let vendorsList ;
 let activeScanableCase ;
 let workingCaseSpace ;
 let workingScanSpace ;
+let patientsList ;
 
 import styles from '../Styles/ContainerStyles.js'
 
@@ -38,7 +39,7 @@ export default class AccountInfo extends Component {
       account: {
         organization: {
           name: 'Replace with something in user object',
-          systemVersion: 'V0.1',
+          systemVersion: 'V0.3',
           customerServicePhone: '888-888-8888',
           customerServiceEmail: 'troy.norris@insysiv.com'
         }
@@ -147,6 +148,21 @@ export default class AccountInfo extends Component {
         scannerCheckInAuth: "string",
       }}]
     });
+    patientsList = new Realm({
+      schema: [{name: 'Patients_List',
+        properties: {
+          patientId: "string",
+          firstName: "string",
+          middleInitial: "string?",
+          lastName: "string",
+          dateOfBirth: "string?",
+          gender: "string?",
+          patientIdNumber: "string",
+          caseNumber: "int?",
+          procedureTimestamp: "string"
+        }
+      }]
+    });
     vendorsList = new Realm ({
       schema: [{name: 'Vendors_List',
       properties: {
@@ -161,7 +177,7 @@ export default class AccountInfo extends Component {
       schema: [{name: 'Active_Scanable_Case',
       properties: {
         chead_pk_case_number: "string",
-        chead_pk_site_id: "string",
+        chead_pk_site_id: "int",
         chead_patient_id: "string",
 
         cproc_pk_procedure_code: "string",
@@ -357,6 +373,95 @@ export default class AccountInfo extends Component {
       catch (e) {
         console.log("Error on timestamp creation");
       }
+    }
+  }
+  FetchPatientTable = () => {
+    //Product Calls
+    //emulator call
+    //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/subscriptions')
+    //test server call
+    console.log("FETCHRPATIENTTABLE CALLED FROM SUBSCRIPTIONS HOME PAGE")
+    return fetch('http://45.42.176.50:5100/api/Patients/View')
+    .then((response) => response.json())
+    .then((responseJson) => {
+      console.log("PATIENTS RESPONSE")
+      console.log(responseJson)
+      patientResponse = responseJson;
+      this.savePatientTable(patientResponse)
+
+      this.setState({
+        patients: patientResponse,
+        systemMessage: "Patients Updated"
+      })
+    })
+    .catch((error) => {
+      console.error(error);
+      this.setState({
+        systemMessage: "Patient Update Error"
+      })
+    });
+  }
+
+  savePatientTable = (responsepatients) => {
+    let savedPatients = patientsList.objects('Patients_List')
+    let newPatients = responsepatients
+
+    this.setState({
+      systemMessage: "Saving Patients",
+    })
+
+    if(savedPatients != undefined && savedPatients != null && savedPatients.length > 0) {
+      patientsList.write(() => {
+        patientsList.deleteAll()
+        newPatients.forEach(function(patient, i) {
+          console.log(patient.patientId)
+          try {
+            patientsList.create('Patients_List', {
+              patientId: patient.patientId,
+              firstName: patient.firstName,
+              middleInitial: patient.middleInitial,
+              lastName: patient.lastName,
+              dateOfBirth: patient.dateOfBirth,
+              gender: patient.gender,
+              patientIdNumber: patient.patientIdNumber,
+              caseNumber: patient.caseNumber,
+              procedureTimestamp: patient.procedureTimestamp
+            })
+          }
+          catch (e) {
+            this.setState({
+              systemMessage: "Error on patient item creation " + i
+            })
+            console.log(e);
+          }
+        })
+      })
+    }
+    else {
+      patientsList.write(() => {
+        newPatients.forEach(function(patient, i) {
+          console.log()
+          try {
+            patientsList.create('Patients_List', {
+              patientId: patient.patientId,
+              firstName: patient.firstName,
+              middleInitial: patient.middleInitial,
+              lastName: patient.lastName,
+              dateOfBirth: patient.dateOfBirth,
+              gender: patient.gender,
+              patientIdNumber: patient.patientIdNumber,
+              caseNumber: patient.caseNumber,
+              procedureTimestamp: patient.procedureTimestamp
+            })
+          }
+          catch (e) {
+            this.setState({
+              systemMessage: "Error on patient item creation " + i
+            })
+            console.log(e);
+          }
+        })
+      })
     }
   }
 
@@ -1047,6 +1152,8 @@ export default class AccountInfo extends Component {
         let printDocs = outputDocs.length;
         let outputSites = locationsList.objects('Locations_List');
         let printSites = outputSites.length;
+        let outputPatients = patientsList.objects('Patients_List');
+        let printPatients = outputPatients.length;
         return (
           <ScrollView style={styles.scrollContainer}>
             <View style={styles.container}>
@@ -1200,6 +1307,15 @@ export default class AccountInfo extends Component {
                   </View>
                   <View style={styles.rightColumn}>
                     <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.LoadDummyVendorsTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
+                  </View>
+                </View>
+                <View style={styles.tabControlRow}>
+                  <View style={styles.leftColumn}>
+                    <Text>Test Patient Data</Text>
+                    <Text>{printPatients}</Text>
+                  </View>
+                  <View style={styles.rightColumn}>
+                    <TouchableOpacity style={styles.miniSubmitButton} onPress={() => this.FetchPatientTable()}><Text style={styles.miniSubmitButtonText}>Load</Text></TouchableOpacity>
                   </View>
                 </View>
               </View>

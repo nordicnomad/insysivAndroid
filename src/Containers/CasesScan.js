@@ -39,6 +39,10 @@ export default class CasesScan extends Component {
       lastCompleteFlag: true,
       showSaveInvalid: false,
       lastScannedObject: {},
+      productSummaryFlash: [],
+      isSynching: false,
+      isUpdating: false,
+      showSummary: false,
     }
 
     activeUser = new Realm({
@@ -53,7 +57,42 @@ export default class CasesScan extends Component {
           //Additional Organization Level Configuration Options go Here.
       }}]
     });
-
+    products = new Realm({
+      schema: [{name: 'Products_Lookup',
+      properties:{
+        licenseNumber: "string",
+        productModelNumber: "string",
+        orderThruVendor: "string",
+        productDescription: "string",
+        autoReplace: "string",
+        discontinued: "string",
+        productCategory: "string",
+        hospitalItemNumber: "string?",
+        unitOfMeasure: "string",
+        unitOfMeasureQuantity: "int",
+        reorderValue: "int",
+        quantityOnHand: "int",
+        quantityOrdered: "int",
+        lastRequistionNumber: "int?",
+        orderStatus: "string",
+        active: "string",
+        accepted: "string",
+        consignment: "string",
+        minimumValue: "int",
+        maximumValue: "int",
+        nonOrdered: "string",
+        productNote: "string?",
+      }}]
+    });
+    productBarCodes = new Realm({
+      schema: [{name: 'Product_Bar_Codes',
+      properties: {
+        productBarCode1: "string",
+        licenseNumber: "string",
+        productModelNumber: "string",
+        encoding: "int?"
+      }}]
+    });
     rfidLabels = new Realm({
       schema: [{name: 'RFID_Labels',
       properties: {
@@ -94,7 +133,7 @@ export default class CasesScan extends Component {
       schema: [{name: 'Active_Scanable_Case',
       properties: {
         chead_pk_case_number: "string",
-        chead_pk_site_id: "string",
+        chead_pk_site_id: "int",
         chead_patient_id: "string",
 
         cproc_pk_procedure_code: "string",
@@ -151,22 +190,29 @@ export default class CasesScan extends Component {
     BackHandler.addEventListener('hardwareBackPress',  () => this.doubleBackButton());
     this.checkForScanner()
     let activeCaseDetail = activeScanableCase.objects("Active_Scanable_Case")
-    let physiciansDisplayObject = {
+    let physiciansDisplayObject = [{
       firstName: "",
       lastName: "",
-    }
-    let proceduresDisplayObject = {
+    }]
+    let proceduresDisplayObject = [{
       procedureDescription: "",
-    }
-    let sitesDisplayObject = {
+    }]
+    let sitesDisplayObject = [{
       siteDescription: "",
-    }
+    }]
     let displayCaseDetail = activeCaseDetail[0]
 
     if(displayCaseDetail.cproc_physician_id != null && displayCaseDetail.cproc_physician_id != undefined) {
+      console.log("DEBUGING THIS BULLSHIT AGAIN")
       let buildPhysiciansString = 'physicianId CONTAINS "' + displayCaseDetail.cproc_physician_id + '"'
+      console.log(buildPhysiciansString)
       let physiciansObjects = physiciansList.objects("Physicians_List")
+      console.log(physiciansObjects.length)
       physiciansDisplayObject = physiciansObjects.filtered(buildPhysiciansString)
+      physiciansDisplayObject.forEach((item, i) => {
+        console.log(item)
+      });
+
     }
 
     if(displayCaseDetail.cproc_pk_procedure_code != null && displayCaseDetail.cproc_pk_procedure_code != undefined) {
@@ -179,16 +225,17 @@ export default class CasesScan extends Component {
     console.log(displayCaseDetail.chead_pk_site_id)
     if(displayCaseDetail.chead_pk_site_id != null && displayCaseDetail.chead_pk_site_id != undefined) {
       let buildLocationString = 'siteId = ' + displayCaseDetail.chead_pk_site_id + ''
-      console.log("LOCATION SEARCH STRING")
-      console.log(buildLocationString)
       let sitesObjects = locationsList.objects("Locations_List")
-      console.log("Number of Sites in DB")
-      console.log(sitesObjects.length)
       sitesDisplayObject = sitesObjects.filtered(buildLocationString)
-      console.log("Filtered Sites")
-      console.log(sitesDisplayObject.length)
     }
 
+    console.log("CASE DISPLAY OBJECTS")
+    console.log(displayCaseDetail.chead_patient_id)
+    console.log(physiciansDisplayObject[0])
+    console.log(physiciansDisplayObject[0].firstName)
+    console.log(physiciansDisplayObject[0].lastName)
+    console.log(proceduresDisplayObject[0].procedureDescription)
+    console.log(sitesDisplayObject[0].siteDescription)
     this.setState({
       caseNumber: displayCaseDetail.chead_pk_case_number,
       patientNumber: displayCaseDetail.chead_patient_id,
@@ -258,15 +305,258 @@ export default class CasesScan extends Component {
       ),
     }
   };
+  FetchProductTable = () => {
+    //Product Calls
+    //emulator call
+    //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/subscriptions')
+    //test server call
+    console.log("FETCHRPRODUCTTABLE CALLED FROM ACCOUNT INFORMATION PAGE")
+    return fetch('http://45.42.176.50:5100/api/Products')
+    .then((response) => response.json())
+    .then((responseJson) => {
+      console.log("PRODUCT RESPONSE")
+      console.log(responseJson)
+      productResponse = responseJson;
+      this.saveProductTable(productResponse)
+    })
+    .then(this.props.navigation.navigate('Home'))
+    .catch((error) => {
+      console.error(error);
+      this.setState({
+        isFetchingProducts: false,
+        showSyncFooter: true,
+        syncProgressMessage: 'Syncing Failed: ' + error
+      })
+    });
+  }
+
+  saveProductTable = (responseproducts) => {
+    let savedProducts = products.objects('Products_Lookup')
+    let newProducts = responseproducts
+
+    console.log("SAVE PRODUCT TABLE CALLED")
+
+    if(savedProducts != undefined && savedProducts != null && savedProducts.length > 0) {
+      products.write(() => {
+        products.deleteAll()
+        newProducts.forEach(function(product, i) {
+          try {
+            products.create('Products_Lookup', {
+              licenseNumber: product.licenseNumber,
+              productModelNumber: product.productModelNumber,
+              orderThruVendor: product.orderThruVendor,
+              productDescription: product.productDescription,
+              autoReplace: product.autoReplace,
+              discontinued: product.discontinued,
+              productCategory: product.productCategory,
+              hospitalItemNumber: product.hospitalItemNumber,
+              unitOfMeasure: product.unitOfMeasure,
+              unitOfMeasureQuantity: product.unitOfMeasureQuantity,
+              reorderValue: product.reorderValue,
+              quantityOnHand: product.quantityOnHand,
+              quantityOrdered: product.quantityOrdered,
+              lastRequistionNumber: product.lastRequistionNumber,
+              orderStatus: product.orderStatus,
+              active: product.active,
+              accepted: product.accepted,
+              consignment: product.consignment,
+              minimumValue: product.minimumValue,
+              maximumValue: product.maximumValue,
+              nonOrdered: product.nonOrdered,
+              productNote: product.productNote,
+            })
+          }
+          catch (e) {
+            this.setState({
+              syncProgressMessage: "Error on product item creation " + i
+            })
+            console.log(e);
+          }
+        })
+      })
+    }
+    else {
+      products.write(() => {
+        newProducts.forEach(function(product, i) {
+          try {
+            products.create('Products_Lookup', {
+              licenseNumber: product.licenseNumber,
+              productModelNumber: product.productModelNumber,
+              orderThruVendor: product.orderThruVendor,
+              productDescription: product.productDescription,
+              autoReplace: product.autoReplace,
+              discontinued: product.discontinued,
+              productCategory: product.productCategory,
+              hospitalItemNumber: product.hospitalItemNumber,
+              unitOfMeasure: product.unitOfMeasure,
+              unitOfMeasureQuantity: product.unitOfMeasureQuantity,
+              reorderValue: product.reorderValue,
+              quantityOnHand: product.quantityOnHand,
+              quantityOrdered: product.quantityOrdered,
+              lastRequistionNumber: product.lastRequistionNumber,
+              orderStatus: product.orderStatus,
+              active: product.active,
+              accepted: product.accepted,
+              consignment: product.consignment,
+              minimumValue: product.minimumValue,
+              maximumValue: product.maximumValue,
+              nonOrdered: product.nonOrdered,
+              productNote: product.productNote,
+            })
+          }
+          catch (e) {
+            this.setState({
+              syncProgressMessage: "Error on product item creation " + i
+            })
+            console.log(e);
+          }
+        })
+      })
+    }
+  }
+  saveBarCodeTable = (responsebarcodes) => {
+    let savedBarcodes = productBarCodes.objects('Product_Bar_Codes')
+    let newBarcodes = responsebarcodes
+
+    this.setState({
+      isFetchingBarcodes: true,
+      syncProgressMessage: "Saving Barcodes",
+    })
+
+    if(savedBarcodes != undefined && savedBarcodes != null && savedBarcodes.length > 0) {
+      productBarCodes.write(() => {
+        productBarCodes.deleteAll()
+        newBarcodes.forEach(function(barcode, i) {
+          try {
+            productBarCodes.create('Product_Bar_Codes', {
+              productBarCode1: barcode.productBarCode1,
+              licenseNumber: barcode.licenseNumber,
+              productModelNumber: barcode.productModelNumber,
+              encoding: barcode.encoding,
+            })
+
+          }
+          catch (e) {
+            this.setState({
+              syncProgressMessage: "Error on barcode item creation " + i
+            })
+            console.log(e);
+          }
+        })
+      })
+    }
+    else {
+      productBarCodes.write(() => {
+        newBarcodes.forEach(function(barcode, i) {
+          try {
+            productBarCodes.create('Product_Bar_Codes', {
+              productBarCode1: barcode.productBarCode1,
+              licenseNumber: barcode.licenseNumber,
+              productModelNumber: barcode.productModelNumber,
+              encoding: barcode.encoding,
+            })
+          }
+          catch (e) {
+            this.setState({
+              syncProgressMessage: "Error on barcode item creation " + i
+            })
+            console.log(e);
+          }
+        })
+      })
+    }
+  }
+  saveRfidTable = (responserfids) => {
+    let savedRfidLabels = rfidLabels.objects('RFID_Labels')
+    let newRfidLabels = responserfids
+    console.log('SAVE RFID TABLE CALLED')
+    this.setState({
+      isFetchingLabels: true,
+      syncProgressMessage: "Saving Labels",
+    })
+
+    if(savedRfidLabels != undefined && savedRfidLabels != null && savedRfidLabels.length > 0) {
+      rfidLabels.write(() => {
+        rfidLabels.deleteAll()
+        newRfidLabels.forEach(function(label, i) {
+          if(label.productModelNumber != null && label.productModelNumber != undefined) {
+            try {
+              rfidLabels.create('RFID_Labels', {
+                licenseNumber: label.licenseNumber,
+                productModelNumber: label.productModelNumber,
+                lotSerialNumber: label.lotSerialNumber,
+                expirationDate: label.expirationDate,
+                tagid: label.tagid,
+              })
+            }
+            catch (e) {
+              this.setState({
+                syncProgressMessage:"Error on rfid label creation " + i
+              })
+              console.log(e);
+            }
+          }
+          else {
+            console.log("NULL MODEL NUMBER SKIPPED")
+          }
+        })
+      })
+    }
+    else {
+      rfidLabels.write(() => {
+        newRfidLabels.forEach(function(label, i) {
+          try {
+            rfidLabels.create('RFID_Labels', {
+              licenseNumber: label.licenseNumber,
+              productModelNumber: label.productModelNumber,
+              lotSerialNumber: label.lotSerialNumber,
+              expirationDate: label.expirationDate,
+              tagid: label.tagid,
+            })
+          }
+          catch (e) {
+            console.log("Error on rfid label creation");
+            console.log(e);
+          }
+        })
+      })
+    }
+  }
+
+  FetchRFIDTable = () => {
+    //RFID Call
+    //emulator call
+    //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/subscriptions')
+    //test server call
+    console.log("FETCHRFIDTABLE CALLED FROM ACCOUNT INFORMATION PAGE")
+    return fetch('http://45.42.176.50:5100/api/RfidLabels/View')
+    .then((rfidresponse) => rfidresponse.json())
+    .then((rfidresponseJson) => {
+      console.log("RFID RESPONSE RECEIVED")
+      rfidLabelResponse = rfidresponseJson;
+      this.saveRfidTable(rfidLabelResponse)
+
+      this.setState({
+        syncProgressMessage: 'RFID Labels Synced',
+        isFetchingLabels: false,
+        showSyncFooter: false,
+      })
+    })
+    .catch((error) => {
+      console.error(error);
+      this.setState({
+        isFetchingLabels: false,
+        showSyncFooter: true,
+        syncProgressMessage: 'Syncing Failed: ' + error
+      })
+    });
+  }
 
   renderCaseProducts() {
     let caseInformation = activeScanableCase.objects("Active_Scanable_Case")
     let caseProducts = workingCaseSpace.objects("Working_Case_Space")
     let caseProductsOutput = []
-    console.log("CASEINFORMATION IN RENDER")
-    console.log(caseInformation[0])
-    console.log(caseInformation[0].chead_datetime_in)
-    console.log(caseInformation[0].chead_datetime_out)
+
     if(caseProducts != undefined && caseProducts != null) {
       let sortedCaseProducts = caseProducts.sorted("cprod_change_timestamp", true)
       sortedCaseProducts.forEach(function(product, index){
@@ -646,16 +936,9 @@ export default class CasesScan extends Component {
     let scannedCaseProducts = workingCaseSpace.objects("Working_Case_Space")
 
     if(failedSyncs.length === 0) {
-      //If successfully synced all products delete working DB's and
-      //redirect to home page. ? setup page?
-      activeScanableCase.write(() => {
-        activeScanableCase.deleteAll()
-      })
-      workingCaseSpace.write(() => {
-        workingCaseSpace.deleteAll()
-      })
       //Reset state as needed
       this.setState({
+        showSummary: true,
         pageErrorMessage: "Last Sync Completed Successfully"
       })
     }
@@ -692,8 +975,16 @@ export default class CasesScan extends Component {
     let expectedSyncs = scannedCaseProducts.length
     let completedSyncs = 0
 
+    this.setState({
+      productSummaryFlash: scannedCaseProducts
+    })
+
     //Loop products and individually post to product and case data to sproc
     scannedCaseProducts.forEach((caseProduct, i) => {
+      console.log("SYNC SCANNABLECASE")
+      console.log(scannableCase)
+      console.log("SYNC CASEPRODUCT")
+      console.log(caseProduct)
       try {
         //AddCaseProductSproc old name
         fetch('http://45.42.176.50:5100/api/InsertCaseProduct', {
@@ -704,14 +995,14 @@ export default class CasesScan extends Component {
           },
           body: JSON.stringify({
             //add case product data format
-            chead_pk_site_id: scannableCase.chead_pk_site_id,
+            chead_pk_site_id: scannableCase.chead_pk_site_id.toString(),
             chead_pk_case_number: scannableCase.chead_pk_case_number,
             chead_patient_id: scannableCase.chead_patient_id,
 
             cproc_pk_procedure_code: scannableCase.cproc_pk_procedure_code,
             cproc_physician_id: scannableCase.cproc_physician_id,
             cproc_billing_code: scannableCase.cproc_billing_code,
-            cproc_sync_site_name: scannableCase.cproc_sync_site_name,
+            cproc_sync_site_name: this.state.siteName,
 
             chead_datetime_in: scannableCase.chead_datetime_in,
             chead_datetime_out: scannableCase.chead_datetime_out,
@@ -787,6 +1078,79 @@ export default class CasesScan extends Component {
     });
   }
 
+  renderCaseProductsSummary(products) {
+    let caseProducts = products
+    let caseProductsOutput = []
+
+    products.forEach((product, i) => {
+      caseProductsOutput.push(
+        <View key={"sp" + i}>
+          <Text style={styles.bodyTextLabel}>{product.description}</Text>
+          <Text style={styles.bodyText}>{product.barcode}</Text>
+        </View>
+      )
+    });
+
+    return(caseProductsOutput)
+  }
+
+  renderCaseSummary() {
+    let caseProducts = this.state.productSummaryFlash
+    console.log("CASE PRODUCTS IN SUMMARY")
+    console.log(caseProducts)
+    return(
+      <View>
+        <View>
+          <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>{this.state.caseNumber}</Text>
+          <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Patient Id: </Text>{this.state.patientNumber}</Text>
+          <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Doctor: </Text>{this.state.doctorName}</Text>
+          <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Location: </Text>{this.state.siteName}</Text>
+          <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Procedure: </Text>{this.state.procedureDescription}</Text>
+        </View>
+        {this.renderCaseProductsSummary(caseProducts)}
+
+      </View>
+    )
+  }
+
+  startNewCase() {
+    let scannableCases = activeScanableCase.objects("Active_Scanable_Case")
+    let scannedCaseProducts = workingCaseSpace.objects("Working_Case_Space")
+    //reset or delete working case space and active scannable case
+    activeScanableCase.write(() => {
+      activeScanableCase.deleteAll()
+    })
+    workingCaseSpace.write(() => {
+      workingCaseSpace.deleteAll()
+    })
+
+    this.setState({
+      //clean out everything here.
+      scannedBarcode: '',
+      scannerConnected: false,
+      testCount: 0,
+      scanCount: 0,
+      errorLogMessage: '',
+      caseNumber: '',
+      patientNumber: '',
+      doctorName: '',
+      procedureDescription: '',
+      siteName: '',
+      lastCompleteFlag: true,
+      showSaveInvalid: false,
+      lastScannedObject: {},
+      productSummaryFlash: [],
+      isSynching: false,
+      isUpdating: true,
+    })
+
+    //make product update call and barcode update call. maybe also rfid update call.
+    //redirect to case setup page when finished.
+    console.log("START NEW CASE CALLED")
+
+    this.FetchProductTable()
+  }
+
   render() {
     let isLoggedIn = activeUser.objects('Active_User')
     if(isLoggedIn.length === 0) {
@@ -805,7 +1169,7 @@ export default class CasesScan extends Component {
         siteDescription: "",
       }
 
-      if(activeCaseDetail != null && activeCaseDetail != undefined && activeCaseDetail.length > 0) {
+      if(this.state.showSummary === false) {
         return (
           <View style={{flex: 1}}>
             <ScrollView style={styles.scrollContainer}>
@@ -822,7 +1186,7 @@ export default class CasesScan extends Component {
                 </View>
                 <View style={styles.sectionContainer}>
                   <View style={styles.shadedBackgroundWrapper}>
-                    {/*<Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>{this.state.caseNumber}</Text>*/}
+                    <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Case Number: </Text>{this.state.caseNumber}</Text>
                     <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Patient Id: </Text>{this.state.patientNumber}</Text>
                     <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Doctor: </Text>{this.state.doctorName}</Text>
                     <Text style={styles.bodyText}><Text style={styles.bodyTextLabel}>Location: </Text>{this.state.siteName}</Text>
@@ -869,13 +1233,16 @@ export default class CasesScan extends Component {
                 <View style={styles.titleRow}>
                   <Text style={styles.titleText}>Case Information</Text>
                 </View>
-                <View><Text style={styles.errorText}>{this.state.pageErrorMessage}</Text></View>
+                <View style={styles.errorTextContainer}><Text style={styles.errorText}>{this.state.pageErrorMessage}</Text></View>
                 <View style={styles.sectionContainer}>
                   <View key={"noData"}>
                     <Text style={styles.noDataText}>
                       Synchronization Complete
                     </Text>
-                    <TouchableOpacity style={styles.submitButton} onPress={() => this.props.navigation.navigate('CasesSetup')}>
+                    <View>
+                      {this.renderCaseSummary()}
+                    </View>
+                    <TouchableOpacity style={styles.submitButton} onPress={() => this.startNewCase()}>
                       <Text style={styles.submitButtonText}>Start New Case</Text>
                     </TouchableOpacity>
                   </View>

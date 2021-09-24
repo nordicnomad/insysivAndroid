@@ -162,26 +162,36 @@ export default class Home extends Component {
     //emulator call
     //return fetch('http://10.0.2.2:5000/insysiv/api/v1.0/subscriptions')
     //test server call
-    console.log("FETCHRPATIENTTABLE CALLED FROM SUBSCRIPTIONS HOME PAGE")
-    return fetch('http://45.42.176.50:5100/api/Patients/View')
-    .then((response) => response.json())
-    .then((responseJson) => {
-      console.log("PATIENTS RESPONSE")
-      console.log(responseJson)
-      patientResponse = responseJson;
-      this.savePatientTable(patientResponse)
 
-      this.setState({
-        patients: patientResponse,
-        systemMessage: "Patients Updated"
+    console.log("FETCHRPATIENTTABLE CALLED FROM SUBSCRIPTIONS HOME PAGE")
+    try {
+      return fetch('http://45.42.176.50:5100/api/Patients/View')
+      .then((response) => response.json())
+      .then((responseJson) => {
+        console.log("PATIENTS RESPONSE")
+        console.log(responseJson)
+        patientResponse = responseJson;
+        this.savePatientTable(patientResponse)
+
+        this.setState({
+          patients: patientResponse,
+          systemMessage: "Patients Updated"
+        })
       })
-    })
-    .catch((error) => {
-      console.error(error);
+      .catch((error) => {
+        console.error(error);
+        this.setState({
+          systemMessage: "Patient Update Error"
+        })
+      });
+    }
+    catch (e) {
+      console.log("Error on patients table retrieval");
+      console.log(e);
       this.setState({
-        systemMessage: "Patient Update Error"
+        systemMessage: "Patients Update Failed"
       })
-    });
+    }
   }
 
   savePatientTable = (responsepatients) => {
@@ -196,6 +206,7 @@ export default class Home extends Component {
       patientsList.write(() => {
         patientsList.deleteAll()
         newPatients.forEach(function(patient, i) {
+          console.log("PATIENT ID FOR " + i)
           console.log(patient.patientId)
           try {
             patientsList.create('Patients_List', {
@@ -371,6 +382,9 @@ export default class Home extends Component {
             <View style={styles.container}>
               <View style={styles.titleRow}>
                 <Text style={styles.titleText}>Organization</Text>
+              </View>
+              <View style={styles.errorTextContainer}>
+                <Text style={styles.errorText}>{this.state.systemMessage}</Text>
               </View>
               <View style={styles.menuRow}>
                 {this.renderSubscriptions()}

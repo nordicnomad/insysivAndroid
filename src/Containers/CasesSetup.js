@@ -98,7 +98,7 @@ export default class CasesSetup extends Component {
       schema: [{name: 'Active_Scanable_Case',
       properties: {
         chead_pk_case_number: "string",
-        chead_pk_site_id: "string",
+        chead_pk_site_id: "int",
         chead_patient_id: "string",
         cproc_pk_procedure_code: "string",
         cproc_physician_id: "string",
@@ -173,6 +173,9 @@ export default class CasesSetup extends Component {
     let doctorData = physiciansList.objects('Physicians_List')
     let procedureData = proceduresList.objects('Procedures_List')
     let locationData = locationsList.objects('Locations_List')
+    let patientData = patientsList.objects('Patients_List')
+    console.log("PATIENT DATA IN MOUNT")
+    console.log(patientData)
 
     this.FetchCaseNumber()
     if(doctorData === null || doctorData === undefined || doctorData.length === 0) {
@@ -181,42 +184,59 @@ export default class CasesSetup extends Component {
     if(procedureData === null || procedureData === undefined || procedureData.length === 0) {
       this.FetchProcedureTable()
     }
-    //if(locationData === null || locationData === undefined || locationData.length === 0) {
+    if(locationData === null || locationData === undefined || locationData.length === 0) {
       this.FetchLocationTable()
-    //}
+    }
 
     this.setState({
       doctors: doctorData,
       locations: locationData,
       procedures: procedureData,
+      patients: patientData,
     })
   }
   onPatientChange = (patientValue) => {
+    let patientId = ''
+    if(patientValue > 0) {
+      patientId = this.state.patients[patientValue-1].patientId
+    }
     this.setState({
       newPatientValue: patientValue,
       newPatientLabel: this.state.patients[patientValue-1],
-      newPatientId: this.state.patients[patientValue-1].patientId,
+      newPatientId: patientId,
     })
   }
   onDoctorChange = (pickerValue) => {
+    let physicianId = ''
+    if(pickerValue > 0) {
+      physicianId = this.state.doctors[pickerValue-1].physicianId
+    }
     this.setState({
       newDoctorValue: pickerValue,
       newDoctorLabel: this.state.doctors[pickerValue-1],
-      newDoctorId: this.state.doctors[pickerValue-1].physicianId,
+      newDoctorId: physicianId,
     })
   }
   onLocationChange = (pickerValue) => {
+    let siteId = ''
+    if(pickerValue > 0) {
+      siteId = this.state.locations[pickerValue-1].siteId
+    }
     this.setState({
       newLocationValue: pickerValue,
       newLocationLabel: this.state.locations[pickerValue-1],
-      newLocationId: this.state.locations[pickerValue-1].siteId,
+      newLocationId: siteId,
     })
   }
   onProcedureChange = (pickerValue) => {
+    let procedureCode = ''
+    if(pickerValue > 0) {
+      procedureCode = this.state.procedures[pickerValue-1].procedureCode
+    }
     this.setState({
       newProcedureValue: pickerValue,
       newProcedureLabel: this.state.procedures[pickerValue-1],
-      newProcedureId: this.state.procedures[pickerValue-1].procedureCode,
+      newProcedureId: procedureCode,
     })
   }
   onCaseChange = (pickerValue) => {
@@ -271,6 +291,31 @@ export default class CasesSetup extends Component {
             console.log(e);
           }
         })
+      })
+      this.setState({
+        syncProgressMessage: "Physicians List Updated"
+      })
+    }
+    else {
+      physiciansList.write(() => {
+        newPhysicians.forEach(function(physician, i) {
+          try {
+            physiciansList.create('Physicians_List', {
+              physicianId: physician.physicianId,
+              firstName: physician.firstName,
+              middleInitial: physician.middleInitial,
+              lastName: physician.lastName,
+              active: physician.active,
+            })
+          }
+          catch (e) {
+            console.log("Error on physician table creation");
+            console.log(e);
+          }
+        })
+      })
+      this.setState({
+        syncProgressMessage: "Physicians List Updated"
       })
     }
   }
@@ -358,6 +403,29 @@ export default class CasesSetup extends Component {
           }
         })
       })
+      this.setState({
+        syncProgressMessage: "Procedures Updated"
+      })
+    }
+    else {
+      proceduresList.write(() => {
+        newProcedures.forEach(function(procedure, i) {
+          try {
+            proceduresList.create('Procedures_List', {
+              procedureCode: procedure.procedureCode,
+              procedureDescription: procedure.procedureDescription,
+              active: procedure.active,
+            })
+          }
+          catch (e) {
+            console.log("Error on procedure table creation");
+            console.log(e);
+          }
+        })
+      })
+      this.setState({
+        syncProgressMessage: "Procedures Updated"
+      })
     }
   }
   LoadDummyProcedureTable = () => {
@@ -422,6 +490,29 @@ export default class CasesSetup extends Component {
           }
         })
       })
+      this.setState({
+        syncProgressMessage: "Locations Updated"
+      })
+    }
+    else {
+      locationsList.write(() => {
+        newLocations.forEach(function(location, i) {
+          try {
+            locationsList.create('Locations_List', {
+              siteId: location.siteId,
+              siteDescription: location.siteDescription,
+              active: location.active,
+            })
+          }
+          catch (e) {
+            console.log("Error on location table creation");
+            console.log(e);
+          }
+        })
+      })
+      this.setState({
+        syncProgressMessage: "Locations Updated"
+      })
     }
   }
   LoadDummySiteTable = () => {
@@ -464,13 +555,39 @@ export default class CasesSetup extends Component {
       this.LoadDummySiteTable()
     }
   }
+  renderPatientChoices() {
+    let patients = this.state.patients
+    console.log("PATIENT IN CASE SETUP RENDER DROP DOWN")
+    console.log(this.state.patients)
+    console.log(patients)
+    let patientsOutput = []
+    patientsOutput.push(
+      <Picker.Item key={"Pat" + 0} label='Select a Patient...' value='0' />
+    )
+    if(patients != null && patients != undefined && patients.length > 0) {
+      patients.forEach((patient, i) => {
+        patientsOutput.push(
+          <Picker.Item key={"Pat" + i} label={patient.patientId + " - - " + patient.lastName} value={i + 1} />
+        )
+      });
+      patientsList
+    }
+    else {
+      patientsOutput = []
+      patientsOutput.push(
+        <Picker.Item key={"PatErr"} label='NO PATIENT DATA RECEIVED' value='0' />
+      )
+    }
+
+    return(patientsOutput)
+  }
   renderDoctorChoices() {
     let doctors = this.state.doctors
     let doctorsOutput = []
     doctorsOutput.push(
-      <Picker.Item key={"Doc" + 0} label='Select a Doctor...' value='0' />
+      <Picker.Item key={"Doc" + 0} label='Select a Doctor...' value={0} />
     )
-    if(doctors != null && doctors != undefined) {
+    if(doctors != null && doctors != undefined && doctors.length > 0) {
       doctors.forEach(function(doctor, index) {
         if(doctor.active === "Y") {
           doctorsOutput.push(
@@ -479,15 +596,21 @@ export default class CasesSetup extends Component {
         }
       })
     }
+    else {
+      doctorsOutput = []
+      doctorsOutput.push(
+        <Picker.Item key="docErr" label="NO DOCTOR DATA RECEIVED" value={0} />
+      )
+    }
     return(doctorsOutput)
   }
   renderLocationChoices() {
     let locations = this.state.locations
     let locationsOutput = []
     locationsOutput.push(
-      <Picker.Item key={"Loc" + 0} label='Select a Location...' value='0' />
+      <Picker.Item key={"Loc" + 0} label='Select a Location...' value={0} />
     )
-    if(locations != null && locations != undefined) {
+    if(locations != null && locations != undefined && locations.length > 0) {
       locations.forEach(function(location, index) {
         if(location.active === "Y") {
           locationsOutput.push(
@@ -496,15 +619,21 @@ export default class CasesSetup extends Component {
         }
       })
     }
+    else {
+      locationsOutput = []
+      locationsOutput.push(
+        <Picker.Item key="locErr" label="NO SITE DATA RECEIVED" value={0} />
+      )
+    }
     return(locationsOutput)
   }
   renderProcedureChoices() {
     let procedures = this.state.procedures
     let proceduresOutput = []
     proceduresOutput.push(
-      <Picker.Item key={"Pro" + 0} label='Select a Procedure...' value='0' />
+      <Picker.Item key={"Pro" + 0} label='Select a Procedure...' value={0} />
     )
-    if(procedures != null && procedures != undefined) {
+    if(procedures != null && procedures != undefined && procedures.length > 0) {
       procedures.forEach(function(procedure, index) {
         if(procedure.active === "Y") {
           proceduresOutput.push(
@@ -512,6 +641,12 @@ export default class CasesSetup extends Component {
           )
         }
       })
+    }
+    else {
+      locationsOutput = []
+      locationsOutput.push(
+        <Picker.Item key="procErr" label="NO PROCEDURE DATA RECEIVED" value={0} />
+      )
     }
     return(proceduresOutput)
   }
@@ -540,8 +675,7 @@ export default class CasesSetup extends Component {
           cproc_pk_procedure_code: procedureId,
           cproc_physician_id: doctorId,
           cproc_billing_code: "Default",
-          cproc_sync_site_name: locationId,
-
+          cproc_sync_site_name: "",
           chead_datetime_in: new Date().toISOString(),
           chead_datetime_out: new Date().toISOString(),
           chead_user_one: "",
@@ -574,6 +708,9 @@ export default class CasesSetup extends Component {
             <View style={styles.container}>
               <View style={styles.titleRow}>
                 <Text style={styles.titleText}>Cases Setup</Text>
+              </View>
+              <View style={styles.errorTextContainer}>
+                <Text style={styles.errorText}>{this.state.syncProgressMessage}</Text>
               </View>
               {/*<View style={styles.sectionContainer}>
                 <View style={styles.shadedBackgroundWrapper}>
@@ -631,12 +768,6 @@ export default class CasesSetup extends Component {
                         {this.renderPatientChoices()}
                       </Picker>
                     </View>
-                    <TextInput
-                      style={this.state.patientIdHasFocus === true ? styles.formInputFocus : styles.formInput}
-                      onFocus={() => this.onPatientIdFocusChange()}
-                      onBlur={() => this.onPatientIdFocusChange()}
-                      onChangeText={value => this.setState({newPatientId: value})}
-                      />
                   </View>
                   <View style={styles.formItemWrapper}>
                     <Text style={styles.inputTextLabel}>Doctor</Text>
