@@ -618,7 +618,7 @@ export default class CasesScan extends Component {
           cprod_lot_serial_number: lastLookup.lotSerialNumber,
           cprod_no_charge_reason: "Default Value",
           cprod_no_charge_type: "3",
-          cprod_remote_id: "Scanner1",
+          cprod_remote_id: "22",
           cprod_requisition_number: 0
         })
         this.setState({
@@ -730,7 +730,7 @@ export default class CasesScan extends Component {
                   cprod_lot_serial_number: barcodeLookup.lotSerialNumber,
                   cprod_no_charge_reason: "Default Value",
                   cprod_no_charge_type: "1",
-                  cprod_remote_id: "Scanner",
+                  cprod_remote_id: "22",
                   cprod_requisition_number: 0
                 })
               }
@@ -820,7 +820,7 @@ export default class CasesScan extends Component {
                     cprod_lot_serial_number: barcodeLookup.lotSerialNumber,
                     cprod_no_charge_reason: "Default Value",
                     cprod_no_charge_type: "1",
-                    cprod_remote_id: "Scanner",
+                    cprod_remote_id: "22",
                     cprod_requisition_number: 0
                   })
                 }

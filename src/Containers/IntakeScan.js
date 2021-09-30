@@ -8,6 +8,7 @@ import { BarcodeSearch } from '../Utilities/BarcodeLookup'
 import TestBarcodes from '../dummyData/testBarcodes.json'
 
 import SoundPlayer from 'react-native-sound-player'
+import moment from "moment"
 
 var Realm = require('realm');
 let activeUser ;
@@ -638,6 +639,8 @@ export default class IntakeScan extends Component {
     //Loop products and individually post to server
     scannedProducts.forEach((product, index) => {
       let lotSerial = ''
+      console.log("CASE SYNC EXPIRATION DATE")
+      console.log(product.expirationDate)
       if(product.lotNumber === null || product.lotNumber === '') {
         lotSerial = product.serialNumber
       }
@@ -657,10 +660,10 @@ export default class IntakeScan extends Component {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            remote_id: "1",
-            create_userid: "Scanner",
+            remote_id: "22",
+            create_userid: "Scanner3",
             license_number: product.vendorLicenseNumber,
-            expiration_date: product.expirationDate,
+            expiration_date: moment(product.expirationDate, "YYMMDD").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"),
             create_timestamp: new Date().toISOString(),
             product_bar_code: product.barcode,
             lot_serial_number: lotSerial,
