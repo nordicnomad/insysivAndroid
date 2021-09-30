@@ -1,5 +1,19 @@
 # insysivAndroid
 
+## Environment
+
+### IDE / Text Editor
+React and React Native have dedicated packages within Atom. But other IDE's are often used.
+https://flight-manual.atom.io/getting-started/sections/installing-atom/
+
+### Android Studio
+Android Studio is needed to run a local emulator on mac's and pc's.
+https://developer.android.com/studio
+
+### Global Dependencies
+React Native docs have good instructions that are updated to follow in creating your development environment. Doing environment setup on an empty project first is recommended to simplify troubleshooting before trying to load in the entire project.
+https://reactnative.dev/docs/environment-setup
+
 ## Installation
 
 ### Clone Repository
@@ -12,13 +26,14 @@ yarn
 ## InsysivAndroid cast to tethered device
 
 ### Start packager
-yarn start
+react-native start
 
 ### Check tethered device is detected
 adb devices
 
 ### Cast android app to device
 react-native run-android --variant=release
+Note: when casting to the device close the emulator
 
 
 ## Fix React-Native-Zebra-Scanner Bug
@@ -59,6 +74,9 @@ Open Settings application, Display, Advanced
 - Set Wake-Up Sources to check RIGHT_TRIGGER_1 and LEFT_TRIGGER_2
 
 ## Troubleshooting
+
+### State / Debugger / Network Errors
+Often issues in react native are caused by caching problems. Dumping watchman cache and closing and restarting the packager and emulator will often fix strange problems or behavior. These issues thankfully are less common when using Yarn instead of npm. 
 
 ### Hardware trigger not scanning
 Ensure the DataWedge profile is set up correctly by following the instructions above.
